@@ -1,0 +1,24 @@
+{
+  "name": "projeto-integrado-1",
+  "version": "1.0.0",
+  "description": "## Sobre o Projeto 📝   - Este projeto é um Sistema de Gerenciamento de Academia completo, desenvolvido utilizando Electron. Nosso principal objetivo é fornecer uma ferramenta robusta e intuitiva para otimizar a gestão de academias, permitindo que proprietários e funcionários controlem de forma eficiente as informações de alunos, planos, finanças e muito mais.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PabloVini28/projeto-integrado-1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PabloVini28/projeto-integrado-1/issues"
+  },
+  "homepage": "https://github.com/PabloVini28/projeto-integrado-1#readme",
+  "devDependencies": {
+    "electron": "^38.1.2"
+  }
+}
