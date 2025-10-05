@@ -478,14 +478,15 @@ if (started) {
 }
 const createWindow = () => {
   const mainWindow = new require$$3$1.BrowserWindow({
-    width: 800,
-    height: 600,
+    // ALTERADO: Aumentei o tamanho da janela para o layout ficar melhor
+    width: 1200,
+    height: 800,
     webPreferences: {
       preload: path$1.join(__dirname, "preload.js")
     }
   });
   {
-    mainWindow.loadURL("http://localhost:5173");
+    mainWindow.loadURL(`${"http://localhost:5173"}#/login`);
   }
   mainWindow.webContents.openDevTools();
 };

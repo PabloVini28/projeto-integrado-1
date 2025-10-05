@@ -1,15 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Link,
-  Divider
+  Container, Box, Typography, TextField, Button, Link, Divider
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
-import logoImage from '../assets/logo/logo.png';
+import logoImage from '../assets/logo/logocf3.png'; 
 
 const Logo = () => (
   <Box
@@ -25,6 +20,14 @@ const Logo = () => (
 );
 
 function LoginPage() {
+  const navigate = useNavigate();
+
+  const handleLogin = (event) => {
+    event.preventDefault();
+    console.log("Navegando para a página inicial...");
+    navigate('/');
+  };
+
   return (
     <Container 
       component="main" 
@@ -45,16 +48,13 @@ function LoginPage() {
         }}
       >
         <Logo />
-
-        <Box component="form" noValidate sx={{ mt: 1, width: '100%' }}>
-
+        <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1, width: '100%' }}>
           <Typography component="h1" variant="h6" sx={{ mb: 2 }}>
             Acesse sua conta
           </Typography>
-
           <TextField
-            margin="dense" 
-            size="small"   
+            margin="dense"
+            size="small"
             required
             fullWidth
             id="email"
@@ -64,8 +64,8 @@ function LoginPage() {
             autoFocus
           />
           <TextField
-            margin="dense" 
-            size="small"   
+            margin="dense"
+            size="small"
             required
             fullWidth
             name="password"
@@ -74,7 +74,6 @@ function LoginPage() {
             id="password"
             autoComplete="current-password"
           />
-
           <Box
             sx={{
               display: 'flex',
@@ -87,7 +86,6 @@ function LoginPage() {
               Esqueceu sua senha?
             </Link>
           </Box>
-
           <Button
             type="submit"
             fullWidth
@@ -95,7 +93,7 @@ function LoginPage() {
             sx={{
               mt: 2,
               mb: 2,
-              py: 1.2, 
+              py: 1.2,
               backgroundColor: '#e0e0e0',
               color: 'black',
               '&:hover': {
@@ -105,22 +103,19 @@ function LoginPage() {
           >
             Entrar
           </Button>
-
           <Divider sx={{ my: 2 }}>Ou</Divider>
-
           <Button
             fullWidth
             variant="outlined"
             startIcon={<GoogleIcon />}
             sx={{
-              py: 1.2, 
+              py: 1.2,
               color: 'text.secondary',
               borderColor: 'grey.400'
             }}
           >
             Continuar com Google
           </Button>
-
           <Typography variant="body2" align="center" sx={{ mt: 3 }}>
             Não tem uma conta?{' '}
             <Link href="#" variant="body2">
