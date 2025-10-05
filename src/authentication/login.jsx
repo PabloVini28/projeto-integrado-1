@@ -4,7 +4,7 @@ import {
   Container, Box, Typography, TextField, Button, Link, Divider
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
-import logoImage from '../assets/logo/logo.png'; 
+import logoImage from '../assets/logo/logocf3.png'; 
 
 const Logo = () => (
   <Box
