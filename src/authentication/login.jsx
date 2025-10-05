@@ -10,9 +10,9 @@ const Logo = () => (
   <Box
     component="img"
     sx={{
-      width: 160,
+      width: 120, 
       height: 'auto',
-      mb: 3,
+      mb: 2,
     }}
     alt="CF Gestão Logo"
     src={logoImage}
@@ -29,13 +29,22 @@ function LoginPage() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container 
+      component="main" 
+      sx={{ 
+        maxWidth: '340px !important', 
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        minHeight: '100vh' 
+      }}
+    >
       <Box
         sx={{
-          marginTop: 6,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          width: '100%' 
         }}
       >
         <Logo />
