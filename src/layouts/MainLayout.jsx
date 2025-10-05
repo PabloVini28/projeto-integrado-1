@@ -221,7 +221,14 @@ export default function MainLayout() {
                                 component={RouterLink}
                                 to={item.path}
                                 selected={location.pathname === item.path}
-                                sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}
+                                sx={{
+                                    minHeight: 48,
+                                    justifyContent: open ? 'initial' : 'center',
+                                    px: 2.5,
+                                    borderRadius: 7,
+                                    mx: 1,
+                                    width: 'auto',
+                                }}
                             >
                                 <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
                                     {item.icon}
@@ -235,7 +242,7 @@ export default function MainLayout() {
 
             <Box 
                 component="main" 
-                sx={{ flexGrow: 1, p: 3, backgroundColor: '#FFF0F5' }}
+                sx={{ flexGrow: 1, p: 3, backgroundColor: '#FFFFFF' }}
             >
                 <DrawerHeader />
                 <Outlet />
