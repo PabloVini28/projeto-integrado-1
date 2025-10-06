@@ -1,18 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Container, Box, Typography, TextField, Button, Link, Divider
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Link,
 } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
-import logoImage from '../assets/logo/logocf3.png'; 
+import logoImage from '../assets/logo/iconblue.png'; 
 
 const Logo = () => (
   <Box
     component="img"
     sx={{
-      width: 120, 
+      width: 60, 
       height: 'auto',
-      mb: 2,
+      mb: 1,
     }}
     alt="CF Gestão Logo"
     src={logoImage}
@@ -48,10 +52,20 @@ function LoginPage() {
         }}
       >
         <Logo />
+
+        <Typography 
+          variant="h6" 
+          component="h1" 
+          sx={{ 
+            fontWeight: 400, 
+            mb: 3, 
+            color: 'text.secondary' 
+          }}
+        >
+          Corpo em Forma Gestão
+        </Typography>
+
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1, width: '100%' }}>
-          <Typography component="h1" variant="h6" sx={{ mb: 2 }}>
-            Acesse sua conta
-          </Typography>
           <TextField
             margin="dense"
             size="small"
@@ -103,19 +117,7 @@ function LoginPage() {
           >
             Entrar
           </Button>
-          <Divider sx={{ my: 2 }}>Ou</Divider>
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<GoogleIcon />}
-            sx={{
-              py: 1.2,
-              color: 'text.secondary',
-              borderColor: 'grey.400'
-            }}
-          >
-            Continuar com Google
-          </Button>
+          
           <Typography variant="body2" align="center" sx={{ mt: 3 }}>
             Não tem uma conta?{' '}
             <Link href="#" variant="body2">
