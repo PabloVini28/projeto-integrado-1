@@ -5,6 +5,7 @@ import { createHashRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import LoginPage from './authentication/login';
 import HomePage from './pages/Inicio/HomePage';
+import ForgotPassword from './authentication/ForgotPassword';
 
 import AlunosPage from './pages/Alunos/AlunosPage';
 import PlanosPage from './pages/Planos/PlanosPage';
@@ -18,6 +19,10 @@ const router = createHashRouter([
     {
         path: "/login",
         element: <LoginPage />,
+    },
+    {
+        path: "/esqueci-senha", 
+        element: <ForgotPassword />,
     },
     {
         path: "/",

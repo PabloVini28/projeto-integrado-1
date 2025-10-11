@@ -32,6 +32,12 @@ function LoginPage() {
     navigate('/');
   };
 
+  const handleForgotPasswordClick = (event) => {
+      event.preventDefault();
+      // Usa o useNavigate para ir para a rota que definimos no main.jsx
+      navigate('/esqueci-senha'); 
+  };
+
   return (
     <Container 
       component="main" 
@@ -96,7 +102,12 @@ function LoginPage() {
               mt: 1,
             }}
           >
-            <Link href="#" variant="body2">
+            <Link 
+                href="#" 
+                variant="body2"
+                onClick={handleForgotPasswordClick} 
+                sx={{ cursor: 'pointer' }} // Boa prática para indicar que é clicável
+            >
               Esqueceu sua senha?
             </Link>
           </Box>
