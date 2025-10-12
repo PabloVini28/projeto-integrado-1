@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -25,7 +25,9 @@ const Logo = () => (
 
 function LoginPage() {
   const navigate = useNavigate();
-
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const handleLogin = (event) => {
     event.preventDefault();
     console.log("Navegando para a página inicial...");
@@ -82,6 +84,9 @@ function LoginPage() {
             name="email"
             autoComplete="email"
             autoFocus
+            value={email} // Define o valor atual do campo
+            onChange={(e) => setEmail(e.target.value)} // Atualiza o estado
+            disabled={loading} // Desabilita durante o carregamento
           />
           <TextField
             margin="dense"
@@ -93,6 +98,9 @@ function LoginPage() {
             type="password"
             id="password"
             autoComplete="current-password"
+            value={password} // Define o valor atual do campo
+            onChange={(e) => setPassword(e.target.value)} // Atualiza o estado
+            disabled={loading} // Desabilita durante o carregamento
           />
           <Box
             sx={{
@@ -115,14 +123,19 @@ function LoginPage() {
             type="submit"
             fullWidth
             variant="contained"
+            disabled={loading || !email || !password}
             sx={{
               mt: 2,
               mb: 2,
               py: 1.2,
-              backgroundColor: '#e0e0e0',
+              backgroundColor: '#F2D95C',
               color: 'black',
               '&:hover': {
-                backgroundColor: '#d5d5d5',
+                backgroundColor: '#E0C84D',
+              },
+              '&.Mui-disabled': {
+                backgroundColor: '#F7E9A9', // Amarelo bem claro para desativado
+                color: 'rgba(0, 0, 0, 0.4)', // Texto um pouco apagado
               },
             }}
           >

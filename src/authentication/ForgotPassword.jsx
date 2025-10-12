@@ -159,10 +159,14 @@ function ForgotPassword() {
               mt: 2,
               mb: 3,
               py: 1.2,
-              backgroundColor: '#e0e0e0', // Mantendo o estilo da tela de login
+              backgroundColor: '#F2D95C', // Mantendo o estilo da tela de login
               color: 'black',
               '&:hover': {
-                backgroundColor: '#d5d5d5',
+                backgroundColor: '#E0C84D',
+              },
+              '&.Mui-disabled': {
+                backgroundColor: '#F7E9A9', // Amarelo bem claro para desativado
+                color: 'rgba(0, 0, 0, 0.4)', // Texto um pouco apagado
               },
             }}
           >
@@ -176,7 +180,9 @@ function ForgotPassword() {
               href="#" 
               onClick={handleGoBack} 
               variant="body2" 
-              sx={{ fontWeight: 'bold' }}
+              sx={{ 
+                fontWeight: 'bold' 
+              }}
             >
               Voltar ao login
             </Link>
