@@ -8,7 +8,7 @@ import {
   Button,
   Link,
 } from '@mui/material';
-import logoImage from '../assets/logo/iconblue.png'; 
+import logoImage from '../assets/logo/icon.png'; 
 
 const Logo = () => (
   <Box

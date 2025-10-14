@@ -24,7 +24,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import Logout from '@mui/icons-material/Logout';
 
 
-import logoImage from '../assets/logo/iconblue.png'; 
+import logoImage from '../assets/logo/icon.png'; 
 
 const drawerWidth = 240;
 
@@ -242,7 +242,7 @@ export default function MainLayout() {
 
             <Box 
                 component="main" 
-                sx={{ flexGrow: 1, p: 3, backgroundColor: '#f7eeefff' }}
+                sx={{ flexGrow: 1, p: 3, backgroundColor: '#e7919bff' }}
             >
                 <DrawerHeader />
                 <Outlet />
