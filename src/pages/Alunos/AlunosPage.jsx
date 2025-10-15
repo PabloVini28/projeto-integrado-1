@@ -99,16 +99,16 @@ export default function AlunosPage() {
         setPage(0);
     };
 
-    const handleEdit = (id) => {
-        console.log(`Editar Aluno ID: ${id}`);
+    const handleEdit = (matricula) => {
+        console.log(`Editar Aluno com a Matrícula: ${matricula}`);
     };
 
-    const handleDelete = (id) => {
-        console.log(`Excluir Aluno ID: ${id}`);
+    const handleDelete = (matricula) => {
+        console.log(`Excluir Aluno com a Matrícula: ${matricula}`);
     };
     
     const handleAddAluno = () => {
-        console.log("Abrir modal/página de Cadastro de Novo Aluno");
+        console.log("Cadastrar novo aluno");
     };
 
     const filteredRows = studentRows.filter(row =>
@@ -143,19 +143,20 @@ export default function AlunosPage() {
                             </InputAdornment>
                         ),
                     }}
-                    sx={{ width: '300px' }}
+                    sx={{ width: '500px' }}
                 />
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={handleAddAluno}
                     sx={{ 
-                        backgroundColor: '#ffc107', 
+                        backgroundColor: '#F2D95C', 
                         color: 'black',
                         '&:hover': {
-                            backgroundColor: '#ffb300'
-                        }
-                    }}
+                            backgroundColor: '#F2D95C'
+                        },
+                    fontWeight: 'medium'                   
+                 }}
                 >
                     Novo Aluno
                 </Button>
