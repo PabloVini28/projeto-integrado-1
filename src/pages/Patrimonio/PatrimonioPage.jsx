@@ -72,7 +72,9 @@ export default function PatrimonioPage() {
     };
 
     return (
-        <Paper sx={{ 
+        <Paper 
+        elevation={0}
+        sx={{ 
             width: '100%', 
             p: 3, 
             display: 'flex', 
