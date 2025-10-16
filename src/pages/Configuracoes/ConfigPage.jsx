@@ -40,6 +40,33 @@ export default function ConfigPage() {
                             Configurações
                         </Typography>
                 </Box>
+                <Box
+                        sx={{
+                            position: 'relative',
+                            mb: 1,
+                        }}
+                    >
+                        <Avatar
+                            alt="Kelton Martins"
+                            
+                            src=""
+                            sx={{ width: 120, height: 120 }}
+                        />
+                        {}
+                        <IconButton
+                            sx={{
+                                position: 'absolute',
+                                bottom: 0,
+                                right: 0,
+                                bgcolor: '#f0f0f0', 
+                                '&:hover': {
+                                    bgcolor: '#e0e0e0',
+                                },
+                            }}
+                        >
+                            <PhotoCameraIcon />
+                        </IconButton>
+                </Box>
 
             </Box>
             
