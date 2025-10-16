@@ -66,6 +66,33 @@ export default function ConfigPage() {
                         >
                             <PhotoCameraIcon />
                         </IconButton>
+                        </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 4 }}>
+                                <Typography variant="h5">Kelton Martins</Typography>
+                                <IconButton size="small">
+                                    <EditIcon fontSize="small" />
+                                </IconButton>
+                            </Box>
+                            <Box sx={{ width: '100%', mb: 2 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                                Preferências:
+                            </Typography>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Typography>Modo</Typography>
+                                <Typography color="text.secondary">Claro</Typography>
+                            </Box>
+                        <Button
+                        variant="text"
+                        sx={{
+                            p: 0, 
+                            textTransform: 'none', 
+                            color: 'text.primary',
+                            justifyContent: 'flex-start'
+                        }}
+                        >
+                            Alterar senha
+                        </Button>
                 </Box>
 
             </Box>
