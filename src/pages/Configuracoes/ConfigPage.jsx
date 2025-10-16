@@ -4,10 +4,17 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
-export default function ConfiguracoesPage() {
+export default function ConfigPage() {
     return (
-        <Typography variant="h4">
-            Página de Configurações
-        </Typography>
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                bgcolor: '#212121',
+            }}
+        >
+            
+        </Box>
     );
 }
