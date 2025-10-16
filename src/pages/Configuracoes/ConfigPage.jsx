@@ -25,6 +25,21 @@ export default function ConfigPage() {
                     alignItems: 'center',
                 }}
                 >
+                <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                        position: 'relative', 
+                        mb: 3,
+                    }}>
+                        <IconButton sx={{ position: 'absolute', left: 0 }}>
+                            <SettingsIcon />
+                        </IconButton>
+                        <Typography variant="h6" component="h1">
+                            Configurações
+                        </Typography>
+                </Box>
 
             </Box>
             
