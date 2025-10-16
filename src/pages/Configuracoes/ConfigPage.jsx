@@ -14,6 +14,19 @@ export default function ConfigPage() {
                 bgcolor: '#212121',
             }}
         >
+            <Box
+                sx={{
+                    width: '100%',
+                    maxWidth: 1550,
+                    bgcolor: 'background.paper',
+                    p: 4,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}
+                >
+
+            </Box>
             
         </Box>
     );
