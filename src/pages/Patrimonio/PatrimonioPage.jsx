@@ -20,9 +20,9 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
 import DeleteIcon from '@mui/icons-material/Delete'; 
 import ItemDialog from './PatrimonioComponents/ItemDialog';
+import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
 
 
-// Dados estaticos temporários enquanto não tem conexão com o BD
 const createData = (id, nome, codigo, dataAquisicao, status) => {
   return { id, nome, codigo, dataAquisicao, status };
 };
@@ -59,6 +59,9 @@ export default function PatrimonioPage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState(null);
 
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -74,13 +77,21 @@ export default function PatrimonioPage() {
     };
 
     const handleDelete = (id) => {
-        console.log(`Excluir item com ID: ${id}`);
+        setItemToDelete(id); 
+        setIsDeleteDialogOpen(true); 
+    };
+
+    const confirmDelete = () => {
+        console.log(`Excluindo item com ID: ${itemToDelete}`);
+        handleCloseDialogs();
     };
 
     const handleCloseDialogs = () => {
         setIsAddDialogOpen(false);
         setIsEditDialogOpen(false);
+        setIsDeleteDialogOpen(false); 
         setCurrentItem(null); 
+        setItemToDelete(null); 
     };
 
     const handleSaveNewItem = (data) => {
@@ -204,24 +215,27 @@ export default function PatrimonioPage() {
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Itens por página:"
             />
-
-            {/* Renderiza o mesmo componente duas vezes, com props diferentes */}
             
-            {/* Dialog para Adicionar Item */}
             <ItemDialog
                 open={isAddDialogOpen}
                 onClose={handleCloseDialogs}
                 onSave={handleSaveNewItem}
                 title="Cadastre um novo Item"
             />
-
-            {/* Dialog para Editar Item */}
+            
             <ItemDialog
                 open={isEditDialogOpen}
                 onClose={handleCloseDialogs}
                 onSave={handleUpdateItem}
                 title="Editar Item"
                 itemToEdit={currentItem}
+            />
+
+            <ConfirmaDialog
+                open={isDeleteDialogOpen}
+                onClose={handleCloseDialogs}
+                onConfirm={confirmDelete}
+                title="Tem certeza que deseja excluir?"
             />
         </Paper>
     );
