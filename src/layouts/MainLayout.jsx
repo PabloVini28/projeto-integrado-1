@@ -1,13 +1,12 @@
-// src/layouts/MainLayout.jsx
-
 import React, { useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import {
     Box, Drawer as MuiDrawer, AppBar as MuiAppBar, Toolbar, List, CssBaseline,
     Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText,
-    Breadcrumbs, Link as MuiLink
+    Breadcrumbs, Link as MuiLink,
+    Menu, MenuItem
 } from '@mui/material';
-import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
+import { Outlet, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 
 // Ícones
 import MenuIcon from '@mui/icons-material/Menu';
@@ -22,9 +21,10 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import Logout from '@mui/icons-material/Logout';
 
 
-import logoImage from '../assets/logo/iconblue.png'; 
+import logoImage from '../assets/logo/icon.png'; 
 
 const drawerWidth = 240;
 
@@ -104,10 +104,27 @@ export default function MainLayout() {
     const [open, setOpen] = useState(false);
     const location = useLocation();
     const pathnames = location.pathname.split('/').filter((x) => x);
+    
+    const navigate = useNavigate();
+
+    const [anchorEl, setAnchorEl] = useState(null);
+    const isMenuOpen = Boolean(anchorEl);
 
     const handleDrawerOpen = () => setOpen(true);
     const handleDrawerClose = () => setOpen(false);
-    const handleProfileMenuOpen = () => console.log('Ícone de usuário clicado!');
+
+    const handleProfileMenuOpen = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleLogout = () => {
+        handleMenuClose();
+        navigate('/login');
+    };
+
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f4f6f8' }}>
@@ -159,13 +176,37 @@ export default function MainLayout() {
                     <IconButton
                         size="large"
                         edge="end"
-                        onClick={handleProfileMenuOpen}
+                        onClick={handleProfileMenuOpen} 
                         color="inherit"
                     >
                         <AccountCircle sx={{ fontSize: '2rem' }} />
                     </IconButton>
                 </Toolbar>
             </AppBar>
+
+            <Menu
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+                open={isMenuOpen}
+                onClose={handleMenuClose}
+                sx={{ mt: '45px' }} 
+            >
+                <MenuItem onClick={handleLogout}>
+                    <ListItemIcon>
+                        <Logout fontSize="small" />
+                    </ListItemIcon>
+                    Sair
+                </MenuItem>
+            </Menu>
+
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
                     <IconButton onClick={handleDrawerClose}>
@@ -180,7 +221,14 @@ export default function MainLayout() {
                                 component={RouterLink}
                                 to={item.path}
                                 selected={location.pathname === item.path}
-                                sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}
+                                sx={{
+                                    minHeight: 48,
+                                    justifyContent: open ? 'initial' : 'center',
+                                    px: 2.5,
+                                    borderRadius: 7,
+                                    mx: 1,
+                                    width: 'auto',
+                                }}
                             >
                                 <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
                                     {item.icon}
@@ -194,7 +242,7 @@ export default function MainLayout() {
 
             <Box 
                 component="main" 
-                sx={{ flexGrow: 1, p: 3, backgroundColor: '#FFF0F5' }}
+                sx={{ flexGrow: 1, p: 3, backgroundColor: '#eecfcfff' }}
             >
                 <DrawerHeader />
                 <Outlet />
