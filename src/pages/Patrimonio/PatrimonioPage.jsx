@@ -19,9 +19,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
 import DeleteIcon from '@mui/icons-material/Delete'; 
-import NovoItem from './PatrimonioComponents/NovoItemBox';
+import ItemDialog from './PatrimonioComponents/ItemDialog';
 
 
+// Dados estaticos temporários enquanto não tem conexão com o BD
 const createData = (id, nome, codigo, dataAquisicao, status) => {
   return { id, nome, codigo, dataAquisicao, status };
 };
@@ -53,8 +54,10 @@ const columns = [
 export default function PatrimonioPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    // ADAPTAÇÃO: State para controlar a visibilidade do dialog
-    const [openDialog, setOpenDialog] = useState(false);
+    
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [currentItem, setCurrentItem] = useState(null);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -65,20 +68,29 @@ export default function PatrimonioPage() {
         setPage(0);
     };
 
-    const handleEdit = (id) => {
-        console.log(`Editar item com ID: ${id}`);
+    const handleEdit = (item) => {
+        setCurrentItem(item); 
+        setIsEditDialogOpen(true); 
     };
 
     const handleDelete = (id) => {
         console.log(`Excluir item com ID: ${id}`);
     };
 
-    // ADAPTAÇÃO: Funções para abrir, fechar e salvar
-    const handleOpenDialog = () => setOpenDialog(true);
-    const handleCloseDialog = () => setOpenDialog(false);
-    const handleSaveItem = () => {
-        console.log("Item salvo!");
-        handleCloseDialog();
+    const handleCloseDialogs = () => {
+        setIsAddDialogOpen(false);
+        setIsEditDialogOpen(false);
+        setCurrentItem(null); 
+    };
+
+    const handleSaveNewItem = (data) => {
+        console.log("Salvando NOVO item:", data);
+        handleCloseDialogs();
+    };
+
+    const handleUpdateItem = (data) => {
+        console.log("Atualizando item:", data);
+        handleCloseDialogs();
     };
 
 
@@ -112,12 +124,12 @@ export default function PatrimonioPage() {
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
-                    onClick={handleOpenDialog}
+                    onClick={() => setIsAddDialogOpen(true)}
                     sx={{ 
                         backgroundColor: '#F2D95C',
                         color: 'black',
                         '&:hover': {
-                            backgroundColor: '#F2D95C'
+                            backgroundColor: '#e0c850' 
                         }
                     }}
                 >
@@ -159,7 +171,7 @@ export default function PatrimonioPage() {
                                                     <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                                                         <IconButton 
                                                             size="small" 
-                                                            onClick={() => handleEdit(row.id)}
+                                                            onClick={() => handleEdit(row)}
                                                         >
                                                             <EditIcon fontSize="small" />
                                                         </IconButton>
@@ -193,10 +205,23 @@ export default function PatrimonioPage() {
                 labelRowsPerPage="Itens por página:"
             />
 
-            <NovoItem
-                open={openDialog}
-                onClose={handleCloseDialog}
-                onSave={handleSaveItem}
+            {/* Renderiza o mesmo componente duas vezes, com props diferentes */}
+            
+            {/* Dialog para Adicionar Item */}
+            <ItemDialog
+                open={isAddDialogOpen}
+                onClose={handleCloseDialogs}
+                onSave={handleSaveNewItem}
+                title="Cadastre um novo Item"
+            />
+
+            {/* Dialog para Editar Item */}
+            <ItemDialog
+                open={isEditDialogOpen}
+                onClose={handleCloseDialogs}
+                onSave={handleUpdateItem}
+                title="Editar Item"
+                itemToEdit={currentItem}
             />
         </Paper>
     );

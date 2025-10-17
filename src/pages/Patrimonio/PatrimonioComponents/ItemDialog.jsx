@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, 
     TextField, RadioGroup, FormControlLabel, Radio, FormLabel, FormControl
@@ -8,10 +8,36 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
 
-export default function ItemDialog({ open, onClose, onSave }) {
+export default function ItemDialog({ open, onClose, onSave, title, itemToEdit }) {
     
+    //estados internos para controlar os campos do formulário
+    const [nome, setNome] = useState('');
+    const [codigo, setCodigo] = useState('');
+    const [dataAquisicao, setDataAquisicao] = useState(null);
+    const [status, setStatus] = useState('ativo');
+
+    // useEffect preenche o formulário quando um item é passado para edição
+    useEffect(() => {
+        if (itemToEdit) {
+            setNome(itemToEdit.nome || '');
+            setCodigo(itemToEdit.codigo || '');
+            // Converte a string de data para um objeto Date
+            const [day, month, year] = itemToEdit.dataAquisicao.split('/');
+            setDataAquisicao(new Date(`${year}-${month}-${day}`));
+            setStatus(itemToEdit.status.toLowerCase() || 'ativo');
+        } else {
+            // Limpa o formulário para o modo de adição
+            setNome('');
+            setCodigo('');
+            setDataAquisicao(null);
+            setStatus('ativo');
+        }
+    }, [itemToEdit, open]); 
+
     const handleSave = () => {
-        onSave();
+        const itemData = { nome, codigo, dataAquisicao, status };
+        console.log("Salvando item:", itemData);
+        onSave(itemData);
     };
 
     return (
@@ -23,7 +49,8 @@ export default function ItemDialog({ open, onClose, onSave }) {
             PaperProps={{ sx: { borderRadius: 2 } }}
         >
             <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', pb: 0 }}>
-                Cadastre um novo Item
+                {/*O título é dinâmico */}
+                {title || "Cadastre um novo Item"}
             </DialogTitle>
             <DialogContent>
                 <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
@@ -32,29 +59,36 @@ export default function ItemDialog({ open, onClose, onSave }) {
                         required
                         id="nome"
                         label="Nome do Item"
-                        type="text"
                         fullWidth
-                        variant="outlined"
                         size="small"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
                     />
                     <TextField
                         id="codigo"
                         label="Código"
-                        type="text"
                         fullWidth
-                        variant="outlined"
                         size="small"
+                        value={codigo}
+                        onChange={(e) => setCodigo(e.target.value)}
                     />
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
                         <DatePicker
                             label="Data de Aquisição"
                             format="dd/MM/yyyy"
+                            value={dataAquisicao}
+                            onChange={(newValue) => setDataAquisicao(newValue)}
                             slotProps={{ textField: { size: 'small' } }}
                         />
                     </LocalizationProvider>
                     <FormControl>
                         <FormLabel>Status:</FormLabel>
-                        <RadioGroup row defaultValue="ativo" name="status-group">
+                        <RadioGroup 
+                            row 
+                            name="status-group"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
                             <FormControlLabel value="ativo" control={<Radio size="small" />} label="Ativo" />
                             <FormControlLabel value="inativo" control={<Radio size="small" />} label="Inativo" />
                         </RadioGroup>
@@ -62,26 +96,10 @@ export default function ItemDialog({ open, onClose, onSave }) {
                 </Box>
             </DialogContent>
             <DialogActions sx={{ p: '0 24px 24px', justifyContent: 'center', gap: 1 }}>
-                <Button 
-                    onClick={onClose}
-                    variant="contained"
-                    sx={{ 
-                        backgroundColor: '#343a40',
-                        color: 'white',
-                        '&:hover': { backgroundColor: '#23272b' },
-                    }}
-                >
+                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', '&:hover': { backgroundColor: '#23272b' }}}>
                     Cancelar
                 </Button>
-                <Button 
-                    onClick={handleSave}
-                    variant="contained"
-                    sx={{ 
-                        backgroundColor: '#F2D95C',
-                        color: 'black',
-                        '&:hover': { backgroundColor: '#e0c850' },
-                    }}
-                    >
+                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', '&:hover': { backgroundColor: '#e0c850' }}}>
                     Salvar Item
                 </Button>
             </DialogActions>
