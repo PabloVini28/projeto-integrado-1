@@ -242,7 +242,7 @@ export default function MainLayout() {
 
             <Box 
                 component="main" 
-                sx={{ flexGrow: 1, p: 3, backgroundColor: '#eecfcfff' }}
+                sx={{ flexGrow: 1, p: 3, backgroundColor: '#ffffff' }}
             >
                 <DrawerHeader />
                 <Outlet />

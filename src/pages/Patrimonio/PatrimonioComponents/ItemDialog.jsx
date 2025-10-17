@@ -48,7 +48,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
             fullWidth
             PaperProps={{ sx: { borderRadius: 2 } }}
         >
-            <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', pb: 0 }}>
+            <DialogTitle sx={{ textAlign: 'center', fontWeight: 'normal', fontSize: '1.5rem', pb: 0 }}>
                 {/*O título é dinâmico */}
                 {title || "Cadastre um novo Item"}
             </DialogTitle>
