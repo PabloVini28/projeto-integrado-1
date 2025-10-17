@@ -19,9 +19,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
 import DeleteIcon from '@mui/icons-material/Delete'; 
+import NovoItem from './PatrimonioComponents/NovoItemBox';
 
 
-// Dados estaticos temporários enquanto não tem conexão com o BD
 const createData = (id, nome, codigo, dataAquisicao, status) => {
   return { id, nome, codigo, dataAquisicao, status };
 };
@@ -53,6 +53,8 @@ const columns = [
 export default function PatrimonioPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    // ADAPTAÇÃO: State para controlar a visibilidade do dialog
+    const [openDialog, setOpenDialog] = useState(false);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -70,6 +72,15 @@ export default function PatrimonioPage() {
     const handleDelete = (id) => {
         console.log(`Excluir item com ID: ${id}`);
     };
+
+    // ADAPTAÇÃO: Funções para abrir, fechar e salvar
+    const handleOpenDialog = () => setOpenDialog(true);
+    const handleCloseDialog = () => setOpenDialog(false);
+    const handleSaveItem = () => {
+        console.log("Item salvo!");
+        handleCloseDialog();
+    };
+
 
     return (
         <Paper 
@@ -101,11 +112,12 @@ export default function PatrimonioPage() {
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
+                    onClick={handleOpenDialog}
                     sx={{ 
-                        backgroundColor: '#ffc107',
+                        backgroundColor: '#F2D95C',
                         color: 'black',
                         '&:hover': {
-                            backgroundColor: '#ffb300'
+                            backgroundColor: '#F2D95C'
                         }
                     }}
                 >
@@ -179,6 +191,12 @@ export default function PatrimonioPage() {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Itens por página:"
+            />
+
+            <NovoItem
+                open={openDialog}
+                onClose={handleCloseDialog}
+                onSave={handleSaveItem}
             />
         </Paper>
     );
