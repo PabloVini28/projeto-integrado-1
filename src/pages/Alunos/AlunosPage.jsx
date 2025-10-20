@@ -19,69 +19,39 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
 import DeleteIcon from '@mui/icons-material/Delete'; 
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import CadastroAlunoDialog from './AlunosComponents/CadastroAlunoDialog.jsx'; 
+import RenovarMensalidadeDialog from './AlunosComponents/RenovarMensalidadeDialog.jsx';
+// === NOVOS IMPORTS ===
+import EditarAlunoDialog from './AlunosComponents/EditarAlunoDialog.jsx';
+import ExcluirAlunoDialog from './AlunosComponents/ExcluirAlunoDialog.jsx';
 
-const StatusBadge = ({ status }) => {
-    const isAtivo = status === 'Ativo';
-    const color = isAtivo ? 'success.main' : 'error.main';
 
-    return (
-        <Box 
-            component="span"
-            sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                backgroundColor: isAtivo ? 'rgba(0, 150, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)',
-                color: isAtivo ? 'success.dark' : 'error.dark',
-                borderRadius: '16px',
-                px: 1,
-                py: 0.5,
-                fontWeight: 'medium',
-                fontSize: '0.75rem',
-            }}
-        >
-            <Box
-                component="span"
-                sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: color,
-                    mr: 0.5,
-                }}
-            />
-            {status}
-        </Box>
-    );
-};
-
-const createStudentData = (id, nome, matricula, plano, data_inico, status) => {
-    return { id, nome, matricula, plano, data_inico, status};
+const createStudentData = (id, nome, matricula, plano, data_matricula, data_expiracao, outrosDados = {}) => {
+    return { 
+        id, nome, matricula, plano, data_matricula, data_expiracao, 
+        ...outrosDados 
+    };
 };
 
 const studentRows = [
-    createStudentData(1, 'Ricardo Santos', '3119', 'Plano 1', '15/10/2025', 'Ativo'),
-    createStudentData(2, 'Ana Beatriz', '3120', 'Plano 2', '20/11/2025', 'Inativo'),
-    createStudentData(3, 'Carlos Eduardo', '3121', 'Plano 1', '05/09/2025', 'Ativo'),
-    createStudentData(4, 'Mariana Silva', '3122', 'Plano 3', '12/12/2025', 'Ativo'),
-    createStudentData(5, 'João Pedro', '3123', 'Plano 2', '22/08/2025', 'Inativo'),
-    createStudentData(6, 'Larissa Costa', '3124', 'Plano 1', '30/07/2025', 'Ativo'),
-    createStudentData(7, 'Felipe Oliveira', '3125', 'Plano 3', '18/06/2025', 'Ativo'),
-    createStudentData(8, 'Juliana Pereira', '3126', 'Plano 2', '25/05/2025', 'Inativo'),
-    createStudentData(9, 'Bruno Almeida', '3127', 'Plano 1', '10/04/2025', 'Ativo'),
-    createStudentData(10, 'Camila Rodrigues', '3128', 'Plano 3', '05/03/2025', 'Ativo'),
-    createStudentData(11, 'Gustavo Fernandes', '3129', 'Plano 2', '15/02/2025', 'Inativo'),
-    createStudentData(12, 'Isabela Martins', '3130', 'Plano 1', '20/01/2025', 'Ativo'),
-    createStudentData(13, 'Lucas Lima', '3131', 'Plano 3', '30/12/2024', 'Ativo'),
-    createStudentData(14, 'Sofia Gomes', '3132', 'Plano 2', '12/11/2024', 'Inativo'),
-    createStudentData(15, 'Rafael Barros', '3133', 'Plano 1', '18/10/2024', 'Ativo'),
+    createStudentData(1, 'Gabriel Pereira de Souza', '25010', 'Plano Fit', '15/07/2025', '15/08/2025', { email: 'gabriel@email.com', cpf: '111.222.333-44', telefone: '85912345678', dataNascimento: '01/01/2000', genero: 'masculino', formaPagamento: 'pix' }),
+    createStudentData(2, 'Ana Clara Souza', '25102', 'Plano Premium', '20/09/2025', '20/10/2025', { email: 'ana@email.com', cpf: '222.333.444-55', telefone: '85987654321', dataNascimento: '05/03/1999', genero: 'feminino', formaPagamento: 'cartao' }),
+    createStudentData(3, 'Rafael Oliveira Almeida', '23874', 'Plano Total', '11/01/2025', '11/05/2025'),
+    createStudentData(4, 'Beatriz Pereira Gomes', '25820', 'Plano Fit', '05/06/2025', '05/10/2025'),
+    createStudentData(5, 'Júlia Alves Ribeiro', '25649', 'Plano Fit', '01/02/2025', '01/10/2025'),
+    createStudentData(6, 'Guilherme Santos Rodrigues', '24891', 'Plano Premium', '03/02/2024', '03/10/2025'),
+    createStudentData(7, 'Mariana Costa Lima', '24673', 'Plano Premium', '08/01/2024', '08/10/2025'),
+    createStudentData(8, 'Bruno Carvalho Azevedo', '25810', 'Plano Total', '03/10/2025', '03/11/2025'),
+    createStudentData(9, 'Letícia Dias Moreira', '25730', 'Plano Start', '06/10/2025', '06/11/2025'),
+    createStudentData(10, 'Matheus Cunha Barros', '25543', 'Plano Premium', '14/06/2025', '14/10/2025'),
 ];
-
 const studentColumns = [
     { id: 'nome', label: 'Nome do Aluno' },
     { id: 'matricula', label: 'Matrícula' },
-    { id: 'plano', label: 'Plano' },
-    { id: 'data_inico', label: 'Data de Início', align: 'center' },
-    { id: 'status', label: 'Status', align: 'center' },
+    { id: 'plano', label: 'Plano Ativo' },
+    { id: 'data_matricula', label: 'Data de matrícula', align: 'center' }, 
+    { id: 'data_expiracao', label: 'Data de Expiração', align: 'center' }, 
     { id: 'actions', label: 'Ação', align: 'center' }
 ];
 
@@ -89,6 +59,15 @@ export default function AlunosPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState(''); 
+
+    // === ESTADOS PARA OS DIALOGS ===
+    const [cadastroOpen, setCadastroOpen] = useState(false);
+    const [renovarOpen, setRenovarOpen] = useState(false);
+    // === NOVOS ESTADOS ===
+    const [editOpen, setEditOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [alunoSelecionado, setAlunoSelecionado] = useState(null);
+
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -99,18 +78,61 @@ export default function AlunosPage() {
         setPage(0);
     };
 
-    const handleEdit = (matricula) => {
-        console.log(`Editar Aluno com a Matrícula: ${matricula}`);
+    // === HANDLERS PARA OS DIALOGS ===
+    const handleAddAlunoClick = () => {
+        setCadastroOpen(true);
     };
 
-    const handleDelete = (matricula) => {
-        console.log(`Excluir Aluno com a Matrícula: ${matricula}`);
+    const handleSaveNovoAluno = (novoAluno) => {
+        console.log("Novo aluno para salvar na página principal:", novoAluno);
+        setCadastroOpen(false);
     };
+
+    const handleRenovarClick = () => {
+        setRenovarOpen(true);
+    };
+
+    const handleRenovarMensalidade = (alunoId) => {
+        console.log(`Renovar aluno com ID: ${alunoId} na página principal`);
+        setRenovarOpen(false);
+    };
+
+    // === NOVOS HANDLERS (CONECTADOS AOS BOTÕES DA TABELA) ===
+    const handleEdit = (id) => {
+        const aluno = studentRows.find(row => row.id === id);
+        console.log(`Editar Aluno:`, aluno);
+        setAlunoSelecionado(aluno);
+        setEditOpen(true);
+    };
+
+    const handleDelete = (id) => {
+        const aluno = studentRows.find(row => row.id === id);
+        console.log(`Excluir Aluno:`, aluno);
+        setAlunoSelecionado(aluno);
+        setDeleteOpen(true);
+    };
+
+    const handleSaveEdicao = (alunoEditado) => {
+        console.log("Salvando aluno editado:", alunoEditado);
+        setEditOpen(false);
+        setAlunoSelecionado(null);
+    };
+
+    const handleConfirmDelete = () => {
+        console.log("Excluindo aluno:", alunoSelecionado.id);
+        setDeleteOpen(false);
+        setAlunoSelecionado(null);
+    };
+
+    const handleCloseDialogs = () => {
+        setCadastroOpen(false);
+        setRenovarOpen(false);
+        setEditOpen(false);
+        setDeleteOpen(false);
+        setTimeout(() => setAlunoSelecionado(null), 300); 
+    };
+
     
-    const handleAddAluno = () => {
-        console.log("Cadastrar novo aluno");
-    };
-
     const filteredRows = studentRows.filter(row =>
         row.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         row.matricula.includes(searchTerm)
@@ -118,14 +140,16 @@ export default function AlunosPage() {
 
     return (
         <Paper 
-        elevation={0}
-        sx={{ 
-            width: '100%', 
-            p: 3, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            height: '100%' 
-        }}>
+            elevation={0}
+            sx={{ 
+                width: '100%', 
+                p: 3, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                height: '100%',
+                backgroundColor: 'white'
+            }}>
+            
             <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                 Gerenciamento de Alunos
             </Typography>
@@ -145,21 +169,37 @@ export default function AlunosPage() {
                     }}
                     sx={{ width: '500px' }}
                 />
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={handleAddAluno}
-                    sx={{ 
-                        backgroundColor: '#F2D95C', 
-                        color: 'black',
-                        '&:hover': {
-                            backgroundColor: '#F2D95C'
-                        },
-                    fontWeight: 'medium'                   
-                 }}
-                >
-                    Novo Aluno
-                </Button>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                        variant="contained"
+                        startIcon={<AutorenewIcon />} 
+                        onClick={handleRenovarClick}
+                        sx={{ 
+                            backgroundColor: '#F2D95C', 
+                            color: 'black',
+                            '&:hover': { backgroundColor: '#e0c850' },
+                            fontWeight: 'bold',
+                            borderRadius: '8px' 
+                        }}
+                    >
+                        Renovar Mensalidade
+                    </Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleAddAlunoClick}
+                        sx={{ 
+                            backgroundColor: '#F2D95C', 
+                            color: 'black',
+                            '&:hover': { backgroundColor: '#e0c850' },
+                            fontWeight: 'bold',
+                            borderRadius: '8px' 
+                        }}
+                    >
+                        Novo Aluno
+                    </Button>
+                </Box>
             </Box>
 
             <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
@@ -170,7 +210,7 @@ export default function AlunosPage() {
                                 <TableCell
                                     key={column.id}
                                     align={column.align || 'left'} 
-                                    sx={{ fontWeight: 'bold' }}
+                                    sx={{ fontWeight: 'bold', backgroundColor: '#fafafa' }}
                                 >
                                     {column.label}
                                 </TableCell>
@@ -193,15 +233,7 @@ export default function AlunosPage() {
                                         
                                         let cellContent = value;
 
-                                        if (column.id === 'nome') {
-                                            cellContent = (
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Typography>{value}</Typography>
-                                                </Box>
-                                            );
-                                        } else if (column.id === 'status') {
-                                            cellContent = <StatusBadge status={value} />;
-                                        } else if (column.id === 'actions') {
+                                        if (column.id === 'actions') {
                                             cellContent = (
                                                 <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                                                     <IconButton size="small" onClick={() => handleEdit(row.id)}>
@@ -235,6 +267,33 @@ export default function AlunosPage() {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Alunos por página:"
+            />
+
+            <CadastroAlunoDialog 
+                open={cadastroOpen} 
+                onClose={handleCloseDialogs} 
+                onSave={handleSaveNovoAluno} 
+            />
+
+            <RenovarMensalidadeDialog 
+                open={renovarOpen}
+                onClose={handleCloseDialogs}
+                onRenovar={handleRenovarMensalidade}
+                studentList={studentRows}
+            />
+
+            <EditarAlunoDialog
+                open={editOpen}
+                onClose={handleCloseDialogs}
+                onSave={handleSaveEdicao}
+                alunoParaEditar={alunoSelecionado} 
+            />
+
+            <ExcluirAlunoDialog
+                open={deleteOpen}
+                onClose={handleCloseDialogs}
+                onConfirm={handleConfirmDelete}
+                alunoParaExcluir={alunoSelecionado}
             />
         </Paper>
     );
