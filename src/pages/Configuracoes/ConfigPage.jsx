@@ -406,3 +406,16 @@ function CodigoInput() {
     </Box>
   );
 }
+
+function InfoItem({ icon, title, value }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      {React.cloneElement(icon, { sx: { fontSize: 28, color: 'text.secondary' } })}
+      <Box>
+        <Typography variant="body2" color="text.secondary">{title}</Typography>
+        <Typography variant="body1" fontWeight="bold">{value}</Typography>
+      </Box>
+    </Box>
+  );
+}
+
