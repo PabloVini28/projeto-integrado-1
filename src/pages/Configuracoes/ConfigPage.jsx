@@ -199,3 +199,101 @@ export default function ConfigPage() {
     </Box>
   );
 }
+
+function AlterarEmailModal({ open, onClose }) {
+  const [step, setStep] = useState(1); // 1: Senha, 2: Código, 3: Sucesso
+
+  useEffect(() => {
+    if (!open) {
+      setTimeout(() => setStep(1), 300);
+    }
+  }, [open]);
+
+  const handleNextStep = () => setStep((prev) => prev + 1);
+  const handlePrevStep = () => setStep((prev) => prev - 1);
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
+
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>
+            <DialogTitle fontWeight="bold">Alterar E-mail</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Digite a senha do app"
+                type="password"
+                fullWidth
+                variant="outlined"
+              />
+              <TextField
+                margin="dense"
+                label="Digite seu novo email"
+                type="email"
+                fullWidth
+                variant="outlined"
+              />
+            </DialogContent>
+            <DialogActions sx={{ p: '0 24px 16px' }}>
+              <Button onClick={handleClose} variant="contained" sx={grayButtonSx}>
+                Cancelar
+              </Button>
+              <Button onClick={handleNextStep} variant="contained" sx={yellowButtonSx}>
+                Continuar
+              </Button>
+            </DialogActions>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <DialogTitle fontWeight="bold">Código E-mail</DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" color="text.secondary" textAlign="center">
+                Um código de 6 dígitos foi enviado para seu e-mail.
+                Por favor, digite-o abaixo.
+              </Typography>
+              <CodigoInput />
+            </DialogContent>
+            <DialogActions sx={{ p: '0 24px 16px' }}>
+              <Button onClick={handlePrevStep} variant="contained" sx={grayButtonSx}>
+                Cancelar
+              </Button>
+              <Button onClick={handleNextStep} variant="contained" sx={yellowButtonSx}>
+                Continuar
+              </Button>
+            </DialogActions>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <DialogTitle fontWeight="bold">Sucesso E-mail</DialogTitle>
+            <DialogContent>
+              <Typography variant="body1" textAlign="center">
+                Parabéns! Seu e-mail foi alterado com sucesso.
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ p: '0 24px 16px', justifyContent: 'center' }}>
+              <Button onClick={handleClose} variant="contained" sx={yellowButtonSx}>
+                Concluído
+              </Button>
+            </DialogActions>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '450px' } }}>
+      {renderStep()}
+    </Dialog>
+  );
+}
