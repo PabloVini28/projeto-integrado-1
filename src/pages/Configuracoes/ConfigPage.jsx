@@ -111,7 +111,7 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Rows per page:"
+          labelRowsPerPage="Linhas por pág:"
         />
       </TableContainer>
     </Box>
@@ -295,5 +295,114 @@ function AlterarEmailModal({ open, onClose }) {
     <Dialog open={open} onClose={handleClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '450px' } }}>
       {renderStep()}
     </Dialog>
+  );
+}
+
+function CadastrarUsuarioModal({ open, onClose, onSave }) {
+  return (
+    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+      <DialogTitle fontWeight="bold">Cadastrar Novo Usuário</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
+        <TextField autoFocus label="Nome" fullWidth variant="outlined" />
+        <TextField label="E-mail" type="email" fullWidth variant="outlined" />
+        <TextField label="Matrícula" fullWidth variant="outlined" />
+        <TextField label="Senha Provisória" type="password" fullWidth variant="outlined" />
+      </DialogContent>
+      <DialogActions sx={{ p: '0 24px 16px' }}>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
+          Cancelar
+        </Button>
+        <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
+          Cadastrar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function EditarUsuarioModal({ open, onClose, onSave, user }) {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setNome(user.nome || '');
+      setEmail(user.email || '');
+    } else {
+      setNome('');
+      setEmail('');
+    }
+  }, [user, open]);
+
+  return (
+    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+      <DialogTitle fontWeight="bold">Editar Usuário</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
+        <TextField
+          autoFocus
+          label="Nome"
+          fullWidth
+          variant="outlined"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+        />
+        <TextField
+          label="E-mail"
+          type="email"
+          fullWidth
+          variant="outlined"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions sx={{ p: '0 24px 16px' }}>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
+          Cancelar
+        </Button>
+        <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
+          Salvar Usuário
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function ExcluirUsuarioModal({ open, onClose, onConfirm, user }) {
+  return (
+    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+      <DialogTitle fontWeight="bold">Excluir Usuário</DialogTitle>
+      <DialogContent>
+        <Typography>
+          Tem certeza que deseja excluir o usuário <strong>{user?.nome}</strong>?
+          Esta ação não pode ser desfeita.
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={{ p: '0 24px 16px' }}>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
+          Voltar
+        </Button>
+        <Button onClick={onConfirm} variant="contained" sx={yellowButtonSx}>
+          Excluir
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function CodigoInput() {
+  return (
+    <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', my: 3 }}>
+      {[...Array(6)].map((_, index) => (
+        <TextField
+          key={index}
+          variant="outlined"
+          sx={{ width: 45, height: 45 }}
+          inputProps={{
+            maxLength: 1,
+            style: { textAlign: 'center', fontSize: '1.2rem', padding: 10 },
+          }}
+        />
+      ))}
+    </Box>
   );
 }
