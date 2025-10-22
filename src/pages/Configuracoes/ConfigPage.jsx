@@ -68,7 +68,7 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
       <Typography variant="h4" fontWeight="bold" mb={3}>Área do Administrador</Typography>
       <Button
         variant="contained"
-        startIcon={<Add />}
+        endIcon={<Add />}
         sx={{ ...yellowButtonSx, mb: 3 }}
         onClick={onAddUser}
       >
@@ -145,7 +145,7 @@ function AlterarSenhaModal({ open, onClose }) {
   );
 }
 
-export default function ConfigPage() {
+function LegacyConfigPage() {
   const [funcionarios, setFuncionarios] = React.useState(mockFuncionarios);
   const [openSenha, setOpenSenha] = React.useState(false);
 
@@ -419,3 +419,124 @@ function InfoItem({ icon, title, value }) {
   );
 }
 
+export default function ConfigPage() {
+  
+  const [user, setUser] = useState(mockUserAdmin);
+  const [funcionarios, setFuncionarios] = useState(mockFuncionarios);
+
+  const [modalOpen, setModalOpen] = useState(null); // 'senha', 'email', 'cadastrar', 'editar', 'excluir'
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleOpenModal = (modalName, user = null) => {
+    setSelectedUser(user);
+    setModalOpen(modalName);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(null);
+    setSelectedUser(null);
+  };
+
+  return (
+    
+    <Box sx={{ p: 0 }}> 
+  
+      <Breadcrumbs 
+        separator={<NavigateNext fontSize="small" />} 
+        aria-label="breadcrumb" 
+        sx={{ mb: 2 }}
+      >
+        <Link underline="hover" color="inherit" href="/">
+          Corpo em Forma Gestão
+        </Link>
+        <Typography color="text.primary">Configurações</Typography>
+      </Breadcrumbs>
+      
+      <Typography variant="h4" fontWeight="bold" mb={4}>
+        Página de Configurações
+      </Typography>
+
+      {/* --- SEÇÃO ACESSO --- */}
+      <Typography variant="h4" fontWeight="bold" mb={3}>Acesso</Typography>
+      <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+        <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
+        <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
+        <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
+      </Paper>
+
+      <Grid container spacing={4} mt={1}>
+        {/* --- SEÇÃO SEGURANÇA --- */}
+        <Grid item xs={12} md={user.role === 'ADMINISTRADOR' ? 5 : 12}>
+          <Typography variant="h4" fontWeight="bold" mb={3}>Segurança</Typography>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => handleOpenModal('senha')}
+              endIcon={
+                <Box sx={{ bgcolor: '#FACC15', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
+                </Box>
+              }
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-around', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+            >
+              Alterar Senha
+            </Button>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => handleOpenModal('email')}
+              endIcon={
+                <Box sx={{ bgcolor: '#FACC15', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
+                </Box>
+              }
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-around', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+            >
+              Alterar Email
+            </Button>
+          </Paper>
+        </Grid>
+
+        {/* --- SEÇÃO ÁREA DO ADMINISTRADOR (CONDICIONAL) --- */}
+        {user.role === 'ADMINISTRADOR' && (
+          <Grid item xs={12} md={7}>
+            <AdminArea
+              funcionarios={funcionarios}
+              onAddUser={() => handleOpenModal('cadastrar')}
+              onEditUser={(user) => handleOpenModal('editar', user)}
+              onDeleteUser={(user) => handleOpenModal('excluir', user)}
+            />
+          </Grid>
+        )}
+      </Grid>
+
+      {/* --- RENDERIZAÇÃO DOS MODAIS --- */}
+      <AlterarSenhaModal
+        open={modalOpen === 'senha'}
+        onClose={handleCloseModal}
+      />
+      <AlterarEmailModal
+        open={modalOpen === 'email'}
+        onClose={handleCloseModal}
+      />
+      <CadastrarUsuarioModal
+        open={modalOpen === 'cadastrar'}
+        onClose={handleCloseModal}
+        // onSave={...}
+      />
+      <EditarUsuarioModal
+        open={modalOpen === 'editar'}
+        onClose={handleCloseModal}
+        user={selectedUser}
+        // onSave={...}
+      />
+      <ExcluirUsuarioModal
+        open={modalOpen === 'excluir'}
+        onClose={handleCloseModal}
+        user={selectedUser}
+        // onConfirm={...}
+      />
+    </Box>
+  );
+}
