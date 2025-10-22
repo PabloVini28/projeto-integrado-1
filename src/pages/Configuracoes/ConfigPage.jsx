@@ -117,3 +117,85 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
     </Box>
   );
 }
+
+function AlterarSenhaModal({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+      <DialogTitle fontWeight="bold">Alterar Senha</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="text.secondary" mb={2}>
+          Informe seu e-mail para um link de redefinição.
+        </Typography>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="E-mail"
+          type="email"
+          fullWidth
+          variant="outlined"
+        />
+      </DialogContent>
+      <DialogActions sx={{ p: '0 24px 16px' }}>
+        <Button onClick={onClose} sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Cancelar</Button>
+        <Button onClick={onClose} variant="contained" sx={yellowButtonSx}>
+          Enviar Link
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+export default function ConfigPage() {
+  const [funcionarios, setFuncionarios] = React.useState(mockFuncionarios);
+  const [openSenha, setOpenSenha] = React.useState(false);
+
+  const handleAddUser = () => {
+    // placeholder: open dialog / navigate to a create user form
+    const nextId = funcionarios.length ? Math.max(...funcionarios.map(f => f.id)) + 1 : 1;
+    setFuncionarios([...funcionarios, { id: nextId, nome: `Novo Usuário ${nextId}`, matricula: String(100000 + nextId), email: `usuario${nextId}@exemplo.com` }]);
+  };
+
+  const handleEditUser = (user) => {
+    // placeholder: simple name edit for demo
+    setFuncionarios(funcionarios.map(f => f.id === user.id ? { ...f, nome: f.nome + ' (edit)' } : f));
+  };
+
+  const handleDeleteUser = (user) => {
+    setFuncionarios(funcionarios.filter(f => f.id !== user.id));
+  };
+
+  return (
+    <Box sx={{ p: 3 }}>
+      <Breadcrumbs separator={<NavigateNext fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Link color="inherit" href="#/">
+          Início
+        </Link>
+        <Typography color="text.primary">Configurações</Typography>
+      </Breadcrumbs>
+
+      <Paper sx={{ p: 3, mb: 3 }} elevation={2}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item>
+            <PersonOutline fontSize="large" />
+          </Grid>
+          <Grid item xs>
+            <Typography variant="h6" fontWeight="bold">Usuário</Typography>
+            <Typography variant="body2" color="text.secondary">{mockUserAdmin.nome} — {mockUserAdmin.role}</Typography>
+          </Grid>
+          <Grid item>
+            <Button variant="contained" sx={grayButtonSx} onClick={() => setOpenSenha(true)}>Alterar Senha</Button>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      <AdminArea
+        funcionarios={funcionarios}
+        onAddUser={handleAddUser}
+        onEditUser={handleEditUser}
+        onDeleteUser={handleDeleteUser}
+      />
+
+      <AlterarSenhaModal open={openSenha} onClose={() => setOpenSenha(false)} />
+    </Box>
+  );
+}
