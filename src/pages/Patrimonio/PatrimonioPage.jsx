@@ -121,26 +121,29 @@ export default function PatrimonioPage() {
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <TextField
-                    size="small"
-                    placeholder="Pesquisa por nome ou Código"
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon />
-                            </InputAdornment>
-                        ),
-                    }}
-                    sx={{ width: '300px' }}
-                />
+    size="small"
+    placeholder="Pesquisa por nome ou Código"
+    InputProps={{
+        startAdornment: (
+            <InputAdornment position="start">
+                <SearchIcon />
+            </InputAdornment>
+        ),
+    }}
+    variant="outlined"
+    sx={{ width: '600px' }}
+/>
                 <Button
                     variant="contained"
-                    startIcon={<AddIcon />}
+                    endIcon={<AddIcon />}
                     onClick={() => setIsAddDialogOpen(true)}
                     sx={{ 
                         backgroundColor: '#F2D95C',
                         color: 'black',
+                        fontWeight: 'bold',
+                        borderRadius: '25px',
                         '&:hover': {
-                            backgroundColor: '#e0c850' 
+                            backgroundColor: '#e0c850',
                         }
                     }}
                 >

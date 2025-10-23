@@ -35,7 +35,7 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
                     sx={{
                         backgroundColor: '#343a40',
                         color: '#ffffffff',
-                        fontWeight: 'normal',
+                        fontWeight: 'bold',
                         '&:hover': { backgroundColor: '#23272b' },
                     }}
                 >
@@ -44,10 +44,11 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
                 <Button
                     onClick={onConfirm}
                     variant="contained"
+                    justifyContent= "flex-end"
                     sx={{
                         backgroundColor: '#F2D95C',
                         color: 'black',
-                        fontWeight: 'normal',
+                        fontWeight: 'bold',
                         '&:hover': { backgroundColor: '#e0c850' },
                     }}
                 >

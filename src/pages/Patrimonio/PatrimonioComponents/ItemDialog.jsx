@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, 
+import {
+    Box, Dialog, DialogTitle, DialogContent, DialogActions, Button,
     TextField, RadioGroup, FormControlLabel, Radio, FormLabel, FormControl
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -9,7 +9,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
 
 export default function ItemDialog({ open, onClose, onSave, title, itemToEdit }) {
-    
+
     //estados internos para controlar os campos do formulário
     const [nome, setNome] = useState('');
     const [codigo, setCodigo] = useState('');
@@ -32,7 +32,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
             setDataAquisicao(null);
             setStatus('ativo');
         }
-    }, [itemToEdit, open]); 
+    }, [itemToEdit, open]);
 
     const handleSave = () => {
         const itemData = { nome, codigo, dataAquisicao, status };
@@ -41,9 +41,9 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
     };
 
     return (
-        <Dialog 
-            open={open} 
-            onClose={onClose} 
+        <Dialog
+            open={open}
+            onClose={onClose}
             maxWidth="xs"
             fullWidth
             PaperProps={{ sx: { borderRadius: 2 } }}
@@ -82,24 +82,33 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                         />
                     </LocalizationProvider>
                     <FormControl>
-                        <FormLabel>Status:</FormLabel>
-                        <RadioGroup 
-                            row 
+                        <FormLabel
+                            sx={{
+                                color: '#23272b',
+                                '&.Mui-focused': {
+                                    color: '#23272b',
+                                },
+                            }}
+                        >
+                            Status:
+                        </FormLabel>
+                        <RadioGroup
+                            row
                             name="status-group"
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                         >
-                            <FormControlLabel value="ativo" control={<Radio size="small" />} label="Ativo" />
-                            <FormControlLabel value="inativo" control={<Radio size="small" />} label="Inativo" />
+                            <FormControlLabel value="ativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Ativo" />
+                            <FormControlLabel value="inativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Inativo" />
                         </RadioGroup>
                     </FormControl>
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ p: '0 24px 24px', justifyContent: 'center', gap: 1 }}>
-                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', '&:hover': { backgroundColor: '#23272b' }}}>
+            <DialogActions sx={{ p: '0 24px 24px', justifyContent: 'flex-end', gap: 1 }}>
+                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', fontWeight: 'bold', '&:hover': { backgroundColor: '#23272b' } }}>
                     Cancelar
                 </Button>
-                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', '&:hover': { backgroundColor: '#e0c850' }}}>
+                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', fontWeight: 'bold', '&:hover': { backgroundColor: '#e0c850' } }}>
                     Salvar Item
                 </Button>
             </DialogActions>
