@@ -48,7 +48,7 @@ const mockFuncionarios = [
   { id: 2, nome: "Pablo", matricula: "147897", email: "pablo@email.com" },
   { id: 3, nome: "Guilherme pinheiro", matricula: "123783", email: "gui@email.com" },
   { id: 4, nome: "Victor", matricula: "192845", email: "victor@email.com" },
-  { id: 5, nome: "Oliveira", matricula: "172839", email: "oliveira@email.com" },
+  { id: 5, nome: "K.Martins", matricula: "172839", email: "oliveira@email.com" },
 ];
 
 function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
