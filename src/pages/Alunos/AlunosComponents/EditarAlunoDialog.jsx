@@ -34,13 +34,16 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             setTelefone(alunoParaEditar.telefone || '');
             setCpf(alunoParaEditar.cpf || '');
 
+            // Conversão de Data de Nascimento
             if (alunoParaEditar.dataNascimento) {
                 const [day, month, year] = alunoParaEditar.dataNascimento.split('/');
+                // data-fns usa o formato YYYY-MM-DD
                 setDataNascimento(new Date(`${year}-${month}-${day}`));
             } else {
                 setDataNascimento(null);
             }
 
+            // Conversão de Data de Matrícula (Data de Início)
             if (alunoParaEditar.data_matricula) { 
                 const [day, month, year] = alunoParaEditar.data_matricula.split('/');
                 setDataInicio(new Date(`${year}-${month}-${day}`));
@@ -78,22 +81,64 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
         <Dialog
             open={open}
             onClose={onClose}
+            maxWidth="xs" // Usado para garantir que o fullWidth funcione bem no PaperProps
+            fullWidth
             PaperProps={{ 
                 sx: { 
-                    borderRadius: 2, 
-                    maxWidth: '600px',
+                    borderRadius: 2,
+                    maxHeight: '450px', // Adicionado para telas menores
                 } 
             }}
-            fullWidth
         >
-            <DialogTitle sx={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: 'bold', pb: 1, pt: 3 }}>
-                Editar um Aluno
+            <DialogTitle 
+                // TÍTULO COMPACTO
+                sx={{ 
+                    textAlign: 'left', 
+                    fontSize: '1.5rem', 
+                    fontWeight: 'bold', 
+                    pt: 2, // Reduzido
+                    pb: 0.5, // Reduzido
+                    px: 3 
+                }}
+            >
+                Editar Aluno
             </DialogTitle>
-            <DialogContent>
-                <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 2 }}>
+            
+            <DialogContent 
+                // CONTENT PADDING E SCROLLBAR DISCRETA
+                sx={{ 
+                    px: 3, 
+                    pt: 1, 
+                    pb: 0,
+                    // Estilização WebKit (Chrome, Safari, Edge)
+                    '&::-webkit-scrollbar': {
+                        width: '0.4em', 
+                    },
+                    '&::-webkit-scrollbar-track': {
+                        background: 'transparent', 
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: 'rgba(0,0,0,.15)', 
+                        borderRadius: '20px',
+                    },
+                    '&::-webkit-scrollbar-thumb:hover': {
+                        backgroundColor: 'rgba(0,0,0,.3)', 
+                    }
+                }}
+            >
+                <Box 
+                    component="form" 
+                    // GAP REDUZIDO
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}
+                >
                     
-                    <Typography variant="h6" sx={{ fontWeight: 'normal' }}>Informações Pessoais:</Typography>
-                    <TextField label="Nome Completo*" value={nome} onChange={(e) => setNome(e.target.value)} />
+                    <Typography 
+                        variant="subtitle1" // Título de seção menor
+                        sx={{ fontWeight: 'bold', mt: 1 }}
+                    >
+                        Informações Pessoais:
+                    </Typography>
+                    <TextField label="Nome Completo*" size="small" value={nome} onChange={(e) => setNome(e.target.value)} />
                     
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
                         <DatePicker
@@ -101,15 +146,21 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                             value={dataNascimento}
                             onChange={(newValue) => setDataNascimento(newValue)}
                             format="dd/MM/yyyy"
+                            slotProps={{ textField: { size: 'small' } }} // Campo menor
                         />
                     </LocalizationProvider>
 
-                    <TextField label="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <TextField label="Endereço" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
-                    <TextField label="Telefone*" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-                    <TextField label="CPF" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                    <TextField label="E-mail" size="small" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <TextField label="Endereço" size="small" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+                    <TextField label="Telefone*" size="small" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+                    <TextField label="CPF" size="small" value={cpf} onChange={(e) => setCpf(e.target.value)} />
 
-                    <Typography variant="h6" sx={{ fontWeight: 'normal', pt: 2 }}>Informações Administrativas e Financeiras:</Typography>
+                    <Typography 
+                        variant="subtitle1" // Título de seção menor
+                        sx={{ fontWeight: 'bold', pt: 1 }}
+                    >
+                        Informações Administrativas e Financeiras:
+                    </Typography>
                     
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
                         <DatePicker
@@ -117,13 +168,14 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                             value={dataInicio}
                             onChange={(newValue) => setDataInicio(newValue)}
                             format="dd/MM/yyyy"
-                            disabled={true}
+                            slotProps={{ textField: { size: 'small' } }} // Campo menor
+                            disabled={true} // Mantido desabilitado
                         />
                     </LocalizationProvider>
                     
-                    <TextField label="Plano" value={plano} onChange={(e) => setPlano(e.target.value)} />
+                    <TextField label="Plano" size="small" value={plano} onChange={(e) => setPlano(e.target.value)} />
                     
-                    <FormControl variant="outlined">
+                    <FormControl variant="outlined" size="small">
                         <InputLabel id="forma-pagamento-label">Forma de Pagamento</InputLabel>
                         <Select
                             labelId="forma-pagamento-label"
@@ -138,7 +190,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                         </Select>
                     </FormControl>
 
-                    <FormControl>
+                    <FormControl sx={{ pt: 1, pb: 1 }}>
                         <FormLabel 
                             sx={{ 
                                 color: 'rgba(0, 0, 0, 0.6)', 
@@ -149,25 +201,29 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                         >
                             Gênero:
                         </FormLabel>
-                        <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
-                            <FormControlLabel value="masculino" control={<Radio sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label="Masculino" />
-                            <FormControlLabel value="feminino" control={<Radio sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label="Feminino" />
-                            <FormControlLabel value="prefiro" control={<Radio sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label="Prefiro não informar" />
-                        </RadioGroup>
+                         <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
+                                                    <FormControlLabel value="masculino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Masculino</Typography>} />
+                                                    <FormControlLabel value="feminino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Feminino</Typography>} />
+                                                    <FormControlLabel value="prefiro" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
+                                                </RadioGroup>
                     </FormControl>
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ p: '24px', justifyContent: 'flex-start', gap: 2 }}>
+            
+            <DialogActions 
+                // AÇÕES COMPACTAS, botões size="small" implicito pelo padding reduzido
+                sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
+            >
                 <Button 
                     onClick={onClose} 
                     variant="contained" 
+                    size="small" // Botão menor
                     sx={{ 
                         backgroundColor: '#343a40', 
                         color: 'white', 
                         '&:hover': { backgroundColor: '#23272b' }, 
                         fontWeight: 'normal', 
-                        width: '180px',
-                        height: '40px'
+                        // Removidos width e height fixos
                     }}
                 >
                     Cancelar
@@ -175,13 +231,13 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                 <Button 
                     onClick={handleSave} 
                     variant="contained" 
+                    size="small" // Botão menor
                     sx={{ 
                         backgroundColor: '#F2D95C', 
                         color: 'black', 
                         '&:hover': { backgroundColor: '#e0c850' }, 
                         fontWeight: 'bold', 
-                        width: '180px',
-                        height: '40px'
+                        // Removidos width e height fixos
                     }}
                 >
                     Salvar
