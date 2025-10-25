@@ -68,8 +68,9 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
       <Button
         variant="contained"
         endIcon={<Add />}
-        sx={{ ...yellowButtonSx, mb: 3 }}
+        sx={{ ...yellowButtonSx, mb: 3, borderRadius: '12px', padding: "10px" }}
         onClick={onAddUser}
+
       >
         Cadastrar Novos Usuários
       </Button>
