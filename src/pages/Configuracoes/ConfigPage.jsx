@@ -3,12 +3,10 @@ import {
   Box, Typography, Paper, Grid, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, TablePagination, IconButton,
-  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio
-} from '@mui/material';
-import {
+  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,
   PersonOutline, DescriptionOutlined, AdminPanelSettingsOutlined,
-  ChevronRight, Add, Edit, Delete, NavigateNext // <-- Icone para o Breadcrumb
-} from '@mui/icons-material';
+  ChevronRight, Add, Edit, Delete, NavigateNext
+} from '@mui/material';
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
