@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Grid, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, TablePagination, IconButton,
-  Breadcrumbs, Link
+  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio
 } from '@mui/material';
 import {
   PersonOutline, DescriptionOutlined, AdminPanelSettingsOutlined,
@@ -12,7 +11,7 @@ import {
 } from '@mui/icons-material';
 
 const yellowButtonSx = {
-  bgcolor: '#FACC15',
+  bgcolor: '#F2D95C',
   color: '#1F2937',
   fontWeight: 'bold',
   '&:hover': {
@@ -22,7 +21,7 @@ const yellowButtonSx = {
 
 const grayButtonSx = {
   bgcolor: '#6B7280',
-  color: 'white',
+  color: '#F2D95C',
   fontWeight: 'bold',
   '&:hover': {
     bgcolor: '#4B5563',
@@ -300,22 +299,35 @@ function AlterarEmailModal({ open, onClose }) {
 
 function CadastrarUsuarioModal({ open, onClose, onSave }) {
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-      <DialogTitle fontWeight="bold">Cadastrar Novo Usuário</DialogTitle>
+    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '500px' } }}>
+      <DialogTitle fontWeight="bold" textAlign="center" >Cadastrar um novo Usuário</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
-        <TextField autoFocus label="Nome" fullWidth variant="outlined" />
-        <TextField label="E-mail" type="email" fullWidth variant="outlined" />
-        <TextField label="Matrícula" fullWidth variant="outlined" />
-        <TextField label="Senha Provisória" type="password" fullWidth variant="outlined" />
+        <TextField autoFocus label="Nome Completo*"/>
+        <TextField label="E-mail*" type="email" />
+        <TextField label="Senha*" type="password" />
+        <TextField label="Confirmar Senha*" type="password"  />
+        <TextField label="CPF*"/>
       </DialogContent>
-      <DialogActions sx={{ p: '0 24px 16px' }}>
-        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
-          Cancelar
-        </Button>
-        <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
-          Cadastrar
-        </Button>
-      </DialogActions>
+      <FormControl component="fieldset" sx={{ mt: 1 }}>
+          <FormLabel component="legend">Tipo de Usuário:</FormLabel>
+          <RadioGroup
+            row
+            aria-label="tipo de usuário"
+            name="tipo-usuario-group"
+            defaultValue="funcionario"
+          >
+            <FormControlLabel value="administrador" control={<Radio />} label="Administrador" />
+            <FormControlLabel value="funcionario" control={<Radio />} label="Funcionário" />
+          </RadioGroup>
+      </FormControl>
+        <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
+          <Button onClick={onClose} variant="contained" sx={grayButtonSx} >
+            CANCELAR
+          </Button>
+          <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
+            CADASTRAR USUÁRIO
+          </Button>
+        </Box>
     </Dialog>
   );
 }
@@ -464,52 +476,50 @@ export default function ConfigPage() {
         <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
       </Paper>
 
-      <Grid container spacing={4} mt={1}>
+      <Box mb={3} mt={3}>
         {/* --- SEÇÃO SEGURANÇA --- */}
-        <Grid item xs={12} md={user.role === 'ADMINISTRADOR' ? 5 : 12}>
-          <Typography variant="h4" fontWeight="bold" mb={3}>Segurança</Typography>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Typography variant="h4" fontWeight="bold" mb={3} pl={1}>Segurança</Typography>
+        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2}}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, width: '100%' }}>
             <Button
               variant="contained"
-              fullWidth
               onClick={() => handleOpenModal('senha')}
               endIcon={
-                <Box sx={{ bgcolor: '#FACC15', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
+                <Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20,  }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-around', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
             >
               Alterar Senha
             </Button>
             <Button
               variant="contained"
-              fullWidth
               onClick={() => handleOpenModal('email')}
               endIcon={
-                <Box sx={{ bgcolor: '#FACC15', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-around', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
             >
               Alterar Email
             </Button>
-          </Paper>
-        </Grid>
+          </Box>
+        </Paper>
+      </Box>
 
-        {/* --- SEÇÃO ÁREA DO ADMINISTRADOR (CONDICIONAL) --- */}
-        {user.role === 'ADMINISTRADOR' && (
-          <Grid item xs={12} md={7}>
-            <AdminArea
-              funcionarios={funcionarios}
-              onAddUser={() => handleOpenModal('cadastrar')}
-              onEditUser={(user) => handleOpenModal('editar', user)}
-              onDeleteUser={(user) => handleOpenModal('excluir', user)}
-            />
-          </Grid>
-        )}
-      </Grid>
+      {/* --- SEÇÃO ÁREA DO ADMINISTRADOR (CONDICIONAL) --- */}
+      {user.role === 'ADMINISTRADOR' && (
+        <Box>
+          <AdminArea
+            funcionarios={funcionarios}
+            onAddUser={() => handleOpenModal('cadastrar')}
+            onEditUser={(user) => handleOpenModal('editar', user)}
+            onDeleteUser={(user) => handleOpenModal('excluir', user)}
+          />
+        </Box>
+      )}
 
       {/* --- RENDERIZAÇÃO DOS MODAIS --- */}
       <AlterarSenhaModal
