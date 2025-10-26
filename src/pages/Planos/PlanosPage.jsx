@@ -7,13 +7,12 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
-import DeleteIcon from '@mui/icons-material/Delete'; 
-// Importe os novos componentes de Diálogo
+import DeleteIcon from '@mui/icons-material/Delete';
+
 import { PlanoFormDialog } from './PlanosComponents/PlanoFormDialog'; 
 import { ExcluirPlanoDialog } from './PlanosComponents/ExcluirPlanoDialog'; 
 
 
-// Função para formatar o valor monetário
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
 };
@@ -142,18 +141,17 @@ export default function PlanosPage() {
                             </InputAdornment>
                         ),
                     }}
-                    sx={{ flexGrow: 1, mr: 2 }} 
+                    sx={{ width: '500px' }}
                 />
                 <Button
                     variant="contained"
-                    // MUDANÇA 2: Icone no final e fonte normal
                     endIcon={<AddIcon />} 
                     onClick={handleNewPlan}
                     sx={{ 
                         backgroundColor: '#F2D95C',
                         color: 'black',
                         borderRadius: '25px',
-                        fontWeight: 'normal', // MUDANÇA 2: Fonte normal
+                        fontWeight: 'normal',
                         '&:hover': {
                             backgroundColor: '#e0c850'
                         }
@@ -196,7 +194,6 @@ export default function PlanosPage() {
                             {column.id === 'status' ? (
                                 <Typography 
                                     variant="body2" 
-                                    // NOVO ESTILO: Cor cinza escuro (#343a40)
                                     sx={{ 
                                         color: '#343a40'
                                     }}
@@ -242,8 +239,6 @@ export default function PlanosPage() {
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Itens por página:"
             />
-
-            {/* --- MODAIS --- */}
             
             <PlanoFormDialog
                 open={isFormOpen}
