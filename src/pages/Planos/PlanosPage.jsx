@@ -1,33 +1,28 @@
 import React, { useState, useMemo } from 'react';
 import { 
-    Box, 
-    Typography, 
-    TextField, 
-    InputAdornment, 
-    Button, 
-    Paper, 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableContainer, 
-    TableHead, 
-    TableRow, 
-    TablePagination,
-    IconButton 
+    Box, Typography, TextField, InputAdornment, Button, Paper, 
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+    TablePagination, IconButton 
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
 import DeleteIcon from '@mui/icons-material/Delete'; 
+// Importe os novos componentes de Diálogo
+import { PlanoFormDialog } from './PlanosComponents/PlanoFormDialog'; 
+import { ExcluirPlanoDialog } from './PlanosComponents/ExcluirPlanoDialog'; 
+
+
+// Função para formatar o valor monetário
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
+};
 
 const createData = (id, nome, codigo, valor, status) => {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
-  };
   return { id, nome, codigo, valor: formatCurrency(valor), status };
 };
 
-const allRows = [
+const initialRows = [
   createData(1, 'Diária', '001', 10.00, 'Ativo'),
   createData(2, 'Semanal', '002', 50.00, 'Ativo'),
   createData(3, 'Mensal', '003', 100.00, 'Ativo'),
@@ -47,6 +42,11 @@ export default function PlanosPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
+    const [rows, setRows] = useState(initialRows); 
+
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState(null); 
 
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
@@ -61,26 +61,58 @@ export default function PlanosPage() {
 
     const filteredRows = useMemo(() => {
         if (!searchTerm) {
-            return allRows; 
+            return rows; 
         }
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        return allRows.filter(row => 
+        return rows.filter(row => 
             row.nome.toLowerCase().includes(lowerCaseSearchTerm) || 
             row.codigo.toLowerCase().includes(lowerCaseSearchTerm)
         );
-    }, [searchTerm]); 
+    }, [searchTerm, rows]); 
 
+    const handleNewPlan = () => {
+        setSelectedPlan(null); 
+        setIsFormOpen(true);
+    }
+    
     const handleEdit = (id) => {
-        console.log(`Editar plano com ID: ${id}`);
+        const plan = rows.find(r => r.id === id);
+        setSelectedPlan(plan);
+        setIsFormOpen(true);
     };
 
     const handleDelete = (id) => {
-        console.log(`Excluir plano com ID: ${id}`);
+        const plan = rows.find(r => r.id === id);
+        setSelectedPlan(plan);
+        setIsDeleteOpen(true);
     };
 
-    const handleNewPlan = () => {
-        console.log("Abrir dialog/modal para novo plano");
-    }
+    const handleConfirmDelete = () => {
+        if (selectedPlan) {
+            setRows(prevRows => prevRows.filter(row => row.id !== selectedPlan.id));
+        }
+        setIsDeleteOpen(false);
+        setSelectedPlan(null);
+    };
+
+    const handleSavePlan = (planData) => {
+        if (planData.id) {
+            setRows(prevRows => prevRows.map(row => 
+                row.id === planData.id 
+                ? createData(row.id, planData.nome, planData.codigo, planData.valor, planData.status) 
+                : row
+            ));
+        } else {
+            const maxCodigo = rows.reduce((max, r) => Math.max(max, parseInt(r.codigo, 10)), 0);
+            const newCodigo = String(maxCodigo + 1).padStart(3, '0');
+            const newId = rows.length ? Math.max(...rows.map(r => r.id)) + 1 : 1;
+            
+            const newRow = createData(newId, planData.nome, newCodigo, planData.valor, planData.status);
+            setRows(prevRows => [...prevRows, newRow]);
+        }
+        setIsFormOpen(false);
+        setSelectedPlan(null);
+    };
 
     return (
         <Paper 
@@ -110,16 +142,18 @@ export default function PlanosPage() {
                             </InputAdornment>
                         ),
                     }}
-                    sx={{ width: '300px' }}
+                    sx={{ flexGrow: 1, mr: 2 }} 
                 />
                 <Button
                     variant="contained"
-                    startIcon={<AddIcon />}
+                    // MUDANÇA 2: Icone no final e fonte normal
+                    endIcon={<AddIcon />} 
                     onClick={handleNewPlan}
                     sx={{ 
                         backgroundColor: '#F2D95C',
                         color: 'black',
                         borderRadius: '25px',
+                        fontWeight: 'normal', // MUDANÇA 2: Fonte normal
                         '&:hover': {
                             backgroundColor: '#e0c850'
                         }
@@ -145,44 +179,56 @@ export default function PlanosPage() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredRows
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((row) => (
-                                <TableRow 
-                                    hover 
-                                    role="checkbox" 
-                                    tabIndex={-1} 
-                                    key={row.id}
-                                    sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
+    {filteredRows
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+        .map((row) => (
+            <TableRow 
+                hover 
+                role="checkbox" 
+                tabIndex={-1} 
+                key={row.id}
+                sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
+            >
+                {columns.map((column) => {
+                    const value = row[column.id];
+                    return (
+                        <TableCell key={column.id} align={column.align || 'left'}>
+                            {column.id === 'status' ? (
+                                <Typography 
+                                    variant="body2" 
+                                    // NOVO ESTILO: Cor cinza escuro (#343a40)
+                                    sx={{ 
+                                        color: '#343a40'
+                                    }}
                                 >
-                                    {columns.map((column) => {
-                                        const value = row[column.id];
-                                        return (
-                                            <TableCell key={column.id} align={column.align || 'left'}>
-                                                {column.id === 'actions' ? (
-                                                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleEdit(row.id)}
-                                                        >
-                                                            <EditIcon fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleDelete(row.id)}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                ) : (
-                                                    value
-                                                )}
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-                            ))}
-                    </TableBody>
+                                    {value}
+                                </Typography>
+                            ) : column.id === 'actions' ? (
+                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                    <IconButton 
+                                        size="small" 
+                                        onClick={() => handleEdit(row.id)}
+                                        sx={{ color: '#343a40' }}
+                                    >
+                                        <EditIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton 
+                                        size="small" 
+                                        onClick={() => handleDelete(row.id)}
+                                        sx={{ color: '#343a40' }}
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </Box>
+                            ) : (
+                                value
+                            )}
+                        </TableCell>
+                    );
+                })}
+            </TableRow>
+        ))}
+</TableBody>
                 </Table>
             </TableContainer>
 
@@ -195,6 +241,22 @@ export default function PlanosPage() {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Itens por página:"
+            />
+
+            {/* --- MODAIS --- */}
+            
+            <PlanoFormDialog
+                open={isFormOpen}
+                onClose={() => {setIsFormOpen(false); setSelectedPlan(null);}}
+                onSave={handleSavePlan}
+                planToEdit={selectedPlan}
+            />
+            
+            <ExcluirPlanoDialog
+                open={isDeleteOpen}
+                onClose={() => {setIsDeleteOpen(false); setSelectedPlan(null);}}
+                onConfirm={handleConfirmDelete}
+                planToDelete={selectedPlan}
             />
         </Paper>
     );
