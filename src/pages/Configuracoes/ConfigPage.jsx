@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-
 import {
   Box, Typography, Paper, Grid, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, TablePagination, IconButton,
-  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,
+  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,Fab
 } from '@mui/material';
 import {
   PersonOutline, DescriptionOutlined, AdminPanelSettingsOutlined,
@@ -30,8 +29,10 @@ const grayButtonSx = {
 };
 
 const mockUserAdmin = {
+  id: 5,
   nome: "Kelton Martins",
   matricula: "123456",
+  cpf: "123.456.789-00",
   email: "kelton@admin.com",
   role: "ADMINISTRADOR"
 };
@@ -39,16 +40,17 @@ const mockUserAdmin = {
 const mockUserFuncionario = {
   nome: "Julio Mateus Morais",
   matricula: "654321",
+  cpf: "987.654.321-00",
   email: "julio@funcionario.com",
   role: "FUNCIONARIO"
 };
 
 const mockFuncionarios = [
-  { id: 1, nome: "Julio Mateus Morais", matricula: "123456", email: "julio@email.com" },
-  { id: 2, nome: "Pablo", matricula: "147897", email: "pablo@email.com" },
-  { id: 3, nome: "Guilherme pinheiro", matricula: "123783", email: "gui@email.com" },
-  { id: 4, nome: "Victor", matricula: "192845", email: "victor@email.com" },
-  { id: 5, nome: "K.Martins", matricula: "172839", email: "oliveira@email.com" },
+  { id: 1, nome: "Julio Mateus Morais", cpf: "156.476.239-00", matricula: "123456", email: "julio@email.com", role: 'FUNCIONARIO' },
+  { id: 2, nome: "Pablo", cpf: "987.654.321-00", matricula: "147897", email: "pablo@email.com", role: 'FUNCIONARIO' },
+  { id: 3, nome: "Guilherme pinheiro", cpf: "123.783.456-00", matricula: "123783", email: "gui@email.com", role: 'FUNCIONARIO' },
+  { id: 4, nome: "Victor", cpf: "192.845.678-00", matricula: "192845", email: "victor@email.com", role: 'FUNCIONARIO' },
+  mockUserAdmin
 ];
 
 function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
@@ -65,33 +67,48 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
   };
     return (
     <Box>
-      <Typography variant="h4" fontWeight="bold" mb={3}>Área do Administrador</Typography>
-      <Button
-        variant="contained"
-        endIcon={<Add />}
-        sx={{ ...yellowButtonSx, mb: 3, borderRadius: '12px', padding: "10px" }}
-        onClick={onAddUser}
-
-      >
-        Cadastrar Novos Usuários
-      </Button>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h5">Área do Administrador</Typography>
+        
+      </Box>
 
       <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+          <Button
+            variant="contained"
+            endIcon={<Add/>}
+            sx={{ ...yellowButtonSx, borderRadius: '20px', px: 2, py: 1 , padding: '15px 12px 12px 16px'}}
+            onClick={onAddUser}
+          >
+            CADASTRAR NOVO USUÁRIO
+          </Button>
+        </Box>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Nome</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Matrícula</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>CPF</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Nível de Acesso</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Ação</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {funcionarios
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.nome}</TableCell>
-                  <TableCell>{user.matricula}</TableCell>
+              .map((user, idx) => (
+                <TableRow
+                  key={user.id}
+                  sx={(theme) => ({
+                    backgroundColor: idx % 2
+                        ? theme.palette.action.hover
+                        : 'transparent',
+                  })}
+                >
+                  <TableCell>{user.nome ?? '-'}</TableCell>
+                  <TableCell>{user.matricula ?? '-'}</TableCell>
+                  <TableCell>{user.cpf ?? '-'}</TableCell>
+                  <TableCell>{user.role ?? 'FUNCIONARIO'}</TableCell>
                   <TableCell>
                     <IconButton onClick={() => onEditUser(user)}>
                       <Edit />
