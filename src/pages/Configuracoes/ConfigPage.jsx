@@ -455,12 +455,12 @@ export default function ConfigPage() {
     
     <Box sx={{ p: 4 }}> 
       
-      <Typography variant="h2" fontWeight="bold" mb={4}>
+      <Typography variant="h4" fontWeight="bold" mb={4}>
         Configurações
       </Typography>
 
       {/* --- SEÇÃO ACESSO --- */}
-      <Typography variant="h3"  mb={3}>Acesso</Typography>
+      <Typography variant="h5"  mb={3}>Acesso</Typography>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
         <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
@@ -469,7 +469,7 @@ export default function ConfigPage() {
 
       <Box mb={3} mt={3}>
         {/* --- SEÇÃO SEGURANÇA --- */}
-        <Typography variant="h3" mb={3} marginTop={7} marginBottom={7}>Segurança</Typography>
+        <Typography variant="h5" mb={3} marginTop={7} marginBottom={7}>Segurança</Typography>
         <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2}}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, width: '100%' }}>
             <Button
