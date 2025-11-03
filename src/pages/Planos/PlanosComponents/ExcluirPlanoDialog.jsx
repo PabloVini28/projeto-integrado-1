@@ -6,7 +6,10 @@ import {
     Button 
 } from '@mui/material';
 
-export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
+// --- DIALOG PARA CONFIRMAÇÃO DE EXCLUSÃO ---
+export function ExcluirPlanoDialog({ open, onClose, onConfirm, planToDelete }) {
+    const title = `Tem certeza que deseja excluir o plano "${planToDelete?.nome || ''}"?`;
+
     return (
         <Dialog
             open={open}
@@ -14,28 +17,24 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
             PaperProps={{
                 sx: {
                     borderRadius: 2,
-                    width: '100%',
                     maxWidth: '420px', 
                 }
             }}
+            fullWidth
         >
-            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'normal', fontSize: '1.5rem', textAlign: 'left' }}>
-                {title || "Tem certeza que deseja excluir?"}
+            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'bold', fontSize: '1.5rem', textAlign: 'left' }}>
+                {title}
             </DialogTitle>
             
-            <DialogActions sx={{ 
-                px: 6, 
-                pb: 3,
-                pt: 1,
-                gap: 1 
-            }}>
+            <DialogActions sx={{ px: 3, pb: 2, pt: 1, gap: 1, justifyContent: 'flex-end' }}>
                 <Button
                     onClick={onClose}
                     variant="contained"
+                    size="small"
                     sx={{
                         backgroundColor: '#343a40',
-                        color: '#ffffffff',
-                        fontWeight: 'bold',
+                        color: 'white',
+                        fontWeight: 'normal',
                         '&:hover': { backgroundColor: '#23272b' },
                     }}
                 >
@@ -44,11 +43,11 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
                 <Button
                     onClick={onConfirm}
                     variant="contained"
-                    justifyContent= "flex-end"
+                    size="small"
                     sx={{
                         backgroundColor: '#F2D95C',
                         color: 'black',
-                        fontWeight: 'bold',
+                        fontWeight: 'normal',
                         '&:hover': { backgroundColor: '#e0c850' },
                     }}
                 >

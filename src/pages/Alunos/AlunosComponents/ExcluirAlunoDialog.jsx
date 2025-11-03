@@ -22,7 +22,7 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                 sx: {
                     borderRadius: 2,
                     width: '100%',
-                    maxWidth: '525px',
+                    maxWidth: '420',
                 }
             }}
         >
@@ -60,7 +60,7 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                 pb: 3,
                 pt: 1,
                 gap: 1,
-                justifyContent: 'flex-start'
+                justifyContent: 'flex-end'
             }}>
                 <Button
                     onClick={onClose}
@@ -68,7 +68,7 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                     sx={{
                         backgroundColor: '#343a40',
                         color: '#ffffffff',
-                        fontWeight: 'normal',
+                        fontWeight: 'bold',
                         '&:hover': { backgroundColor: '#23272b' },
                     }}
                 >
@@ -80,7 +80,7 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                     sx={{
                         backgroundColor: '#F2D95C',
                         color: 'black',
-                        fontWeight: 'normal',
+                        fontWeight: 'bold',
                         '&:hover': { backgroundColor: '#e0c850' },
                     }}
                 >
