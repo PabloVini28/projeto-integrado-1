@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Grid, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, TablePagination, IconButton,
-  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,Fab
+  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Fab
 } from '@mui/material';
 import {
   PersonOutline, DescriptionOutlined, AdminPanelSettingsOutlined,
@@ -11,21 +11,17 @@ import {
 } from '@mui/icons-material';
 
 const yellowButtonSx = {
-  bgcolor: '#F2D95C',
-  color: '#1F2937',
-  fontWeight: 'bold',
-  '&:hover': {
-    bgcolor: '#EAB308',
-  },
+  backgroundColor: '#F2D95C',
+  color: 'black',
+  '&:hover': { backgroundColor: '#e0c850' },
+  fontWeight: 'normal',
 };
 
 const grayButtonSx = {
-  bgcolor: '#6B7280',
-  color: '#F2D95C',
-  fontWeight: 'bold',
-  '&:hover': {
-    bgcolor: '#4B5563',
-  },
+  backgroundColor: '#343a40',
+  color: 'white',
+  '&:hover': { backgroundColor: '#23272b' },
+  fontWeight: 'normal',
 };
 
 const mockUserAdmin = {
@@ -65,19 +61,19 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-    return (
+  return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="h5">Área do Administrador</Typography>
-        
+
       </Box>
 
       <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
           <Button
             variant="contained"
-            endIcon={<Add/>}
-            sx={{ ...yellowButtonSx, borderRadius: '20px', px: 2, py: 1 , padding: '15px 12px 12px 16px'}}
+            endIcon={<Add />}
+            sx={{ ...yellowButtonSx, borderRadius: '20px' }}
             onClick={onAddUser}
           >
             CADASTRAR NOVO USUÁRIO
@@ -101,8 +97,8 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
                   key={user.id}
                   sx={(theme) => ({
                     backgroundColor: idx % 2
-                        ? theme.palette.action.hover
-                        : 'transparent',
+                      ? theme.palette.action.hover
+                      : 'transparent',
                   })}
                 >
                   <TableCell>{user.nome ?? '-'}</TableCell>
@@ -321,32 +317,39 @@ function CadastrarUsuarioModal({ open, onClose, onSave }) {
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '500px' } }}>
       <DialogTitle fontWeight="bold" textAlign="center" >Cadastrar um novo Usuário</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
-        <TextField autoFocus label="Nome Completo*"/>
+        <TextField autoFocus label="Nome Completo*" />
         <TextField label="E-mail*" type="email" />
         <TextField label="Senha*" type="password" />
-        <TextField label="Confirmar Senha*" type="password"  />
-        <TextField label="CPF*"/>
+        <TextField label="Confirmar Senha*" type="password" />
+        <TextField label="CPF*" />
       </DialogContent>
       <FormControl component="fieldset" sx={{ mt: 1 }}>
-          <FormLabel component="legend">Tipo de Usuário:</FormLabel>
-          <RadioGroup
-            row
-            aria-label="tipo de usuário"
-            name="tipo-usuario-group"
-            defaultValue="funcionario"
-          >
-            <FormControlLabel value="administrador" control={<Radio />} label="Administrador" />
-            <FormControlLabel value="funcionario" control={<Radio />} label="Funcionário" />
-          </RadioGroup>
+        <FormLabel component="legend"
+          sx={{
+            color: 'rgba(0, 0, 0, 0.6)',
+            '&.Mui-focused': {
+              color: 'rgba(0, 0, 0, 0.6)'
+            }
+          }}
+        >Tipo de Usuário:</FormLabel>
+        <RadioGroup
+          row
+          aria-label="tipo de usuário"
+          name="tipo-usuario-group"
+          defaultValue="funcionario"
+        >
+          <FormControlLabel value="administrador" control={<Radio sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
+          <FormControlLabel value="funcionario" control={<Radio sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+        </RadioGroup>
       </FormControl>
-        <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
-          <Button onClick={onClose} variant="contained" sx={grayButtonSx} >
-            CANCELAR
-          </Button>
-          <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
-            CADASTRAR USUÁRIO
-          </Button>
-        </Box>
+      <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx} >
+          CANCELAR
+        </Button>
+        <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
+          CADASTRAR USUÁRIO
+        </Button>
+      </Box>
     </Dialog>
   );
 }
@@ -451,7 +454,7 @@ function InfoItem({ icon, title, value }) {
 }
 
 export default function ConfigPage() {
-  
+
   const [user, setUser] = useState(mockUserAdmin);
   const [funcionarios, setFuncionarios] = useState(mockFuncionarios);
 
@@ -469,15 +472,15 @@ export default function ConfigPage() {
   };
 
   return (
-    
-    <Box sx={{ p: 4 }}> 
-      
+
+    <Box sx={{ p: 4 }}>
+
       <Typography variant="h4" fontWeight="bold" mb={4}>
         Configurações
       </Typography>
 
       {/* --- SEÇÃO ACESSO --- */}
-      <Typography variant="h5"  mb={3}>Acesso</Typography>
+      <Typography variant="h5" mb={3}>Acesso</Typography>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
         <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
@@ -487,17 +490,17 @@ export default function ConfigPage() {
       <Box mb={3} mt={3}>
         {/* --- SEÇÃO SEGURANÇA --- */}
         <Typography variant="h5" mb={3} marginTop={7} marginBottom={7}>Segurança</Typography>
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2}}>
+        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, width: '100%' }}>
             <Button
               variant="contained"
               onClick={() => handleOpenModal('senha')}
               endIcon={
                 <Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20,  }} />
+                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20, }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight: "bold" }}
             >
               Alterar Senha
             </Button>
@@ -509,7 +512,7 @@ export default function ConfigPage() {
                   <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight: "bold" }}
             >
               Alterar Email
             </Button>
@@ -541,19 +544,19 @@ export default function ConfigPage() {
       <CadastrarUsuarioModal
         open={modalOpen === 'cadastrar'}
         onClose={handleCloseModal}
-        // onSave={...}
+      // onSave={...}
       />
       <EditarUsuarioModal
         open={modalOpen === 'editar'}
         onClose={handleCloseModal}
         user={selectedUser}
-        // onSave={...}
+      // onSave={...}
       />
       <ExcluirUsuarioModal
         open={modalOpen === 'excluir'}
         onClose={handleCloseModal}
         user={selectedUser}
-        // onConfirm={...}
+      // onConfirm={...}
       />
     </Box>
   );
