@@ -179,7 +179,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
                         backgroundColor: '#343a40', 
                         color: 'white', 
                         '&:hover': { backgroundColor: '#23272b' }, 
-                        fontWeight: 'bold', 
+                        fontWeight: 'normal', 
                     }}
                 >
                     Cancelar
@@ -191,7 +191,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
                         backgroundColor: '#F2D95C', 
                         color: 'black', 
                         '&:hover': { backgroundColor: '#e0c850' }, 
-                        fontWeight: 'bold', 
+                        fontWeight: 'normal', 
                     }}
                 >
                     Cadastrar

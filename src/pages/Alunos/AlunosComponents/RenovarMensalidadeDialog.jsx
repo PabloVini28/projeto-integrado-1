@@ -126,7 +126,7 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                                 backgroundColor: '#343a40', 
                                 color: 'white', 
                                 '&:hover': { backgroundColor: '#23272b' }, 
-                                fontWeight: 'bold', 
+                                fontWeight: 'normal', 
                                 // REMOVIDO tamanho fixo
                             }}
                         >
@@ -172,7 +172,7 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                             </Box>
                         </Box>
                     </DialogContent>
-                     <DialogActions sx={{ p: '24px', justifyContent: 'flex-end', gap: 2 }}>
+                     <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
                          <Button 
                             onClick={handleCancel} 
                             variant="contained" 
@@ -180,7 +180,7 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                                 backgroundColor: '#343a40', 
                                 color: 'white', 
                                 '&:hover': { backgroundColor: '#23272b' }, 
-                                fontWeight: 'bold',
+                                fontWeight: 'normal',
                             }}
                         >
                             Cancelar
@@ -192,7 +192,7 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                                 backgroundColor: '#F2D95C', 
                                 color: 'black', 
                                 '&:hover': { backgroundColor: '#e0c850' }, 
-                                fontWeight: 'bold',
+                                fontWeight: 'normal',
                             }}
                         >
                             Renovar + 30 dias
