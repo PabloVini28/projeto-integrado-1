@@ -236,7 +236,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                         backgroundColor: '#F2D95C', 
                         color: 'black', 
                         '&:hover': { backgroundColor: '#e0c850' }, 
-                        fontWeight: 'bold', 
+                        fontWeight: 'normal', 
                         // Removidos width e height fixos
                     }}
                 >

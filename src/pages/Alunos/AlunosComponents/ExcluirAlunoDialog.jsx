@@ -55,20 +55,14 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{
-                px: 3,
-                pb: 3,
-                pt: 1,
-                gap: 1,
-                justifyContent: 'flex-end'
-            }}>
+            <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
                 <Button
                     onClick={onClose}
                     variant="contained"
                     sx={{
                         backgroundColor: '#343a40',
                         color: '#ffffffff',
-                        fontWeight: 'bold',
+                        fontWeight: 'normal',
                         '&:hover': { backgroundColor: '#23272b' },
                     }}
                 >
@@ -80,7 +74,7 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                     sx={{
                         backgroundColor: '#F2D95C',
                         color: 'black',
-                        fontWeight: 'bold',
+                        fontWeight: 'normal',
                         '&:hover': { backgroundColor: '#e0c850' },
                     }}
                 >
