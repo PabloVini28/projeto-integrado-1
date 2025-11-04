@@ -1,46 +1,46 @@
 import React, { useState } from 'react';
-import { 
-    Box, 
-    Typography, 
-    TextField, 
-    InputAdornment, 
-    Button, 
-    Paper, 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableContainer, 
-    TableHead, 
-    TableRow, 
+import {
+    Box,
+    Typography,
+    TextField,
+    InputAdornment,
+    Button,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     TablePagination,
-    IconButton 
+    IconButton
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit'; 
-import DeleteIcon from '@mui/icons-material/Delete'; 
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ItemDialog from './PatrimonioComponents/ItemDialog';
 import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
 
 
 const createData = (id, nome, codigo, dataAquisicao, status) => {
-  return { id, nome, codigo, dataAquisicao, status };
+    return { id, nome, codigo, dataAquisicao, status };
 };
 
 const rows = [
-  createData(1, 'Leg Press', 'CF - 001', '25/07/2020', 'Ativo'),
-  createData(2, 'Esteira Ergométrica', 'CF - 002', '13/06/2021', 'Ativo'),
-  createData(3, 'Bicicleta Ergométrica', 'CF - 003', '20/06/2022', 'Ativo'),
-  createData(4, 'Máquina de supino', 'CF - 004', '20/06/2023', 'Ativo'),
-  createData(5, 'Cross-over', 'CF - 005', '20/06/2024', 'Ativo'),
-  createData(6, 'Peck Deck', 'CF - 006', '24/08/2025', 'Ativo'),
-  createData(7, 'Máquina Smith', 'CF - 007', '10/03/2021', 'Ativo'),
-  createData(8, 'Cadeira Extensora', 'CF - 008', '10/03/2022', 'Ativo'),
-  createData(9, 'Máquina de Remo', 'CF - 009', '18/03/2023', 'Ativo'),
-  createData(10, 'Computador', 'CF - 010', '25/05/2024', 'Ativo'),
-  createData(11, 'Bebedouro', 'CF - 011', '10/01/2025', 'Manutenção'),
-  createData(12, 'Anilhas', 'CF - 012', '15/02/2021', 'Ativo'),
-  createData(13, 'Halteres', 'CF - 013', '15/02/2022', 'Ativo'),
+    createData(1, 'Leg Press', 'CF - 001', '25/07/2020', 'Ativo'),
+    createData(2, 'Esteira Ergométrica', 'CF - 002', '13/06/2021', 'Ativo'),
+    createData(3, 'Bicicleta Ergométrica', 'CF - 003', '20/06/2022', 'Ativo'),
+    createData(4, 'Máquina de supino', 'CF - 004', '20/06/2023', 'Ativo'),
+    createData(5, 'Cross-over', 'CF - 005', '20/06/2024', 'Ativo'),
+    createData(6, 'Peck Deck', 'CF - 006', '24/08/2025', 'Ativo'),
+    createData(7, 'Máquina Smith', 'CF - 007', '10/03/2021', 'Ativo'),
+    createData(8, 'Cadeira Extensora', 'CF - 008', '10/03/2022', 'Ativo'),
+    createData(9, 'Máquina de Remo', 'CF - 009', '18/03/2023', 'Ativo'),
+    createData(10, 'Computador', 'CF - 010', '25/05/2024', 'Ativo'),
+    createData(11, 'Bebedouro', 'CF - 011', '10/01/2025', 'Manutenção'),
+    createData(12, 'Anilhas', 'CF - 012', '15/02/2021', 'Ativo'),
+    createData(13, 'Halteres', 'CF - 013', '15/02/2022', 'Ativo'),
 ];
 
 const columns = [
@@ -48,19 +48,22 @@ const columns = [
     { id: 'codigo', label: 'Código' },
     { id: 'dataAquisicao', label: 'Data de Aquisição' },
     { id: 'status', label: 'Status' },
-    { id: 'actions', label: 'Ação', align: 'center' } 
+    { id: 'actions', label: 'Ação', align: 'center' }
 ];
 
 export default function PatrimonioPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    
+
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState(null);
 
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+
+    // <<< MUDANÇA 1: Estado para guardar o texto da pesquisa
+    const [searchTerm, setSearchTerm] = useState('');
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -72,13 +75,13 @@ export default function PatrimonioPage() {
     };
 
     const handleEdit = (item) => {
-        setCurrentItem(item); 
-        setIsEditDialogOpen(true); 
+        setCurrentItem(item);
+        setIsEditDialogOpen(true);
     };
 
     const handleDelete = (id) => {
-        setItemToDelete(id); 
-        setIsDeleteDialogOpen(true); 
+        setItemToDelete(id);
+        setIsDeleteDialogOpen(true);
     };
 
     const confirmDelete = () => {
@@ -89,9 +92,9 @@ export default function PatrimonioPage() {
     const handleCloseDialogs = () => {
         setIsAddDialogOpen(false);
         setIsEditDialogOpen(false);
-        setIsDeleteDialogOpen(false); 
-        setCurrentItem(null); 
-        setItemToDelete(null); 
+        setIsDeleteDialogOpen(false);
+        setCurrentItem(null);
+        setItemToDelete(null);
     };
 
     const handleSaveNewItem = (data) => {
@@ -104,43 +107,52 @@ export default function PatrimonioPage() {
         handleCloseDialogs();
     };
 
+    // <<< MUDANÇA 2: Lógica para filtrar as linhas
+    const filteredRows = rows.filter(row =>
+        row.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
 
     return (
-        <Paper 
-        elevation={0}
-        sx={{ 
-            width: '100%', 
-            p: 3, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            height: '100%' 
-        }}>
+        <Paper
+            elevation={0}
+            sx={{
+                width: '100%',
+                p: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%'
+            }}>
             <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                 Patrimônio e bens
             </Typography>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                {/* <<< MUDANÇA 3: Conectar o TextField ao estado */}
                 <TextField
-    size="small"
-    placeholder="Pesquisa por nome ou Código"
-    InputProps={{
-        startAdornment: (
-            <InputAdornment position="start">
-                <SearchIcon />
-            </InputAdornment>
-        ),
-    }}
-    variant="outlined"
-    sx={{ width: '600px' }}
-/>
+                    size="small"
+                    placeholder="Pesquisa por nome ou Código"
+                    value={searchTerm} // Controla o valor
+                    onChange={(e) => setSearchTerm(e.target.value)} // Atualiza o estado
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon />
+                            </InputAdornment>
+                        ),
+                    }}
+                    variant="outlined"
+                    sx={{ width: '500px' }}
+                />
                 <Button
                     variant="contained"
                     endIcon={<AddIcon />}
                     onClick={() => setIsAddDialogOpen(true)}
-                    sx={{ 
+                    sx={{
                         backgroundColor: '#F2D95C',
                         color: 'black',
-                        fontWeight: 'bold',
+                        fontWeight: 'normal',
                         borderRadius: '25px',
                         '&:hover': {
                             backgroundColor: '#e0c850',
@@ -158,7 +170,7 @@ export default function PatrimonioPage() {
                             {columns.map((column) => (
                                 <TableCell
                                     key={column.id}
-                                    align={column.align || 'left'} 
+                                    align={column.align || 'left'}
                                     sx={{ fontWeight: 'bold' }}
                                 >
                                     {column.label}
@@ -167,13 +179,14 @@ export default function PatrimonioPage() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {rows
+                        {/* <<< MUDANÇA 4: Usar 'filteredRows' ao invés de 'rows' */}
+                        {filteredRows
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             .map((row) => (
-                                <TableRow 
-                                    hover 
-                                    role="checkbox" 
-                                    tabIndex={-1} 
+                                <TableRow
+                                    hover
+                                    role="checkbox"
+                                    tabIndex={-1}
                                     key={row.id}
                                     sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
                                 >
@@ -183,14 +196,14 @@ export default function PatrimonioPage() {
                                             <TableCell key={column.id}>
                                                 {column.id === 'actions' ? (
                                                     <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                        <IconButton 
-                                                            size="small" 
+                                                        <IconButton
+                                                            size="small"
                                                             onClick={() => handleEdit(row)}
                                                         >
                                                             <EditIcon fontSize="small" />
                                                         </IconButton>
-                                                        <IconButton 
-                                                            size="small" 
+                                                        <IconButton
+                                                            size="small"
                                                             onClick={() => handleDelete(row.id)}
                                                         >
                                                             <DeleteIcon fontSize="small" />
@@ -211,21 +224,22 @@ export default function PatrimonioPage() {
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
                 component="div"
-                count={rows.length}
+                // <<< MUDANÇA 5: Usar o 'count' da lista filtrada
+                count={filteredRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Itens por página:"
             />
-            
+
             <ItemDialog
                 open={isAddDialogOpen}
                 onClose={handleCloseDialogs}
                 onSave={handleSaveNewItem}
                 title="Cadastre um novo Item"
             />
-            
+
             <ItemDialog
                 open={isEditDialogOpen}
                 onClose={handleCloseDialogs}

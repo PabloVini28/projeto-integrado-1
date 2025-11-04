@@ -19,23 +19,18 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
                 }
             }}
         >
-            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'normal', fontSize: '1.5rem', textAlign: 'left' }}>
+            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'bold', fontSize: '1.5rem', textAlign: 'left' }}>
                 {title || "Tem certeza que deseja excluir?"}
             </DialogTitle>
             
-            <DialogActions sx={{ 
-                px: 6, 
-                pb: 3,
-                pt: 1,
-                gap: 1 
-            }}>
+            <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
                 <Button
                     onClick={onClose}
                     variant="contained"
                     sx={{
                         backgroundColor: '#343a40',
                         color: '#ffffffff',
-                        fontWeight: 'bold',
+                        fontWeight: 'normal',
                         '&:hover': { backgroundColor: '#23272b' },
                     }}
                 >
@@ -48,7 +43,7 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
                     sx={{
                         backgroundColor: '#F2D95C',
                         color: 'black',
-                        fontWeight: 'bold',
+                        fontWeight: 'normal',
                         '&:hover': { backgroundColor: '#e0c850' },
                     }}
                 >

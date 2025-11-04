@@ -104,11 +104,11 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                     </FormControl>
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ p: '0 24px 24px', justifyContent: 'flex-end', gap: 1 }}>
-                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', fontWeight: 'bold', '&:hover': { backgroundColor: '#23272b' } }}>
+            <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
+                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', fontWeight: 'normal', '&:hover': { backgroundColor: '#23272b' } }}>
                     Cancelar
                 </Button>
-                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', fontWeight: 'bold', '&:hover': { backgroundColor: '#e0c850' } }}>
+                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', fontWeight: 'normal', '&:hover': { backgroundColor: '#e0c850' } }}>
                     Salvar Item
                 </Button>
             </DialogActions>
