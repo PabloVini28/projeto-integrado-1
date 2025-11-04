@@ -1,20 +1,18 @@
-// src/pages/Inicio/HomePage.jsx
-
 import React, { useState } from 'react';
 import { Typography, Box, Paper, Stack, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CachedIcon from '@mui/icons-material/Cached';
 import { useNavigate } from 'react-router-dom';
+
 import CadastroAlunoDialog from '../Alunos/AlunosComponents/CadastroAlunoDialog'; 
 import ItemDialog from '../Patrimonio/PatrimonioComponents/ItemDialog';
 import RenovarMensalidadeDialog from '../Alunos/AlunosComponents/RenovarMensalidadeDialog';
+import AdminDashboard from './InicioComponents/AdminDashboard';
 
-export default function HomePage() {
+const FuncionarioDashboard = () => {
     const navigate = useNavigate(); 
-
     const [isAlunoDialogOpen, setIsAlunoDialogOpen] = useState(false);
     const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
-
     const [isRenovarDialogOpen, setIsRenovarDialogOpen] = useState(false);
 
     const alunosExemplo = [
@@ -50,7 +48,6 @@ export default function HomePage() {
     const handleCloseItemDialog = () => {
         setIsItemDialogOpen(false); 
     };
-    //renovacao bem sucedida
     const handleRenovarMensalidade = (idAluno) => {
         console.log(`Renovando mensalidade do aluno ID ${idAluno}`);
     };
@@ -115,7 +112,6 @@ export default function HomePage() {
                     >
                         Visualizar Planos
                     </Button>
-
                     <Button 
                         variant="contained" 
                         endIcon={<AddIcon />}
@@ -124,7 +120,6 @@ export default function HomePage() {
                     >
                         Registrar Novo Item
                     </Button>
-                    
                     <Button 
                         variant="contained" 
                         endIcon={<AddIcon />}
@@ -133,8 +128,6 @@ export default function HomePage() {
                     >
                         Cadastrar Novo Aluno
                     </Button>
-
-                    {/* BOTÃO QUE ABRE O DIALOG DE RENOVAÇÃO*/}
                     <Button 
                         variant="contained" 
                         endIcon={<CachedIcon />}
@@ -151,14 +144,11 @@ export default function HomePage() {
                 onClose={handleCloseAlunoDialog}
                 onSave={handleSaveAluno}
             />
-
             <ItemDialog
                 open={isItemDialogOpen}
                 onClose={handleCloseItemDialog}
                 onSave={handleSaveItem}
             />
-
-            {/*DIALOG DE RENOVAÇÃO*/}
             <RenovarMensalidadeDialog
                 open={isRenovarDialogOpen}
                 onClose={() => setIsRenovarDialogOpen(false)}
@@ -167,4 +157,17 @@ export default function HomePage() {
             />
         </Box>
     );
+};
+
+
+export default function HomePage() {
+    
+    // Decisão do que mostrar (adm ou funcionario)
+    const userRole = 'admin'; //  'funcionario' para ver o outro layout
+
+    if (userRole === 'admin') {
+        return <AdminDashboard />;
+    }
+    
+    return <FuncionarioDashboard />;
 }
