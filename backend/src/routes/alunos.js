@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const service = require('../services/alunosService'); 
+const service = require('../services/alunoService'); 
 
 router.get('/', async (req, res) => {
   try {
