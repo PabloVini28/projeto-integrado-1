@@ -162,7 +162,7 @@ export default function FinanceiroPage() {
           sx={{
             backgroundColor: "#F2D95C",
             color: "black",
-            fontWeight: "bold",
+            fontWeight: "normal",
             borderRadius: "50px",
             "&:hover": { backgroundColor: "#e0c850" },
           }}
@@ -176,7 +176,7 @@ export default function FinanceiroPage() {
           sx={{
             backgroundColor: "#F2D95C",
             color: "black",
-            fontWeight: "bold",
+            fontWeight: "normal",
             borderRadius: "50px",
             "&:hover": { backgroundColor: "#e0c850" },
           }}
