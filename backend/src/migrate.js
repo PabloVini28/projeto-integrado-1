@@ -21,7 +21,7 @@ async function runMigrations() {
         port: process.env.DB_PORT || 5432,
     });
 
-    try {,
+    try {
         await client.connect();
         console.log("Conectado ao banco de dados para migrações.");
 
