@@ -68,7 +68,7 @@ function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
 
       </Box>
 
-      <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: '1px solid #e0e0e0' }}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
           <Button
             variant="contained"
@@ -164,13 +164,12 @@ function LegacyConfigPage() {
   const [openSenha, setOpenSenha] = React.useState(false);
 
   const handleAddUser = () => {
-    // placeholder: open dialog / navigate to a create user form
+    
     const nextId = funcionarios.length ? Math.max(...funcionarios.map(f => f.id)) + 1 : 1;
     setFuncionarios([...funcionarios, { id: nextId, nome: `Novo Usuário ${nextId}`, matricula: String(100000 + nextId), email: `usuario${nextId}@exemplo.com` }]);
   };
 
   const handleEditUser = (user) => {
-    // placeholder: simple name edit for demo
     setFuncionarios(funcionarios.map(f => f.id === user.id ? { ...f, nome: f.nome + ' (edit)' } : f));
   };
 
@@ -187,7 +186,7 @@ function LegacyConfigPage() {
         <Typography color="text.primary">Configurações</Typography>
       </Breadcrumbs>
 
-      <Paper sx={{ p: 3, mb: 3 }} elevation={2}>
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '1px solid #e0e0e0' }} elevation={0}>
         <Grid container spacing={2} alignItems="center">
           <Grid item>
             <PersonOutline fontSize="large" />
@@ -215,7 +214,7 @@ function LegacyConfigPage() {
 }
 
 function AlterarEmailModal({ open, onClose }) {
-  const [step, setStep] = useState(1); // 1: Senha, 2: Código, 3: Sucesso
+  const [step, setStep] = useState(1);
 
   useEffect(() => {
     if (!open) {
@@ -458,7 +457,7 @@ export default function ConfigPage() {
   const [user, setUser] = useState(mockUserAdmin);
   const [funcionarios, setFuncionarios] = useState(mockFuncionarios);
 
-  const [modalOpen, setModalOpen] = useState(null); // 'senha', 'email', 'cadastrar', 'editar', 'excluir'
+  const [modalOpen, setModalOpen] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const handleOpenModal = (modalName, user = null) => {
@@ -479,18 +478,16 @@ export default function ConfigPage() {
         Configurações
       </Typography>
 
-      {/* --- SEÇÃO ACESSO --- */}
       <Typography variant="h5" mb={3}>Acesso</Typography>
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+      <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
         <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
         <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
       </Paper>
 
       <Box mb={3} mt={3}>
-        {/* --- SEÇÃO SEGURANÇA --- */}
         <Typography variant="h5" mb={3} marginTop={7} marginBottom={7}>Segurança</Typography>
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, width: '100%' }}>
             <Button
               variant="contained"
@@ -520,7 +517,6 @@ export default function ConfigPage() {
         </Paper>
       </Box>
 
-      {/* --- SEÇÃO ÁREA DO ADMINISTRADOR (CONDICIONAL) --- */}
       {user.role === 'ADMINISTRADOR' && (
         <Box>
           <AdminArea
@@ -532,7 +528,6 @@ export default function ConfigPage() {
         </Box>
       )}
 
-      {/* --- RENDERIZAÇÃO DOS MODAIS --- */}
       <AlterarSenhaModal
         open={modalOpen === 'senha'}
         onClose={handleCloseModal}
@@ -544,19 +539,16 @@ export default function ConfigPage() {
       <CadastrarUsuarioModal
         open={modalOpen === 'cadastrar'}
         onClose={handleCloseModal}
-      // onSave={...}
       />
       <EditarUsuarioModal
         open={modalOpen === 'editar'}
         onClose={handleCloseModal}
         user={selectedUser}
-      // onSave={...}
       />
       <ExcluirUsuarioModal
         open={modalOpen === 'excluir'}
         onClose={handleCloseModal}
         user={selectedUser}
-      // onConfirm={...}
       />
     </Box>
   );
