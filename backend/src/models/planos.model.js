@@ -8,16 +8,16 @@ function validatePlano(payload) {
   }
 
   if (!payload.cod_plano || String(payload.cod_plano).trim() === '') {
-    errors.push('Código do Plano (cod_plano) é obrigatório!');
+    errors.push('Código do Plano é obrigatório!');
   }
 
   if (!payload.nome_plano || String(payload.nome_plano).trim() === '') {
-    errors.push('Nome do Plano (nome_plano) é obrigatório!');
+    errors.push('Nome do Plano é obrigatório!');
   }
 
   const valor = parseFloat(payload.valor_plano);
   if (Number.isNaN(valor) || valor <= 0) {
-    errors.push('Valor do Plano (valor_plano) deve ser um número positivo!');
+    errors.push('Valor do Plano deve ser um número positivo!');
   }
 
   if (payload.status_plano && !STATUSES.includes(payload.status_plano)) {
