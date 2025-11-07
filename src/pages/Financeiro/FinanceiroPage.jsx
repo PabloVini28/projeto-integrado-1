@@ -14,51 +14,29 @@ const receitasData = [
   { id: 5, descricao: "Energia", categoria: "Alunos", valor: 80.0 },
   { id: 6, descricao: "Mensalidade", categoria: "Alunos", valor: 150.0 },
   { id: 7, descricao: "Taxa Matrícula", categoria: "Alunos", valor: 50.0 },
-  {
-    id: 8,
-    descricao: "Venda de Suplemento",
-    categoria: "Outras",
-    valor: 250.0,
-  },
+  { id: 8, descricao: "Venda de Suplemento", categoria: "Outras",valor: 250.0,},
   { id: 9, descricao: "Mensalidade Extra", categoria: "Alunos", valor: 150.0 },
-  {
-    id: 10,
-    descricao: "Aulas Particulares",
-    categoria: "Outras",
-    valor: 300.0,
-  },
+  { id: 10, descricao: "Aulas Particulares", categoria: "Outras", valor: 300.0,},
   { id: 11, descricao: "Doação", categoria: "Outras", valor: 20.0 },
   { id: 12, descricao: "Consultoria", categoria: "Outras", valor: 100.0 },
   { id: 13, descricao: "Mensalidade", categoria: "Alunos", valor: 150.0 },
 ];
 
 const despesasData = [
-  {
-    id: 1,
-    descricao: "Mensalidade Aluno(a)",
-    categoria: "Receita",
-    valor: 120.0,
-  },
+  { id: 1, descricao: "Mensalidade Aluno(a)", categoria: "Receita", valor: 120.0, },
   { id: 2, descricao: "Água", categoria: "Despesa", valor: 100.0 },
   { id: 3, descricao: "Aluguel", categoria: "Despesa", valor: 1200.0 },
-  {
-    id: 4,
-    descricao: "Mensalidade Aluno(a)",
-    categoria: "Receita",
-    valor: 120.0,
-  },
-  { id: 5, descricao: "Energia", categoria: "Despesa", valor: 500.0 },
+  { id: 4, descricao: "Mensalidade Aluno(a)", categoria: "Receita", valor: 120.0, },
+  { id: 5, descricao: "Energia", categoria: "Despesa", valor: 500.0 }, 
 ];
 
 export default function FinanceiroPage() {
   const [receitasPage, setReceitasPage] = useState(0);
   const [despesasPage, setDespesasPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
   const [currentItem, setCurrentItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isCurrentRecipe, setIsCurrentRecipe] = useState(true);
