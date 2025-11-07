@@ -20,7 +20,7 @@ function validateAluno(payload) {
     errors.push("Email do aluno é obrigatório!");
   }
 
-  if (!payload.id_plano) {
+  if (!payload.cod_plano) {
     errors.push("Plano é obrigatório! para cadastro.");
   }
 
