@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Box, 
     Typography, 
@@ -21,39 +21,25 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete'; 
 import ItemDialog from './PatrimonioComponents/ItemDialog';
 import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
+import * as patrimonioApi from '../../services/patrimonioApiService';
+import { format } from 'date-fns';
 
 
-const createData = (id, nome, codigo, dataAquisicao, status) => {
-  return { id, nome, codigo, dataAquisicao, status };
-};
-
-const rows = [
-  createData(1, 'Leg Press', 'CF - 001', '25/07/2020', 'Ativo'),
-  createData(2, 'Esteira Ergométrica', 'CF - 002', '13/06/2021', 'Ativo'),
-  createData(3, 'Bicicleta Ergométrica', 'CF - 003', '20/06/2022', 'Ativo'),
-  createData(4, 'Máquina de supino', 'CF - 004', '20/06/2023', 'Ativo'),
-  createData(5, 'Cross-over', 'CF - 005', '20/06/2024', 'Ativo'),
-  createData(6, 'Peck Deck', 'CF - 006', '24/08/2025', 'Ativo'),
-  createData(7, 'Máquina Smith', 'CF - 007', '10/03/2021', 'Ativo'),
-  createData(8, 'Cadeira Extensora', 'CF - 008', '10/03/2022', 'Ativo'),
-  createData(9, 'Máquina de Remo', 'CF - 009', '18/03/2023', 'Ativo'),
-  createData(10, 'Computador', 'CF - 010', '25/05/2024', 'Ativo'),
-  createData(11, 'Bebedouro', 'CF - 011', '10/01/2025', 'Manutenção'),
-  createData(12, 'Anilhas', 'CF - 012', '15/02/2021', 'Ativo'),
-  createData(13, 'Halteres', 'CF - 013', '15/02/2022', 'Ativo'),
-];
+// rows will be loaded from API
 
 const columns = [
     { id: 'nome', label: 'Nome do Item' },
-    { id: 'codigo', label: 'Código' },
-    { id: 'dataAquisicao', label: 'Data de Aquisição' },
-    { id: 'status', label: 'Status' },
-    { id: 'actions', label: 'Ação', align: 'center' } 
+    { id: 'id_patrimonio', label: 'Código' },
+    { id: 'data_aquisicao', label: 'Data de Aquisição' },
+    { id: 'status_patrimonio', label: 'Status' },
+    { id: 'actions', label: 'Ação', align: 'center' },
 ];
 
 export default function PatrimonioPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rows, setRows] = useState([]);
+    const [query, setQuery] = useState('');
     
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -71,19 +57,43 @@ export default function PatrimonioPage() {
         setPage(0);
     };
 
+    const fetchPatrimonios = async () => {
+        try {
+            const res = await patrimonioApi.getPatrimonios();
+            setRows(res.data);
+        } catch (err) {
+            console.error('Erro ao buscar patrimônio', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchPatrimonios();
+    }, []);
+
+    const handleSearchChange = (e) => {
+        setQuery(e.target.value);
+        setPage(0);
+    };
+
     const handleEdit = (item) => {
         setCurrentItem(item); 
         setIsEditDialogOpen(true); 
     };
 
     const handleDelete = (id) => {
-        setItemToDelete(id); 
-        setIsDeleteDialogOpen(true); 
+        setItemToDelete(id);
+        setIsDeleteDialogOpen(true);
     };
 
-    const confirmDelete = () => {
-        console.log(`Excluindo item com ID: ${itemToDelete}`);
-        handleCloseDialogs();
+    const confirmDelete = async () => {
+        try {
+            await patrimonioApi.deletePatrimonio(itemToDelete);
+            await fetchPatrimonios();
+        } catch (err) {
+            console.error('Erro ao deletar', err);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
     const handleCloseDialogs = () => {
@@ -94,14 +104,27 @@ export default function PatrimonioPage() {
         setItemToDelete(null); 
     };
 
-    const handleSaveNewItem = (data) => {
-        console.log("Salvando NOVO item:", data);
-        handleCloseDialogs();
+    const handleSaveNewItem = async (data) => {
+        try {
+            await patrimonioApi.createPatrimonio(data);
+            await fetchPatrimonios();
+        } catch (err) {
+            console.error('Erro ao criar', err);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
-    const handleUpdateItem = (data) => {
-        console.log("Atualizando item:", data);
-        handleCloseDialogs();
+    const handleUpdateItem = async (data) => {
+        if (!currentItem || !currentItem.id_patrimonio) return;
+        try {
+            await patrimonioApi.updatePatrimonio(currentItem.id_patrimonio, data);
+            await fetchPatrimonios();
+        } catch (err) {
+            console.error('Erro ao atualizar', err);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
 
@@ -123,6 +146,8 @@ export default function PatrimonioPage() {
                 <TextField
                     size="small"
                     placeholder="Pesquisa por nome ou Código"
+                    value={query}
+                    onChange={handleSearchChange}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
@@ -164,14 +189,24 @@ export default function PatrimonioPage() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {rows
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((row) => (
-                                <TableRow 
-                                    hover 
-                                    role="checkbox" 
-                                    tabIndex={-1} 
-                                    key={row.id}
+                        {(() => {
+                            const q = query.trim().toLowerCase();
+                            const filtered = q
+                                ? rows.filter(r => {
+                                    const nome = (r.nome || '').toString().toLowerCase();
+                                    const id = (r.id_patrimonio || '').toString().toLowerCase();
+                                    return nome.includes(q) || id.includes(q);
+                                })
+                                : rows;
+
+                            return filtered
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((row) => (
+                                <TableRow
+                                    hover
+                                    role="checkbox"
+                                    tabIndex={-1}
+                                    key={row.id_patrimonio}
                                     sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
                                 >
                                     {columns.map((column) => {
@@ -180,19 +215,15 @@ export default function PatrimonioPage() {
                                             <TableCell key={column.id}>
                                                 {column.id === 'actions' ? (
                                                     <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleEdit(row)}
-                                                        >
+                                                        <IconButton size="small" onClick={() => handleEdit(row)}>
                                                             <EditIcon fontSize="small" />
                                                         </IconButton>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleDelete(row.id)}
-                                                        >
+                                                        <IconButton size="small" onClick={() => handleDelete(row.id_patrimonio)}>
                                                             <DeleteIcon fontSize="small" />
                                                         </IconButton>
                                                     </Box>
+                                                ) : column.id === 'data_aquisicao' ? (
+                                                    value ? format(new Date(value), 'dd/MM/yyyy') : ''
                                                 ) : (
                                                     value
                                                 )}
@@ -200,7 +231,8 @@ export default function PatrimonioPage() {
                                         );
                                     })}
                                 </TableRow>
-                            ))}
+                            ));
+                        })()}
                     </TableBody>
                 </Table>
             </TableContainer>
