@@ -173,28 +173,28 @@ export default function AlunosPage() {
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button
                         variant="contained"
-                        startIcon={<AutorenewIcon />} 
+                        endIcon={<AutorenewIcon />} 
                         onClick={handleRenovarClick}
                         sx={{ 
                             backgroundColor: '#F2D95C', 
                             color: 'black',
                             '&:hover': { backgroundColor: '#e0c850' },
-                            fontWeight: 'bold',
-                            borderRadius: '8px' 
+                            fontWeight: 'normal',
+                            borderRadius: '25px' 
                         }}
                     >
                         Renovar Mensalidade
                     </Button>
                     <Button
                         variant="contained"
-                        startIcon={<AddIcon />}
+                        endIcon={<AddIcon />}
                         onClick={handleAddAlunoClick}
                         sx={{ 
                             backgroundColor: '#F2D95C', 
                             color: 'black',
                             '&:hover': { backgroundColor: '#e0c850' },
-                            fontWeight: 'bold',
-                            borderRadius: '8px' 
+                            fontWeight: 'normal',
+                            borderRadius: '25px' 
                         }}
                     >
                         Novo Aluno

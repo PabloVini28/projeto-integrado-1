@@ -61,25 +61,37 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
             PaperProps={{ 
                 sx: { 
                     borderRadius: 2, 
-                    maxWidth: '500px',
+                    // MAX WIDTH REDUZIDO PARA 420px
+                    maxWidth: '420px', 
                 } 
             }}
             fullWidth
         >
-            <DialogTitle sx={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: 'bold', pb: 1, pt: 3 }}>
+            <DialogTitle 
+                // FONTE E PADDING REDUZIDOS
+                sx={{ 
+                    textAlign: 'left', 
+                    fontSize: '1.5rem', 
+                    fontWeight: 'bold', 
+                    pt: 2, 
+                    pb: 0.5,
+                    px: 3 
+                }}
+            >
                 Renovar mensalidade
             </DialogTitle>
 
-            
+            {/* ----------------- STEP 1: PESQUISA ----------------- */}
             {step === 1 && (
                 <>
-                    <DialogContent>
-                        <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 2 }}>
+                    <DialogContent sx={{ pt: 1, pb: 0, px: 3 }}> {/* Padding reduzido */}
+                        <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}> {/* Gap reduzido */}
                             <TextField
                                 autoFocus
-                                placeholder="Pesquisar por nome ou matrícula do aluno"
+                                placeholder="Pesquisar por nome ou matrícula"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
+                                size="small" // Adicionado size="small" para compactar
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
@@ -91,10 +103,13 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                             />
                             {filteredStudents.length > 0 && (
                                 <Paper sx={{ maxHeight: 200, overflow: 'auto' }}>
-                                    <List>
+                                    <List dense> {/* Lista mais compacta */}
                                         {filteredStudents.map(student => (
                                             <ListItemButton key={student.id} onClick={() => handleSelectStudent(student)}>
-                                                <ListItemText primary={student.nome} secondary={`Matrícula: ${student.matricula}`} />
+                                                <ListItemText 
+                                                    primary={<Typography variant="body2" sx={{ fontWeight: 'bold' }}>{student.nome}</Typography>} 
+                                                    secondary={<Typography variant="caption">{`Matrícula: ${student.matricula}`}</Typography>} 
+                                                />
                                             </ListItemButton>
                                         ))}
                                     </List>
@@ -102,17 +117,17 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                             )}
                         </Box>
                     </DialogContent>
-                    <DialogActions sx={{ p: '24px', justifyContent: 'flex-start' }}>
+                    <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end' }}> {/* Padding reduzido */}
                          <Button 
                             onClick={handleCancel} 
                             variant="contained" 
+                            size="small" // Reduzido o botão
                             sx={{ 
                                 backgroundColor: '#343a40', 
                                 color: 'white', 
                                 '&:hover': { backgroundColor: '#23272b' }, 
                                 fontWeight: 'normal', 
-                                width: '180px',
-                                height: '40px'
+                                // REMOVIDO tamanho fixo
                             }}
                         >
                             Cancelar
@@ -121,42 +136,43 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                 </>
             )}
 
+            {/* ----------------- STEP 2: CONFIRMAÇÃO ----------------- */}
             {step === 2 && selectedStudent && (
                 <>
-                    <DialogContent>
+                    <DialogContent sx={{ pt: 1, pb: 0, px: 3 }}> {/* Padding reduzido */}
                         
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}> {/* Gap reduzido */}
                             
-                            <Box sx={{ width: '100%', border: '1px solid #ccc', borderRadius: 2, p: 1.5, textAlign: 'left' }}>
-                                <FormLabel sx={{ fontSize: '0.9rem' }}>Data de expiração atual</FormLabel>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                            {/* CAIXA DE EXPIRAÇÃO */}
+                            <Box sx={{ width: '100%', border: '1px solid #ccc', borderRadius: 2, p: 1, textAlign: 'left' }}> {/* Padding reduzido */}
+                                <FormLabel sx={{ fontSize: '0.75rem', fontWeight: 'normal' }}>Data de expiração atual</FormLabel>
+                                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}> {/* Fonte reduzida */}
                                     {selectedStudent.data_expiracao}
                                 </Typography>
                             </Box>
 
-                            
+                            {/* DADOS DO ALUNO */}
                             <Box sx={{ 
                                 display: 'flex', 
-                                flexDirection: 'row', 
+                                flexDirection: 'column', // Alterado para coluna para melhor quebra no 420px
                                 justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                flexWrap: 'wrap', // Para quebrar linha se a tela for muito pequena
-                                gap: 3, // Espaço entre os dois itens
+                                flexWrap: 'nowrap', 
+                                gap: 1, // Reduzido o gap
                                 width: '100%',
-                                mt: 1 
+                                mt: 0 
                             }}>
-                                <Typography variant="body1">
+                                <Typography variant="body2"> {/* Fonte reduzida */}
                                     <Box component="span" sx={{ fontWeight: 'bold' }}>Aluno(A): </Box>
                                     {selectedStudent.nome}
                                 </Typography>
-                                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                <Typography variant="body2"> {/* Fonte reduzida */}
                                     <Box component="span" sx={{ fontWeight: 'bold' }}>Matrícula: </Box>
                                     {selectedStudent.matricula}
                                 </Typography>
                             </Box>
                         </Box>
                     </DialogContent>
-                     <DialogActions sx={{ p: '24px', justifyContent: 'flex-start', gap: 2 }}>
+                     <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
                          <Button 
                             onClick={handleCancel} 
                             variant="contained" 
@@ -164,9 +180,7 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                                 backgroundColor: '#343a40', 
                                 color: 'white', 
                                 '&:hover': { backgroundColor: '#23272b' }, 
-                                fontWeight: 'normal', 
-                                width: '180px',
-                                height: '40px'
+                                fontWeight: 'normal',
                             }}
                         >
                             Cancelar
@@ -178,9 +192,7 @@ export default function RenovarMensalidadeDialog({ open, onClose, onRenovar, stu
                                 backgroundColor: '#F2D95C', 
                                 color: 'black', 
                                 '&:hover': { backgroundColor: '#e0c850' }, 
-                                fontWeight: 'bold', 
-                                width: '180px',
-                                height: '40px'
+                                fontWeight: 'normal',
                             }}
                         >
                             Renovar + 30 dias

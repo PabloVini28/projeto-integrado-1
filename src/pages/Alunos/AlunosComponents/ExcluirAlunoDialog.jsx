@@ -22,7 +22,7 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                 sx: {
                     borderRadius: 2,
                     width: '100%',
-                    maxWidth: '525px',
+                    maxWidth: '420',
                 }
             }}
         >
@@ -55,13 +55,7 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{
-                px: 3,
-                pb: 3,
-                pt: 1,
-                gap: 1,
-                justifyContent: 'flex-start'
-            }}>
+            <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
                 <Button
                     onClick={onClose}
                     variant="contained"

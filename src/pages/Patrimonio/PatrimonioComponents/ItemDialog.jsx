@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Box,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    TextField,
-    RadioGroup,
-    FormControlLabel,
-    Radio,
-    FormLabel,
-    FormControl,
+import { 
+    Box, 
+    Dialog, 
+    DialogTitle, 
+    DialogContent, 
+    DialogActions, 
+    Button, 
+    TextField, 
+    RadioGroup, 
+    FormControlLabel, 
+    Radio, 
+    FormLabel, 
+    FormControl
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -19,6 +19,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
 
 export default function ItemDialog({ open, onClose, onSave, title, itemToEdit }) {
+    
     const [nome, setNome] = useState('');
     const [dataAquisicao, setDataAquisicao] = useState(null);
     const [status, setStatus] = useState('Em uso');
@@ -46,7 +47,9 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+        <Dialog 
+            open={open} onClose={onClose} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}
+        >
             <DialogTitle sx={{ textAlign: 'center', fontWeight: 'normal', fontSize: '1.5rem', pb: 0 }}>
                 {title || 'Cadastre um novo Item'}
             </DialogTitle>
@@ -74,20 +77,23 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
 
                     <FormControl>
                         <FormLabel>Status:</FormLabel>
-                        <RadioGroup row name="status-group" value={status} onChange={(e) => setStatus(e.target.value)}>
-                            <FormControlLabel value="Em uso" control={<Radio size="small" />} label="Em uso" />
-                            <FormControlLabel value="Em manutenção" control={<Radio size="small" />} label="Em manutenção" />
-                            <FormControlLabel value="Disponível" control={<Radio size="small" />} label="Disponível" />
-                            <FormControlLabel value="Descartado" control={<Radio size="small" />} label="Descartado" />
+                        <RadioGroup 
+                            row 
+                            name="status-group"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
+                            <FormControlLabel value="ativo" control={<Radio size="small" />} label="Ativo" />
+                            <FormControlLabel value="inativo" control={<Radio size="small" />} label="Inativo" />
                         </RadioGroup>
                     </FormControl>
                 </Box>
             </DialogContent>
             <DialogActions sx={{ p: '0 24px 24px', justifyContent: 'center', gap: 1 }}>
-                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', '&:hover': { backgroundColor: '#23272b' } }}>
+                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', '&:hover': { backgroundColor: '#23272b' }}}>
                     Cancelar
                 </Button>
-                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', '&:hover': { backgroundColor: '#e0c850' } }}>
+                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', '&:hover': { backgroundColor: '#e0c850' }}}>
                     Salvar Item
                 </Button>
             </DialogActions>

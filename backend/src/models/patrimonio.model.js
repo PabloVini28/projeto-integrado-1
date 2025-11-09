@@ -1,4 +1,3 @@
-// Simple model/validator for Patrimonio entity
 const STATUSES = ['Em uso', 'Em manutenção', 'Disponível', 'Descartado'];
 
 function validatePatrimonio(payload) {
