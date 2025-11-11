@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -20,13 +21,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ItemDialog from './PatrimonioComponents/ItemDialog';
 import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
+import * as patrimonioApi from '../../services/patrimonioApiService';
+import { format, parse, isValid } from 'date-fns';
 
 
 const createData = (id, nome, codigo, dataAquisicao, status) => {
     return { id, nome, codigo, dataAquisicao, status };
 };
 
-const rows = [
+const sampleRows = [
     createData(1, 'Leg Press', 'CF - 001', '25/07/2020', 'Ativo'),
     createData(2, 'Esteira Ergométrica', 'CF - 002', '13/06/2021', 'Ativo'),
     createData(3, 'Bicicleta Ergométrica', 'CF - 003', '20/06/2022', 'Ativo'),
@@ -42,6 +45,8 @@ const rows = [
     createData(13, 'Halteres', 'CF - 013', '15/02/2022', 'Ativo'),
 ];
 
+const useInitialRows = () => sampleRows;
+
 const columns = [
     { id: 'nome', label: 'Nome do Item' },
     { id: 'codigo', label: 'Código' },
@@ -53,6 +58,8 @@ const columns = [
 export default function PatrimonioPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const [rows, setRows] = useState(useInitialRows());
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -76,7 +83,18 @@ export default function PatrimonioPage() {
     const fetchPatrimonios = async () => {
         try {
             const res = await patrimonioApi.getPatrimonios();
-            setRows(res.data);
+            const normalized = (res.data || []).map(r => ({
+                id: r.id_patrimonio || r.id,
+                id_patrimonio: r.id_patrimonio || r.id,
+                nome: r.nome,
+                codigo: r.id_patrimonio ? String(r.id_patrimonio) : (r.codigo || ''),
+                dataAquisicao: r.data_aquisicao || r.dataAquisicao || null,
+                data_aquisicao: r.data_aquisicao || r.dataAquisicao || null,
+                status: r.status_patrimonio || r.status || '',
+                status_patrimonio: r.status_patrimonio || r.status || '',
+                _raw: r,
+            }));
+            setRows(normalized);
         } catch (err) {
             console.error('Erro ao buscar patrimônio', err);
         }
@@ -87,12 +105,12 @@ export default function PatrimonioPage() {
     }, []);
 
     const handleSearchChange = (e) => {
-        setQuery(e.target.value);
+        setSearchTerm(e.target.value);
         setPage(0);
     };
 
     const handleEdit = (item) => {
-        setCurrentItem(item);
+        setCurrentItem(item._raw || item);
         setIsEditDialogOpen(true);
     };
 
@@ -142,12 +160,26 @@ export default function PatrimonioPage() {
             handleCloseDialogs();
         }
     };
-
-    // <<< MUDANÇA 2: Lógica para filtrar as linhas
-    const filteredRows = rows.filter(row =>
-        row.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredRows = (rows || []).filter(row =>
+        (row.nome || '').toString().toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+        (row.codigo || '').toString().toLowerCase().includes((searchTerm || '').toLowerCase())
     );
+
+    const formatDateValue = (value) => {
+        if (!value) return '';
+
+        if (value instanceof Date) {
+            return isValid(value) ? format(value, 'dd/MM/yyyy') : '';
+        }
+
+        if (typeof value === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)) {
+            const parsed = parse(value, 'dd/MM/yyyy', new Date());
+            return isValid(parsed) ? format(parsed, 'dd/MM/yyyy') : '';
+        }
+
+        const d = new Date(value);
+        return isValid(d) ? format(d, 'dd/MM/yyyy') : '';
+    };
 
 
     return (
@@ -165,12 +197,11 @@ export default function PatrimonioPage() {
             </Typography>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                {/* <<< MUDANÇA 3: Conectar o TextField ao estado */}
                 <TextField
                     size="small"
                     placeholder="Pesquisa por nome ou Código"
                     value={searchTerm} // Controla o valor
-                    onChange={(e) => setSearchTerm(e.target.value)} // Atualiza o estado
+                    onChange={handleSearchChange} // Atualiza o estado
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
@@ -223,7 +254,7 @@ export default function PatrimonioPage() {
                                     hover
                                     role="checkbox"
                                     tabIndex={-1}
-                                    key={row.id}
+                                    key={row.id_patrimonio || row.id}
                                     sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
                                 >
                                     {columns.map((column) => {
@@ -240,13 +271,13 @@ export default function PatrimonioPage() {
                                                         </IconButton>
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => handleDelete(row.id)}
+                                                            onClick={() => handleDelete(row.id_patrimonio || row.id)}
                                                         >
                                                             <DeleteIcon fontSize="small" />
                                                         </IconButton>
                                                     </Box>
-                                                ) : column.id === 'data_aquisicao' ? (
-                                                    value ? format(new Date(value), 'dd/MM/yyyy') : ''
+                                                ) : column.id === 'dataAquisicao' ? (
+                                                    formatDateValue(value)
                                                 ) : (
                                                     value
                                                 )}
