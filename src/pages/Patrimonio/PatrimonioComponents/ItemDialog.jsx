@@ -86,8 +86,10 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                         >
-                            <FormControlLabel value="ativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Ativo" />
-                            <FormControlLabel value="inativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Inativo" />
+                                <FormControlLabel value="Em uso" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Em uso" />
+                                <FormControlLabel value="Em manutenção" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Em manutenção" />
+                                <FormControlLabel value="Disponível" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Disponível" />
+                                <FormControlLabel value="Descartado" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Descartado" />
                         </RadioGroup>
                     </FormControl>
                 </Box>
