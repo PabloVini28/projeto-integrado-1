@@ -10,6 +10,8 @@ import {
   ChevronRight, Add, Edit, Delete, NavigateNext
 } from '@mui/icons-material';
 
+import AdminArea from './ConfigComponents/AdminArea';
+
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
   color: '#1F2937',
@@ -17,6 +19,7 @@ const yellowButtonSx = {
   '&:hover': {
     bgcolor: '#EAB308',
   },
+  textTransform: 'none', 
 };
 
 const grayButtonSx = {
@@ -26,6 +29,7 @@ const grayButtonSx = {
   '&:hover': {
     bgcolor: '#4B5563',
   },
+  textTransform: 'none', 
 };
 
 const mockUserAdmin = {
@@ -53,88 +57,6 @@ const mockFuncionarios = [
   mockUserAdmin
 ];
 
-function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-    return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="h5">Área do Administrador</Typography>
-        
-      </Box>
-
-      <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-          <Button
-            variant="contained"
-            endIcon={<Add/>}
-            sx={{ ...yellowButtonSx, borderRadius: '20px', px: 2, py: 1 , padding: '15px 12px 12px 16px'}}
-            onClick={onAddUser}
-          >
-            CADASTRAR NOVO USUÁRIO
-          </Button>
-        </Box>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Nome</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Matrícula</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>CPF</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Nível de Acesso</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Ação</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {funcionarios
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((user, idx) => (
-                <TableRow
-                  key={user.id}
-                  sx={(theme) => ({
-                    backgroundColor: idx % 2
-                        ? theme.palette.action.hover
-                        : 'transparent',
-                  })}
-                >
-                  <TableCell>{user.nome ?? '-'}</TableCell>
-                  <TableCell>{user.matricula ?? '-'}</TableCell>
-                  <TableCell>{user.cpf ?? '-'}</TableCell>
-                  <TableCell>{user.role ?? 'FUNCIONARIO'}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => onEditUser(user)}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => onDeleteUser(user)}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={funcionarios.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Linhas por pág:"
-        />
-      </TableContainer>
-    </Box>
-  );
-}
 
 function AlterarSenhaModal({ open, onClose }) {
   return (
@@ -163,63 +85,9 @@ function AlterarSenhaModal({ open, onClose }) {
   );
 }
 
-function LegacyConfigPage() {
-  const [funcionarios, setFuncionarios] = React.useState(mockFuncionarios);
-  const [openSenha, setOpenSenha] = React.useState(false);
-
-  const handleAddUser = () => {
-    // placeholder: open dialog / navigate to a create user form
-    const nextId = funcionarios.length ? Math.max(...funcionarios.map(f => f.id)) + 1 : 1;
-    setFuncionarios([...funcionarios, { id: nextId, nome: `Novo Usuário ${nextId}`, matricula: String(100000 + nextId), email: `usuario${nextId}@exemplo.com` }]);
-  };
-
-  const handleEditUser = (user) => {
-    // placeholder: simple name edit for demo
-    setFuncionarios(funcionarios.map(f => f.id === user.id ? { ...f, nome: f.nome + ' (edit)' } : f));
-  };
-
-  const handleDeleteUser = (user) => {
-    setFuncionarios(funcionarios.filter(f => f.id !== user.id));
-  };
-
-  return (
-    <Box sx={{ p: 3 }}>
-      <Breadcrumbs separator={<NavigateNext fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <Link color="inherit" href="#/">
-          Início
-        </Link>
-        <Typography color="text.primary">Configurações</Typography>
-      </Breadcrumbs>
-
-      <Paper sx={{ p: 3, mb: 3 }} elevation={2}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item>
-            <PersonOutline fontSize="large" />
-          </Grid>
-          <Grid item xs>
-            <Typography variant="h6" fontWeight="bold">Usuário</Typography>
-            <Typography variant="body2" color="text.secondary">{mockUserAdmin.nome} — {mockUserAdmin.role}</Typography>
-          </Grid>
-          <Grid item>
-            <Button variant="contained" sx={grayButtonSx} onClick={() => setOpenSenha(true)}>Alterar Senha</Button>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      <AdminArea
-        funcionarios={funcionarios}
-        onAddUser={handleAddUser}
-        onEditUser={handleEditUser}
-        onDeleteUser={handleDeleteUser}
-      />
-
-      <AlterarSenhaModal open={openSenha} onClose={() => setOpenSenha(false)} />
-    </Box>
-  );
-}
 
 function AlterarEmailModal({ open, onClose }) {
-  const [step, setStep] = useState(1); // 1: Senha, 2: Código, 3: Sucesso
+  const [step, setStep] = useState(1); 
 
   useEffect(() => {
     if (!open) {
@@ -327,7 +195,7 @@ function CadastrarUsuarioModal({ open, onClose, onSave }) {
         <TextField label="Confirmar Senha*" type="password"  />
         <TextField label="CPF*"/>
       </DialogContent>
-      <FormControl component="fieldset" sx={{ mt: 1 }}>
+      <FormControl component="fieldset" sx={{ mt: 1, pl: 3 }}> 
           <FormLabel component="legend">Tipo de Usuário:</FormLabel>
           <RadioGroup
             row
@@ -339,14 +207,14 @@ function CadastrarUsuarioModal({ open, onClose, onSave }) {
             <FormControlLabel value="funcionario" control={<Radio />} label="Funcionário" />
           </RadioGroup>
       </FormControl>
-        <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
+      <DialogActions sx={{ p: 3, justifyContent: 'flex-start', gap: 1.5 }}>
           <Button onClick={onClose} variant="contained" sx={grayButtonSx} >
-            CANCELAR
+            Cancelar
           </Button>
           <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
-            CADASTRAR USUÁRIO
+            Cadastrar Usuário
           </Button>
-        </Box>
+      </DialogActions>
     </Dialog>
   );
 }
@@ -439,12 +307,19 @@ function CodigoInput() {
 }
 
 function InfoItem({ icon, title, value }) {
+  const capitalizeRole = (val) => {
+    if (typeof val === 'string' && (val === 'ADMINISTRADOR' || val === 'FUNCIONARIO')) {
+        return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+    }
+    return val; 
+  };
+
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
       {React.cloneElement(icon, { sx: { fontSize: 28, color: 'text.secondary' } })}
       <Box>
         <Typography variant="body2" color="text.secondary">{title}</Typography>
-        <Typography variant="body1" fontWeight="bold">{value}</Typography>
+        <Typography variant="body1" fontWeight="Semi bold">{capitalizeRole(value)}</Typography>
       </Box>
     </Box>
   );
@@ -455,7 +330,7 @@ export default function ConfigPage() {
   const [user, setUser] = useState(mockUserAdmin);
   const [funcionarios, setFuncionarios] = useState(mockFuncionarios);
 
-  const [modalOpen, setModalOpen] = useState(null); // 'senha', 'email', 'cadastrar', 'editar', 'excluir'
+  const [modalOpen, setModalOpen] = useState(null); 
   const [selectedUser, setSelectedUser] = useState(null);
 
   const handleOpenModal = (modalName, user = null) => {
@@ -468,6 +343,23 @@ export default function ConfigPage() {
     setSelectedUser(null);
   };
 
+  const handleAddUser = (userData) => {
+    console.log("Adicionando usuário:", userData);
+    handleCloseModal();
+  };
+
+  const handleEditUser = (userData) => {
+    console.log("Editando usuário:", userData);
+    handleCloseModal();
+  };
+  
+  const handleDeleteUser = () => {
+    console.log("Excluindo usuário:", selectedUser);
+    setFuncionarios(funcionarios.filter(f => f.id !== selectedUser.id));
+    handleCloseModal();
+  };
+
+
   return (
     
     <Box sx={{ p: 4 }}> 
@@ -476,18 +368,22 @@ export default function ConfigPage() {
         Configurações
       </Typography>
 
-      {/* --- SEÇÃO ACESSO --- */}
-      <Typography variant="h5"  mb={3}>Acesso</Typography>
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+      <Typography variant="h5"  mb={2}>Acesso</Typography>
+      <Paper 
+        variant="outlined" 
+        sx={{ p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}
+      >
         <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
         <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
         <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
       </Paper>
 
-      <Box mb={3} mt={3}>
-        {/* --- SEÇÃO SEGURANÇA --- */}
-        <Typography variant="h5" mb={3} marginTop={7} marginBottom={7}>Segurança</Typography>
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2}}>
+      <Box mb={3} mt={5}> 
+        <Typography variant="h5" mb={2}>Segurança</Typography> 
+        <Paper 
+            variant="outlined" 
+            sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2}}
+        >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, width: '100%' }}>
             <Button
               variant="contained"
@@ -497,7 +393,7 @@ export default function ConfigPage() {
                   <ChevronRight sx={{ color: '#1F2937', fontSize: 20,  }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}
             >
               Alterar Senha
             </Button>
@@ -509,7 +405,7 @@ export default function ConfigPage() {
                   <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold" }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}
             >
               Alterar Email
             </Button>
@@ -517,7 +413,6 @@ export default function ConfigPage() {
         </Paper>
       </Box>
 
-      {/* --- SEÇÃO ÁREA DO ADMINISTRADOR (CONDICIONAL) --- */}
       {user.role === 'ADMINISTRADOR' && (
         <Box>
           <AdminArea
@@ -529,7 +424,6 @@ export default function ConfigPage() {
         </Box>
       )}
 
-      {/* --- RENDERIZAÇÃO DOS MODAIS --- */}
       <AlterarSenhaModal
         open={modalOpen === 'senha'}
         onClose={handleCloseModal}
@@ -541,19 +435,19 @@ export default function ConfigPage() {
       <CadastrarUsuarioModal
         open={modalOpen === 'cadastrar'}
         onClose={handleCloseModal}
-        // onSave={...}
+        onSave={handleAddUser}
       />
       <EditarUsuarioModal
         open={modalOpen === 'editar'}
         onClose={handleCloseModal}
         user={selectedUser}
-        // onSave={...}
+        onSave={handleEditUser}
       />
       <ExcluirUsuarioModal
         open={modalOpen === 'excluir'}
         onClose={handleCloseModal}
         user={selectedUser}
-        // onConfirm={...}
+        onConfirm={handleDeleteUser}
       />
     </Box>
   );
