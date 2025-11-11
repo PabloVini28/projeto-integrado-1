@@ -82,7 +82,6 @@ const menuItems = [
     { text: 'Planos', icon: <CreditCardIcon />, path: '/planos' },
     { text: 'Financeiro', icon: <MonetizationOnIcon />, path: '/financeiro' },
     { text: 'Patrimônio', icon: <BusinessCenterIcon />, path: '/patrimonio' },
-    { text: 'Relatórios', icon: <AssessmentIcon />, path: '/relatorios' },
     { text: 'Configurações', icon: <SettingsIcon />, path: '/configuracoes' },
 ];
 
@@ -91,7 +90,6 @@ const breadcrumbNameMap = {
     '/planos': 'Planos',
     '/financeiro': 'Financeiro',
     '/patrimonio': 'Patrimônio',
-    '/relatorios': 'Relatórios',
     '/configuracoes': 'Configurações',
 };
 
