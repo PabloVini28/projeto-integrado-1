@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'; 
+import React, { useState, useMemo } from 'react';
 import { 
     Box, 
     Typography, 
@@ -17,13 +17,16 @@ import {
     FormControl,
     InputLabel,
     Select,
-    MenuItem
+    MenuItem,
+    Menu,
+    ListItemIcon
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
 import DeleteIcon from '@mui/icons-material/Delete'; 
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ItemDialog from './PatrimonioComponents/ItemDialog';
 import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
 
@@ -33,19 +36,19 @@ const createData = (id, nome, codigo, dataAquisicao, status) => {
 };
 
 const allRows = [
-  createData(1, 'Leg Press', 'CF - 001', '25/07/2020', 'Ativo'),
-  createData(2, 'Esteira Ergométrica', 'CF - 002', '13/06/2021', 'Ativo'),
-  createData(3, 'Bicicleta Ergométrica', 'CF - 003', '20/06/2022', 'Ativo'),
-  createData(4, 'Máquina de supino', 'CF - 004', '20/06/2023', 'Ativo'),
-  createData(5, 'Cross-over', 'CF - 005', '20/06/2024', 'Ativo'),
-  createData(6, 'Peck Deck', 'CF - 006', '24/08/2025', 'Ativo'),
-  createData(7, 'Máquina Smith', 'CF - 007', '10/03/2021', 'Ativo'),
-  createData(8, 'Cadeira Extensora', 'CF - 008', '10/03/2022', 'Ativo'),
-  createData(9, 'Máquina de Remo', 'CF - 009', '18/03/2023', 'Ativo'),
-  createData(10, 'Computador', 'CF - 010', '25/05/2024', 'Ativo'),
-  createData(11, 'Bebedouro', 'CF - 011', '10/01/2025', 'Manutenção'),
-  createData(12, 'Anilhas', 'CF - 012', '15/02/2021', 'Ativo'),
-  createData(13, 'Halteres', 'CF - 013', '15/02/2022', 'Inativo'),
+  createData(1, 'Leg Press', '001', '25/07/2020', 'Ativo'),
+  createData(2, 'Esteira Ergométrica', '002', '13/06/2021', 'Ativo'),
+  createData(3, 'Bicicleta Ergométrica', '003', '20/06/2022', 'Ativo'),
+  createData(4, 'Máquina de supino', '004', '20/06/2023', 'Ativo'),
+  createData(5, 'Cross-over', '005', '20/06/2024', 'Ativo'),
+  createData(6, 'Peck Deck', '006', '24/08/2025', 'Ativo'),
+  createData(7, 'Máquina Smith', '007', '10/03/2021', 'Ativo'),
+  createData(8, 'Cadeira Extensora', '008', '10/03/2022', 'Ativo'),
+  createData(9, 'Máquina de Remo', '009', '18/03/2023', 'Ativo'),
+  createData(10, 'Computador', '010', '25/05/2024', 'Ativo'),
+  createData(11, 'Bebedouro', '011', '10/01/2025', 'Manutenção'),
+  createData(12, 'Anilhas', '012', '15/02/2021', 'Ativo'),
+  createData(13, 'Halteres', '013', '15/02/2022', 'Inativo'),
 ];
 
 const columns = [
@@ -55,6 +58,9 @@ const columns = [
     { id: 'status', label: 'Status' },
     { id: 'actions', label: 'Ação', align: 'center' } 
 ];
+
+const primaryColor = '#F2D95C';
+const primaryHoverColor = '#e0c850';
 
 export default function PatrimonioPage() {
     const [page, setPage] = useState(0);
@@ -67,9 +73,10 @@ export default function PatrimonioPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
-    // ADAPTAÇÃO: States para a lógica de filtro e pesquisa
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
+
+    const [anchorElReport, setAnchorElReport] = useState(null);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -119,7 +126,6 @@ export default function PatrimonioPage() {
         if (statusFilter !== 'Todos') {
             tempRows = tempRows.filter(row => row.status === statusFilter);
         }
-
         if (searchTerm) {
             const lowerSearchTerm = searchTerm.toLowerCase();
             tempRows = tempRows.filter(row =>
@@ -127,12 +133,46 @@ export default function PatrimonioPage() {
                 row.codigo.toLowerCase().includes(lowerSearchTerm)
             );
         }
-
         return tempRows;
-    }, [searchTerm, statusFilter]); 
+    }, [searchTerm, statusFilter]);
 
-    const handleDownloadReport = () => {
-        console.log("Gerando relatório...");
+    const handleReportMenuClick = (event) => {
+        setAnchorElReport(event.currentTarget);
+    };
+
+    const handleReportMenuClose = () => {
+        setAnchorElReport(null);
+    };
+
+    const handleDownloadReport = async () => {
+        handleReportMenuClose(); 
+        console.log("Iniciando geração de relatório de Patrimônio...");
+        
+        const reportOptions = {
+            title: 'Relatório de Patrimônio',
+            defaultFileName: `relatorio_patrimonio_${new Date().toISOString().split('T')[0]}.pdf`,
+            headers: ['Nome do Item', 'Código', 'Data de Aquisição', 'Status'],
+            columnWidths: [300, 120, 150, 172], 
+            
+            data: allRows.map(row => [ 
+                row.nome,
+                row.codigo,
+                row.dataAquisicao,
+                row.status
+            ])
+        };
+
+        try {
+            const result = await window.electronAPI.generateReport(reportOptions);
+            
+            if (result.success) {
+                alert(`Relatório salvo com sucesso em:\n${result.path}`);
+            } else if (result.error !== 'Save dialog canceled') {
+                alert(`Falha ao salvar relatório: ${result.error}`);
+            }
+        } catch (error) {
+            alert(`Erro ao gerar relatório: ${error.message}`);
+        }
     };
 
     return (
@@ -165,9 +205,16 @@ export default function PatrimonioPage() {
                             ),
                         }}
                         variant="outlined"
-                        sx={{ width: '400px' }} 
+                        sx={{ 
+                            width: '400px',
+                        }}
                     />
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <FormControl 
+                        size="small" 
+                        sx={{ 
+                            minWidth: 180,
+                        }}
+                    >
                         <InputLabel>Filtrar por Status</InputLabel>
                         <Select
                             value={statusFilter}
@@ -184,9 +231,9 @@ export default function PatrimonioPage() {
                 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button
-                        variant="outlined" 
-                        startIcon={<PictureAsPdfIcon />}
-                        onClick={handleDownloadReport}
+                        variant="outlined"
+                        onClick={handleReportMenuClick}
+                        endIcon={<ArrowDropDownIcon />}
                         sx={{
                             color: 'text.secondary',
                             borderColor: 'grey.400',
@@ -194,19 +241,19 @@ export default function PatrimonioPage() {
                             borderRadius: '25px',
                         }}
                     >
-                        Baixar Relatório
+                        Relatórios
                     </Button>
                     <Button
                         variant="contained"
                         endIcon={<AddIcon />}
                         onClick={() => setIsAddDialogOpen(true)}
                         sx={{ 
-                            backgroundColor: '#F2D95C',
+                            backgroundColor: primaryColor,
                             color: 'black',
                             fontWeight: 'bold',
                             borderRadius: '25px',
                             '&:hover': {
-                                backgroundColor: '#e0c850',
+                                backgroundColor: primaryHoverColor,
                             }
                         }}
                     >
@@ -244,7 +291,7 @@ export default function PatrimonioPage() {
                                     {columns.map((column) => {
                                         const value = row[column.id];
                                         return (
-                                            <TableCell key={column.id}>
+                                            <TableCell key={column.id} align={column.align || 'left'}>
                                                 {column.id === 'actions' ? (
                                                     <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                                                         <IconButton 
@@ -304,6 +351,27 @@ export default function PatrimonioPage() {
                 onConfirm={confirmDelete}
                 title="Tem certeza que deseja excluir?"
             />
+
+            <Menu
+                anchorEl={anchorElReport}
+                open={Boolean(anchorElReport)}
+                onClose={handleReportMenuClose}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+            >
+                <MenuItem onClick={handleDownloadReport}>
+                    <ListItemIcon>
+                        <PictureAsPdfIcon fontSize="small" />
+                    </ListItemIcon>
+                    Relatório de Patrimônio (PDF)
+                </MenuItem>
+            </Menu>
         </Paper>
     );
 }
