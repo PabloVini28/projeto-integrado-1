@@ -187,7 +187,7 @@ export default function PlanosPage() {
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <TextField
                         size="small"
-                        placeholder="Pesquisa por nome ou Código"
+                        placeholder="Pesquisa por Nome ou Código"
                         variant="outlined"
                         value={searchTerm} 
                         onChange={handleSearchChange} 
@@ -198,7 +198,7 @@ export default function PlanosPage() {
                                 </InputAdornment>
                             ),
                         }}
-                        sx={{ width: '300px' }} 
+                        sx={{ width: '400px' }} 
                     />
                     <FormControl size="small" sx={{ minWidth: 180 }}>
                         <InputLabel>Filtrar por Status</InputLabel>
@@ -250,6 +250,17 @@ export default function PlanosPage() {
             <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
                 <Table stickyHeader aria-label="Tabela de Planos">
                     <TableHead>
+                        <TableRow>
+                            {columns.map((column) => (
+                                <TableCell
+                                    key={column.id}
+                                    align={column.align || 'left'} 
+                                    sx={{ fontWeight: 'bold', backgroundColor: '#fff' }}
+                                >
+                                    {column.label}
+                                </TableCell>
+                            ))}
+                        </TableRow>
                     </TableHead>
                     <TableBody>
                         {filteredRows
