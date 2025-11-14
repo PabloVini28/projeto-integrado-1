@@ -15,6 +15,7 @@ app.use(express.json());
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/patrimonio', patrimonioRouter);
 app.use('/api/alunos', alunoRouter);
+app.use('/api/planos', planoRouter);
 
 async function start() {
   try {
