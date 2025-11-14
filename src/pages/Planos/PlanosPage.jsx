@@ -2,12 +2,20 @@ import React, { useState, useMemo } from 'react';
 import { 
     Box, Typography, TextField, InputAdornment, Button, Paper, 
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-    TablePagination, IconButton 
+    TablePagination, IconButton,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Menu,
+    ListItemIcon
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
 import DeleteIcon from '@mui/icons-material/Delete';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 import { PlanoFormDialog } from './PlanosComponents/PlanoFormDialog'; 
 import { ExcluirPlanoDialog } from './PlanosComponents/ExcluirPlanoDialog'; 
@@ -26,7 +34,7 @@ const initialRows = [
   createData(2, 'Semanal', '002', 50.00, 'Ativo'),
   createData(3, 'Mensal', '003', 100.00, 'Ativo'),
   createData(4, 'Trimestral', '004', 250.00, 'Ativo'),
-  createData(5, 'Anual', '005', 1000.00, 'Ativo'),
+  createData(5, 'Anual', '005', 1000.00, 'Inativo'),
 ];
 
 const columns = [
@@ -46,6 +54,9 @@ export default function PlanosPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(null); 
+    
+    const [statusFilter, setStatusFilter] = useState('Todos');
+    const [anchorElReport, setAnchorElReport] = useState(null);
 
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
@@ -59,15 +70,21 @@ export default function PlanosPage() {
     };
 
     const filteredRows = useMemo(() => {
-        if (!searchTerm) {
-            return rows; 
+        let tempRows = rows; 
+        
+        if (statusFilter !== 'Todos') {
+            tempRows = tempRows.filter(row => row.status === statusFilter);
         }
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        return rows.filter(row => 
-            row.nome.toLowerCase().includes(lowerCaseSearchTerm) || 
-            row.codigo.toLowerCase().includes(lowerCaseSearchTerm)
-        );
-    }, [searchTerm, rows]); 
+
+        if (searchTerm) {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+            tempRows = tempRows.filter(row => 
+                row.nome.toLowerCase().includes(lowerCaseSearchTerm) || 
+                row.codigo.toLowerCase().includes(lowerCaseSearchTerm)
+            );
+        }
+        return tempRows;
+    }, [searchTerm, statusFilter, rows]); 
 
     const handleNewPlan = () => {
         setSelectedPlan(null); 
@@ -112,6 +129,44 @@ export default function PlanosPage() {
         setIsFormOpen(false);
         setSelectedPlan(null);
     };
+    
+    const handleReportMenuClick = (event) => {
+        setAnchorElReport(event.currentTarget);
+    };
+
+    const handleReportMenuClose = () => {
+        setAnchorElReport(null);
+    };
+
+    const handleDownloadReport = async () => {
+        handleReportMenuClose();
+        console.log("Iniciando geração de relatório de Planos...");
+        
+        const reportOptions = {
+            title: 'Relatório de Planos',
+            defaultFileName: `relatorio_planos_${new Date().toISOString().split('T')[0]}.pdf`,
+            headers: ['Nome do Plano', 'Código', 'Valor', 'Status'],
+            columnWidths: [300, 120, 150, 172], 
+            data: rows.map(row => [
+                row.nome,
+                row.codigo,
+                row.valor, 
+                row.status
+            ])
+        };
+
+        try {
+            const result = await window.electronAPI.generateReport(reportOptions);
+            if (result.success) {
+                alert(`Relatório salvo com sucesso em:\n${result.path}`);
+            } else if (result.error !== 'Save dialog canceled') {
+                alert(`Falha ao salvar relatório: ${result.error}`);
+            }
+        } catch (error) {
+            alert(`Erro ao gerar relatório: ${error.message}`);
+        }
+    };
+
 
     return (
         <Paper 
@@ -127,105 +182,114 @@ export default function PlanosPage() {
                 Planos
             </Typography>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <TextField
-                    size="small"
-                    placeholder="Pesquisa por nome ou Código"
-                    variant="outlined"
-                    value={searchTerm} 
-                    onChange={handleSearchChange} 
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon />
-                            </InputAdornment>
-                        ),
-                    }}
-                    sx={{ width: '500px' }}
-                />
-                <Button
-                    variant="contained"
-                    endIcon={<AddIcon />} 
-                    onClick={handleNewPlan}
-                    sx={{ 
-                        backgroundColor: '#F2D95C',
-                        color: 'black',
-                        borderRadius: '25px',
-                        fontWeight: 'normal',
-                        '&:hover': {
-                            backgroundColor: '#e0c850'
-                        }
-                    }}
-                >
-                    Novo Plano
-                </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2 }}>
+                
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <TextField
+                        size="small"
+                        placeholder="Pesquisa por nome ou Código"
+                        variant="outlined"
+                        value={searchTerm} 
+                        onChange={handleSearchChange} 
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                        sx={{ width: '300px' }} 
+                    />
+                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                        <InputLabel>Filtrar por Status</InputLabel>
+                        <Select
+                            value={statusFilter}
+                            label="Filtrar por Status"
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <MenuItem value="Todos">Todos</MenuItem>
+                            <MenuItem value="Ativo">Ativo</MenuItem>
+                            <MenuItem value="Inativo">Inativo</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleReportMenuClick}
+                        endIcon={<ArrowDropDownIcon />}
+                        sx={{
+                            color: 'text.secondary',
+                            borderColor: 'grey.400',
+                            fontWeight: 'bold',
+                            borderRadius: '25px',
+                        }}
+                    >
+                        Relatórios
+                    </Button>
+                    <Button
+                        variant="contained"
+                        endIcon={<AddIcon />} 
+                        onClick={handleNewPlan}
+                        sx={{ 
+                            backgroundColor: '#F2D95C',
+                            color: 'black',
+                            borderRadius: '25px',
+                            fontWeight: 'bold', 
+                            '&:hover': {
+                                backgroundColor: '#e0c850'
+                            }
+                        }}
+                    >
+                        Novo Plano
+                    </Button>
+                </Box>
             </Box>
 
             <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
                 <Table stickyHeader aria-label="Tabela de Planos">
                     <TableHead>
-                        <TableRow>
-                            {columns.map((column) => (
-                                <TableCell
-                                    key={column.id}
-                                    align={column.align || 'left'} 
-                                    sx={{ fontWeight: 'bold', backgroundColor: '#fff' }}
-                                >
-                                    {column.label}
-                                </TableCell>
-                            ))}
-                        </TableRow>
                     </TableHead>
                     <TableBody>
-    {filteredRows
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        .map((row) => (
-            <TableRow 
-                hover 
-                role="checkbox" 
-                tabIndex={-1} 
-                key={row.id}
-                sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
-            >
-                {columns.map((column) => {
-                    const value = row[column.id];
-                    return (
-                        <TableCell key={column.id} align={column.align || 'left'}>
-                            {column.id === 'status' ? (
-                                <Typography 
-                                    variant="body2" 
-                                    sx={{ 
-                                        color: '#343a40'
-                                    }}
+                        {filteredRows
+                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            .map((row) => (
+                                <TableRow 
+                                    hover 
+                                    key={row.id}
+                                    sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
                                 >
-                                    {value}
-                                </Typography>
-                            ) : column.id === 'actions' ? (
-                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                    <IconButton 
-                                        size="small" 
-                                        onClick={() => handleEdit(row.id)}
-                                        sx={{ color: '#343a40' }}
-                                    >
-                                        <EditIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton 
-                                        size="small" 
-                                        onClick={() => handleDelete(row.id)}
-                                        sx={{ color: '#343a40' }}
-                                    >
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                </Box>
-                            ) : (
-                                value
-                            )}
-                        </TableCell>
-                    );
-                })}
-            </TableRow>
-        ))}
-</TableBody>
+                                    {columns.map((column) => {
+                                        const value = row[column.id];
+                                        return (
+                                            <TableCell key={column.id} align={column.align || 'left'}>
+                                                {column.id === 'actions' ? (
+                                                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                        <IconButton 
+                                                            size="small" 
+                                                            onClick={() => handleEdit(row.id)}
+                                                            sx={{ color: '#343a40' }}
+                                                        >
+                                                            <EditIcon fontSize="small" />
+                                                        </IconButton>
+                                                        <IconButton 
+                                                            size="small" 
+                                                            onClick={() => handleDelete(row.id)}
+                                                            sx={{ color: '#343a40' }}
+                                                        >
+                                                            <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Box>
+                                                ) : (
+                                                    value
+                                                )}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            ))}
+                    </TableBody>
                 </Table>
             </TableContainer>
 
@@ -253,6 +317,27 @@ export default function PlanosPage() {
                 onConfirm={handleConfirmDelete}
                 planToDelete={selectedPlan}
             />
+            
+            <Menu
+                anchorEl={anchorElReport}
+                open={Boolean(anchorElReport)}
+                onClose={handleReportMenuClose}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+            >
+                <MenuItem onClick={handleDownloadReport}>
+                    <ListItemIcon>
+                        <PictureAsPdfIcon fontSize="small" />
+                    </ListItemIcon>
+                    Relatório de Planos (PDF)
+                </MenuItem>
+            </Menu>
         </Paper>
     );
 }
