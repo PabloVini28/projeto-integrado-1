@@ -237,7 +237,7 @@ export default function PatrimonioPage() {
                         sx={{
                             color: 'text.secondary',
                             borderColor: 'grey.400',
-                            fontWeight: 'bold',
+                            fontWeight: 'normal',
                             borderRadius: '25px',
                         }}
                     >
@@ -250,7 +250,7 @@ export default function PatrimonioPage() {
                         sx={{ 
                             backgroundColor: primaryColor,
                             color: 'black',
-                            fontWeight: 'bold',
+                            fontWeight: 'normal',
                             borderRadius: '25px',
                             '&:hover': {
                                 backgroundColor: primaryHoverColor,
