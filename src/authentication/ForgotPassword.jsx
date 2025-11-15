@@ -7,17 +7,16 @@ import {
   TextField,
   Button,
   Link,
-  CircularProgress, // Adicionado para indicar carregamento
-  Alert,             // Adicionado para exibir mensagens de status
+  CircularProgress,
+  Alert,
 } from '@mui/material';
-import logoImage from '../assets/logo/icon.png'; 
+import logoImage from '../assets/logo/icon.png';
 
-// Componente Logo (copiado do LoginPage para manter a consistência)
 const Logo = () => (
   <Box
     component="img"
     sx={{
-      width: 60, 
+      width: 60,
       height: 'auto',
       mb: 1,
     }}
@@ -30,28 +29,37 @@ function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState({ message: '', type: '' }); // {message: 'Mensagem', type: 'success' | 'error'}
+  const [status, setStatus] = useState({ message: '', type: '' });
+  const [showError, setShowError] = useState(false); 
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (loading) return;
 
-    setStatus({ message: '', type: '' }); // Limpa mensagens anteriores
+    setShowError(true);
+    setStatus({ message: '', type: '' });
+
+    if (!validateEmail(email)) {
+      return; 
+    }
+
     setLoading(true);
-    
-    // ⚠️ CHAMADA AO BACK-END SEGURO (via preload.js)
+
     try {
-      // window.api.solicitarResetSenha foi exposto no preload.js
-      const result = await window.api.solicitarResetSenha(email); 
+      const result = await window.api.solicitarResetSenha(email);
       
       if (result.success) {
         setStatus({ message: result.message, type: 'success' });
-        // Opcional: Limpar o email após o sucesso
         setEmail('');
+        setShowError(false); 
       } else {
         setStatus({ message: result.message, type: 'error' });
       }
-
     } catch (error) {
       console.error("Erro na comunicação IPC:", error);
       setStatus({ message: 'Erro: Falha na comunicação com o sistema.', type: 'error' });
@@ -62,19 +70,21 @@ function ForgotPassword() {
 
   const handleGoBack = (e) => {
     e.preventDefault();
-    // Navega para a rota de login, que definimos como '/login' no main.jsx
     navigate('/login');
   };
 
+  const isEmailValid = validateEmail(email);
+  const displayEmailError = showError && !isEmailValid;
+
   return (
-    <Container 
-      component="main" 
-      sx={{ 
-        maxWidth: '340px !important', 
+    <Container
+      component="main"
+      sx={{
+        maxWidth: '340px !important',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center', 
-        minHeight: '100vh' 
+        justifyContent: 'center',
+        minHeight: '100vh',
       }}
     >
       <Box
@@ -82,50 +92,49 @@ function ForgotPassword() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          width: '100%' 
+          width: '100%',
         }}
       >
         <Logo />
 
-        <Typography 
-          variant="h6" 
-          component="h1" 
-          sx={{ 
-            fontWeight: 400, 
-            mb: 1, 
-            color: 'text.secondary' 
+        <Typography
+          variant="h6"
+          component="h1"
+          sx={{
+            fontWeight: 400,
+            mb: 1,
+            color: 'text.secondary',
           }}
         >
           Corpo em Forma Gestão
         </Typography>
 
-        <Typography 
-          variant="h5" 
-          component="h2" 
-          sx={{ 
-            fontWeight: 500, 
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: 500,
             mt: 2,
-            mb: 1, 
+            mb: 1,
           }}
         >
           Recupere sua senha
         </Typography>
 
-        <Typography 
-            variant="body2" 
-            sx={{ 
-                mb: 3, 
-                color: 'text.secondary', 
-                textAlign: 'center',
-                whiteSpace: 'nowrap' // Esta propriedade impede quebra de linha
-            }}
+        <Typography
+          variant="body2"
+          sx={{
+            mb: 3,
+            color: 'text.secondary',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+          }}
         >
           Informe seu e-mail para um link de redefinição.
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
           
-          {/* Campo E-mail */}
           <TextField
             margin="normal"
             size="small"
@@ -140,16 +149,16 @@ function ForgotPassword() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
+            error={displayEmailError} 
+            helperText={displayEmailError ? 'Formato de e-mail inválido.' : ''}
           />
           
-          {/* Mensagem de Status (Sucesso/Erro) */}
-          {status.message && (
+          {!displayEmailError && status.message && (
             <Alert severity={status.type} sx={{ mt: 2, mb: 1 }}>
               {status.message}
             </Alert>
           )}
 
-          {/* Botão de Envio */}
           <Button
             type="submit"
             fullWidth
@@ -159,29 +168,28 @@ function ForgotPassword() {
               mt: 2,
               mb: 3,
               py: 1.2,
-              backgroundColor: '#F2D95C', // Mantendo o estilo da tela de login
+              backgroundColor: '#F2D95C',
               color: 'black',
               '&:hover': {
                 backgroundColor: '#E0C84D',
               },
               '&.Mui-disabled': {
-                backgroundColor: '#F7E9A9', // Amarelo bem claro para desativado
-                color: 'rgba(0, 0, 0, 0.4)', // Texto um pouco apagado
+                backgroundColor: '#F7E9A9',
+                color: 'rgba(0, 0, 0, 0.4)',
               },
             }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Enviar Link'}
           </Button>
           
-          {/* Link para Voltar ao Login */}
           <Typography variant="body2" align="center">
             Lembrou da sua senha?{' '}
-            <Link 
-              href="#" 
-              onClick={handleGoBack} 
-              variant="body2" 
-              sx={{ 
-                fontWeight: 'bold' 
+            <Link
+              href="#"
+              onClick={handleGoBack}
+              variant="body2"
+              sx={{
+                fontWeight: 'bold',
               }}
             >
               Voltar ao login
