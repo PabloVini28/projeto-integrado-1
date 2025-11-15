@@ -19494,6 +19494,7 @@ if (started) {
 }
 const createWindow = () => {
   const mainWindow = new require$$3$1.BrowserWindow({
+    // ALTERADO: Aumentei o tamanho da janela para o layout ficar melhor
     width: 1200,
     height: 800,
     webPreferences: {
@@ -19519,6 +19520,69 @@ require$$3$1.app.on("window-all-closed", () => {
     require$$3$1.app.quit();
   }
 });
+async function drawPageHeader(page, logoImage, fonts, title) {
+  const { width, height } = page.getSize();
+  const margin = 50;
+  const y = height - margin;
+  page.drawImage(logoImage, { x: margin, y: y - 40, width: 40, height: 40 });
+  let textY = y - 10;
+  page.drawText("Corpo em Forma", {
+    x: margin + 50,
+    y: textY,
+    size: 16,
+    font: fonts.bold
+  });
+  textY -= 15;
+  page.drawText("Rua Tabelião Eneas, 60, Centro, Quixadá, Ceará", {
+    x: margin + 50,
+    y: textY,
+    size: 9,
+    font: fonts.normal,
+    color: rgb(0.3, 0.3, 0.3)
+  });
+  textY -= 12;
+  page.drawText("CNPJ: 40.522.014/0001-90 | Tel: (88) 996106590", {
+    x: margin + 50,
+    y: textY,
+    size: 9,
+    font: fonts.normal,
+    color: rgb(0.3, 0.3, 0.3)
+  });
+  const emissionDate = (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR");
+  const emissionText = `Emitido em: ${emissionDate}`;
+  const titleWidth = fonts.bold.widthOfTextAtSize(title, 14);
+  const dateWidth = fonts.normal.widthOfTextAtSize(emissionText, 10);
+  page.drawText(title, {
+    x: width - margin - titleWidth,
+    y: y - 10,
+    size: 14,
+    font: fonts.bold,
+    color: rgb(0, 0, 0)
+  });
+  page.drawText(emissionText, {
+    x: width - margin - dateWidth,
+    y: y - 28,
+    size: 10,
+    font: fonts.normal,
+    color: rgb(0.3, 0.3, 0.3)
+  });
+  return height - margin - 80;
+}
+function drawPageFooter(page, pageNum, totalPages, font) {
+  const { width, height } = page.getSize();
+  const margin = 50;
+  const footerText = `Página ${pageNum} de ${totalPages}`;
+  const textWidth = font.widthOfTextAtSize(footerText, 9);
+  page.drawText(footerText, {
+    x: width - margin - textWidth,
+    // Alinhado à direita
+    y: margin / 2,
+    // Na base da página
+    size: 9,
+    font,
+    color: rgb(0.3, 0.3, 0.3)
+  });
+}
 async function createPdf(options) {
   const { title, headers, columnWidths, data, defaultFileName } = options;
   const { canceled, filePath } = await require$$3$1.dialog.showSaveDialog({
@@ -19526,13 +19590,12 @@ async function createPdf(options) {
     defaultPath: defaultFileName || `relatorio_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.pdf`,
     filters: [{ name: "Arquivos PDF", extensions: ["pdf"] }]
   });
-  if (canceled || !filePath) {
-    return { success: false, error: "Save dialog canceled" };
-  }
+  if (canceled || !filePath) return { success: false, error: "Save dialog canceled" };
   try {
     const pdfDoc = await PDFDocument.create();
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fonts = { normal: helveticaFont, bold: helveticaBoldFont };
     let logoPath;
     if (require$$3$1.app.isPackaged) {
       logoPath = path$1.join(__dirname, `../renderer/${"main_window"}/assets/logo/icon.png`);
@@ -19545,12 +19608,6 @@ async function createPdf(options) {
     const { width, height } = page.getSize();
     const margin = 50;
     const rowHeight = 20;
-    const drawPageHeader = (currentPage) => {
-      currentPage.drawImage(logoImage, { x: margin, y: height - margin - 40, width: 40, height: 40 });
-      currentPage.drawText("Corpo em Forma Gestão", { x: margin + 50, y: height - margin - 15, size: 18, font: helveticaBoldFont, color: rgb(0, 0, 0) });
-      currentPage.drawText(title, { x: margin + 50, y: height - margin - 35, size: 14, font: helveticaFont, color: rgb(0.3, 0.3, 0.3) });
-      return height - margin - 80;
-    };
     const drawTableHeader = (currentPage, yPos) => {
       const tableRowHeight = 25;
       currentPage.drawRectangle({ x: margin, y: yPos - tableRowHeight, width: width - margin * 2, height: tableRowHeight, color: rgb(0.9, 0.9, 0.9) });
@@ -19563,14 +19620,14 @@ async function createPdf(options) {
       });
       return yPos - tableRowHeight;
     };
-    let y = drawPageHeader(page);
+    let y = await drawPageHeader(page, logoImage, fonts, title);
     y = drawTableHeader(page, y, margin, columnWidths, helveticaBoldFont);
     page.setFont(helveticaFont);
     page.setFontSize(10);
     for (const [index, row] of data.entries()) {
       if (y < margin + rowHeight) {
         page = pdfDoc.addPage([841.89, 595.28]);
-        y = drawPageHeader(page);
+        y = await drawPageHeader(page, logoImage, fonts, title);
         y = drawTableHeader(page, y, margin, columnWidths, helveticaBoldFont);
       }
       if (index % 2 === 0) {
@@ -19583,15 +19640,10 @@ async function createPdf(options) {
       });
       y -= rowHeight;
     }
-    y -= 30;
-    if (y < margin) {
-      page = pdfDoc.addPage([841.89, 595.28]);
-      y = height - margin;
-    }
-    const emissionDate = (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-    const emissionText = `Relatório emitido em: ${emissionDate}`;
-    const textWidth = helveticaFont.widthOfTextAtSize(emissionText, 9);
-    page.drawText(emissionText, { x: width - margin - textWidth, y, size: 9, color: rgb(0.3, 0.3, 0.3) });
+    const totalPages = pdfDoc.getPageCount();
+    pdfDoc.getPages().forEach((p, i) => {
+      drawPageFooter(p, i + 1, totalPages, helveticaFont);
+    });
     const pdfBytes = await pdfDoc.save();
     await fs.promises.writeFile(filePath, pdfBytes);
     return { success: true, path: filePath };
@@ -19602,4 +19654,97 @@ async function createPdf(options) {
 }
 require$$3$1.ipcMain.handle("generate-report", async (event, options) => {
   return await createPdf(options);
+});
+require$$3$1.ipcMain.handle("generate-detailed-student-report", async (event, data) => {
+  const { canceled, filePath } = await require$$3$1.dialog.showSaveDialog({
+    title: "Salvar Relatório Detalhado de Alunos",
+    defaultPath: `relatorio_detalhado_alunos_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.pdf`,
+    filters: [{ name: "Arquivos PDF", extensions: ["pdf"] }]
+  });
+  if (canceled || !filePath) {
+    return { success: false, error: "Save dialog canceled" };
+  }
+  try {
+    const pdfDoc = await PDFDocument.create();
+    const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fonts = { normal: helveticaFont, bold: helveticaBoldFont };
+    let logoPath;
+    if (require$$3$1.app.isPackaged) {
+      logoPath = path$1.join(__dirname, `../renderer/${"main_window"}/assets/logo/icon.png`);
+    } else {
+      logoPath = path$1.join(__dirname, "../../src/assets/logo/icon.png");
+    }
+    const logoBytes = fs.readFileSync(logoPath);
+    const logoImage = await pdfDoc.embedPng(logoBytes);
+    let page = pdfDoc.addPage([841.89, 595.28]);
+    const { width, height } = page.getSize();
+    const margin = 40;
+    const lineGap = 13;
+    const sectionGap = 18;
+    const blockHeight = 100;
+    let y = await drawPageHeader(page, logoImage, fonts, "Relatório Detalhado de Alunos");
+    const col1_x = margin;
+    const col2_x = margin + 250;
+    const col3_x = margin + 500;
+    const labelWidth = 65;
+    const drawField = (label, value, x, yPos) => {
+      if (!value) value = "Não informado";
+      page.drawText(label, {
+        x,
+        y: yPos,
+        size: 7,
+        font: helveticaBoldFont,
+        color: rgb(0.4, 0.4, 0.4)
+      });
+      page.drawText(value, {
+        x: x + labelWidth,
+        y: yPos,
+        size: 9,
+        font: helveticaFont,
+        color: rgb(0, 0, 0)
+      });
+      return yPos - lineGap;
+    };
+    for (const [index, student] of data.entries()) {
+      if (y < margin + blockHeight) {
+        page = pdfDoc.addPage([841.89, 595.28]);
+        y = await drawPageHeader(page, logoImage, fonts, "Relatório Detalhado de Alunos");
+      }
+      let y_col1 = y;
+      let y_col2 = y;
+      let y_col3 = y;
+      y_col1 = drawField("Nome:", student.nome, col1_x, y_col1);
+      y_col1 = drawField("Matrícula:", student.matricula, col1_x, y_col1);
+      y_col1 = drawField("Plano:", student.plano, col1_x, y_col1);
+      y_col1 = drawField("Matrícula em:", student.data_matricula, col1_x, y_col1);
+      y_col1 = drawField("Expiração:", student.data_expiracao, col1_x, y_col1);
+      y_col1 = drawField("Status:", student.status, col1_x, y_col1);
+      y_col2 = drawField("CPF:", student.cpf, col2_x, y_col2);
+      y_col2 = drawField("Data de Nasc.:", student.dataNascimento, col2_x, y_col2);
+      y_col2 = drawField("Gênero:", student.genero, col2_x, y_col2);
+      y_col3 = drawField("Email:", student.email, col3_x, y_col3);
+      y_col3 = drawField("Telefone:", student.telefone, col3_x, y_col3);
+      const address = student.endereco ? `${student.endereco.logradouro}, ${student.endereco.numero}` : "Não informado";
+      y_col3 = drawField("Endereço:", address, col3_x, y_col3);
+      y = Math.min(y_col1, y_col2, y_col3) - sectionGap / 2;
+      page.drawLine({
+        start: { x: margin, y },
+        end: { x: width - margin, y },
+        thickness: 0.5,
+        color: rgb(0.8, 0.8, 0.8)
+      });
+      y -= sectionGap;
+    }
+    const totalPages = pdfDoc.getPageCount();
+    pdfDoc.getPages().forEach((p, i) => {
+      drawPageFooter(p, i + 1, totalPages, helveticaFont);
+    });
+    const pdfBytes = await pdfDoc.save();
+    await fs.promises.writeFile(filePath, pdfBytes);
+    return { success: true, path: filePath };
+  } catch (error2) {
+    console.error("Falha ao gerar o PDF:", error2);
+    return { success: false, error: error2.message };
+  }
 });
