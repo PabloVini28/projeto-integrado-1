@@ -3,24 +3,24 @@ const {pool} = require("../db");
 const FIELDS = ['cod_plano', 'nome_plano', 'valor', 'status_plano', 'created_at'];
 
 async function findAll() {
-  const q = ` SELECT ${FIELDS} FROM planos ORDER BY nome_plano`;
-  const r = await pool.query(q);
-  return r.rows;
+    const q = ` SELECT ${FIELDS} FROM planos ORDER BY nome_plano`;
+    const r = await pool.query(q);
+    return r.rows;
 }
 
 async function findByCod(cod_plano) {
-  const q = ` SELECT ${FIELDS} FROM planos WHERE cod_plano = $1`;
-  const r = await pool.query(q, [cod_plano]);
-  return r.rows[0] || null;
+    const q = ` SELECT ${FIELDS} FROM planos WHERE cod_plano = $1`;
+    const r = await pool.query(q, [cod_plano]);
+    return r.rows[0] || null;
 }
 
 async function create(plano) {
-    const q  = ` INSERT INTO planos (cod_plano, nome_plano, valor, status_plano)
+    const q = ` INSERT INTO planos (cod_plano, nome_plano, valor, status_plano)
     VALUES ($1, $2, $3, $4)
     RETURNING ${FIELDS} `;
 
     const vals = [plano.cod_plano, plano.nome_plano, plano.valor, plano.status_plano || 'Ativo'];
-    
+
     try {
         const r = await pool.query(q, vals);
         return r.rows[0];
@@ -30,7 +30,7 @@ async function create(plano) {
             err.status = 409;
             throw err;
         }
-        throw error;
+    throw error;
     }
 }
 
