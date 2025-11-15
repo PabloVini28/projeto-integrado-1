@@ -6,7 +6,6 @@ import {
     Button 
 } from '@mui/material';
 
-// --- DIALOG PARA CONFIRMAÇÃO DE EXCLUSÃO ---
 export function ExcluirPlanoDialog({ open, onClose, onConfirm, planToDelete }) {
     const title = `Tem certeza que deseja excluir o plano "${planToDelete?.nome || ''}"?`;
 
@@ -22,7 +21,7 @@ export function ExcluirPlanoDialog({ open, onClose, onConfirm, planToDelete }) {
             }}
             fullWidth
         >
-            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'bold', fontSize: '1.5rem', textAlign: 'left' }}>
+            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'normal', fontSize: '1.5rem', textAlign: 'left' }}>
                 {title}
             </DialogTitle>
             

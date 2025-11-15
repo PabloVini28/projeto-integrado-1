@@ -222,7 +222,7 @@ export default function PlanosPage() {
                         sx={{
                             color: 'text.secondary',
                             borderColor: 'grey.400',
-                            fontWeight: 'bold',
+                            fontWeight: 'normal',
                             borderRadius: '25px',
                         }}
                     >
@@ -236,7 +236,7 @@ export default function PlanosPage() {
                             backgroundColor: '#F2D95C',
                             color: 'black',
                             borderRadius: '25px',
-                            fontWeight: 'bold', 
+                            fontWeight: 'normal', 
                             '&:hover': {
                                 backgroundColor: '#e0c850'
                             }
