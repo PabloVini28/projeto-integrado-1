@@ -1,4 +1,3 @@
-// src/pages/Financeiro/FinanceiroComponents/FinanceTable.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -20,18 +19,16 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-// ALTERAÇÃO: Adicionada "Data" e larguras ajustadas
 const tableColumns = [
   { id: "expand", label: "", width: "5%" },
   { id: "id", label: "ID", width: "10%" },
   { id: "nome", label: "Nome", width: "25%" },
   { id: "categoria", label: "Categoria", width: "20%" },
-  { id: "data", label: "Data", width: "15%", align: "left" }, // ADICIONADO
+  { id: "data", label: "Data", width: "15%", align: "left" },
   { id: "valor", label: "Valor", align: "right", width: "15%" },
   { id: "acao", label: "Ação", align: "center", width: "10%" },
 ];
 
-// --- Detalhes da linha expandida ---
 function RowDetails({ item, isRecipe }) {
   return (
     <Box
@@ -44,22 +41,6 @@ function RowDetails({ item, isRecipe }) {
       }}
     >
       <Grid container spacing={2}>
-        {/* ALTERAÇÃO: 'Data' foi removida daqui */}
-
-        {isRecipe && item.categoria === "Alunos" && (
-          <Grid item xs={12} sm={6}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "block", textTransform: "uppercase" }}
-            >
-              Aluno
-            </Typography>
-            <Typography variant="body2" fontWeight="medium">
-              {item.nome_aluno || "Não informado"}
-            </Typography>
-          </Grid>
-        )}
 
         <Grid item xs={12}>
           <Typography
@@ -78,7 +59,6 @@ function RowDetails({ item, isRecipe }) {
   );
 }
 
-// --- Linha principal ---
 function RowItem({ row, isRecipe, onEdit, onDelete }) {
   const [open, setOpen] = useState(false);
 
@@ -134,11 +114,9 @@ function RowItem({ row, isRecipe, onEdit, onDelete }) {
         })}
       </TableRow>
 
-      {/* Linha colapsável */}
       <TableRow>
-        {/* ALTERAÇÃO: colSpan atualizado para 7 */}
         <TableCell
-          colSpan={7}
+          colSpan={7} 
           sx={{
             py: 0,
             borderBottom: "1px solid #eee",
@@ -153,7 +131,6 @@ function RowItem({ row, isRecipe, onEdit, onDelete }) {
   );
 }
 
-// --- Tabela Principal ---
 export default function FinanceTable({
   title,
   rows,
@@ -166,7 +143,6 @@ export default function FinanceTable({
   onEdit,
   onDelete,
 }) {
-  const type = isRecipe ? "Receita" : "Despesa";
 
   return (
     <Box
@@ -182,13 +158,13 @@ export default function FinanceTable({
 
       <Paper
         elevation={0}
-        variant="outlined" // Usando a borda sutil
+        variant="outlined"
         sx={{
           borderRadius: "8px",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          flexGrow: 1, // Corrigido para preencher a aba
+          flexGrow: 1,
         }}
       >
         <TableContainer sx={{ flexGrow: 1, overflowY: "auto" }}>
@@ -203,7 +179,7 @@ export default function FinanceTable({
                       fontWeight: "bold",
                       backgroundColor: "#fff",
                       py: 1.5,
-                      width: column.width, // Aplica a largura
+                      width: column.width,
                       borderBottom: "1px solid #eee",
                     }}
                   >
@@ -241,9 +217,9 @@ export default function FinanceTable({
             borderTop: "1px solid #eee",
             backgroundColor: "#fff",
           }}
-          labelRowsPerPage="Itens por pág:" // Traduzido
+          labelRowsPerPage="Itens por pág:"
           labelDisplayedRows={({ from, to, count }) =>
-            `${from}–${to} de ${count}` // Traduzido
+            `${from}–${to} de ${count}`
           }
         />
       </Paper>

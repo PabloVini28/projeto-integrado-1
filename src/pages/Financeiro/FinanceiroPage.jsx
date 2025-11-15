@@ -16,6 +16,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from '@mui/icons-material/Search';
 
+// Componentes importados
 import FinanceTable from "./FinanceiroComponents/FinanceTable.jsx";
 import ItemDialog from "./FinanceiroComponents/ItemDialog.jsx";
 import ConfirmaDialog from "./FinanceiroComponents/ConfirmaDialog.jsx";
@@ -129,7 +130,9 @@ export default function FinanceiroPage() {
       const search = receitaSearch.toLowerCase();
       temp = temp.filter(r => r.nome.toLowerCase().includes(search) || r.descricao.toLowerCase().includes(search));
     }
-    return temp;
+
+    return temp.slice().sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
+    
   }, [receitasDoMes, receitaSearch, receitaCategory]);
 
   const filteredDespesas = useMemo(() => {
@@ -141,10 +144,11 @@ export default function FinanceiroPage() {
       const search = despesaSearch.toLowerCase();
       temp = temp.filter(d => d.nome.toLowerCase().includes(search) || d.descricao.toLowerCase().includes(search));
     }
-    return temp;
+
+    return temp.slice().sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
   }, [despesasDoMes, despesaSearch, despesaCategory]);
 
-
+ 
   const handleReceitasPageChange = (event, newPage) => setReceitasPage(newPage);
   const handleDespesasPageChange = (event, newPage) => setDespesasPage(newPage);
   const handleRowsPerPageChange = (event) => {
@@ -212,17 +216,20 @@ export default function FinanceiroPage() {
       let columnWidths = [50, 120, 100, 150, 80, 150, 100];
       
       const allData = [
-          ...receitasDoMes.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`})), 
-          ...despesasDoMes.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}))
+          ...filteredReceitas.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`})), 
+          ...filteredDespesas.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}))
       ];
+      if (reportType === 'completo') {
+          allData.sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
+      }
 
       switch(reportType) {
           case 'receitas':
-              dataToExport = receitasDoMes.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`}));
+              dataToExport = filteredReceitas.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`}));
               reportTitle = `Relatório de Receitas (${mesAno})`;
               break;
           case 'despesas':
-              dataToExport = despesasDoMes.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}));
+              dataToExport = filteredDespesas.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}));
               reportTitle = `Relatório de Despesas (${mesAno})`;
               break;
           case 'completo':
@@ -268,11 +275,10 @@ export default function FinanceiroPage() {
         backgroundColor: "transparent",
       }}
     >
-      
       <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'baseline', 
+          alignItems: 'baseline',
           mb: 2, 
           gap: 2 
         }}>
@@ -369,6 +375,7 @@ export default function FinanceiroPage() {
           </Box>
         </TabPanel>
 
+        {/* Aba 2: Despesas */}
         <TabPanel value={tabValue} index={2}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1, minHeight: 0 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, mb: 0, flex: '0 0 auto' }}>
