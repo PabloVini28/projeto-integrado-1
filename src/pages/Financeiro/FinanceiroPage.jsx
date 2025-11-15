@@ -1,49 +1,104 @@
-import React, { useState } from "react";
-import { Box, Typography, Grid, Button, Paper } from "@mui/material";
+import React, { useState, useMemo } from "react";
+import { 
+  Box, 
+  Typography, 
+  Grid, 
+  Button, 
+  Paper,
+  Tabs,
+  Tab,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Menu,
+  ListItemIcon
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from '@mui/icons-material/Search';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+
 import SummaryCard from "./FinanceiroComponents/SummaryCard.jsx";
 import FinanceTable from "./FinanceiroComponents/FinanceTable.jsx";
 import ItemDialog from "./FinanceiroComponents/ItemDialog.jsx";
 import ConfirmaDialog from "./FinanceiroComponents/ConfirmaDialog.jsx";
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`finance-tabpanel-${index}`}
+      aria-labelledby={`finance-tab-${index}`}
+      {...other}
+      style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} 
+    >
+      {value === index && (
+        <Box sx={{ pt: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
 const receitasData = [
-  { id: 1, descricao: "Internet", categoria: "Alunos", valor: 80.0 },
-  { id: 2, descricao: "Água", categoria: "Alunos", valor: 80.0 },
-  { id: 3, descricao: "Aluguel", categoria: "Outras", valor: 1200.0 },
-  { id: 4, descricao: "Salário Funcionário", categoria: "Alunos", valor: 80.0 },
-  { id: 5, descricao: "Energia", categoria: "Alunos", valor: 80.0 },
-  { id: 6, descricao: "Mensalidade", categoria: "Alunos", valor: 150.0 },
-  { id: 7, descricao: "Taxa Matrícula", categoria: "Alunos", valor: 50.0 },
-  { id: 8, descricao: "Venda de Suplemento", categoria: "Outras",valor: 250.0,},
-  { id: 9, descricao: "Mensalidade Extra", categoria: "Alunos", valor: 150.0 },
-  { id: 10, descricao: "Aulas Particulares", categoria: "Outras", valor: 300.0,},
-  { id: 11, descricao: "Doação", categoria: "Outras", valor: 20.0 },
-  { id: 12, descricao: "Consultoria", categoria: "Outras", valor: 100.0 },
-  { id: 13, descricao: "Mensalidade", categoria: "Alunos", valor: 150.0 },
+  { id: 1, nome: 'Mensalidade', data: '01/11/2025', descricao: "Ref. Gabriel", categoria: "Alunos", valor: 80.0, nome_aluno: "Gabriel P. Souza" },
+  { id: 2, nome: 'Mensalidade', data: '01/11/2025', descricao: "Ref. Ana Clara", categoria: "Alunos", valor: 80.0, nome_aluno: "Ana Clara Souza" },
+  { id: 3, nome: 'Aluguel Loja', data: '02/11/2025', descricao: "Aluguel Loja 03", categoria: "Outras", valor: 1200.0 },
+  { id: 6, nome: 'Mensalidade', data: '03/11/2025', descricao: "Ref. Júlia", categoria: "Alunos", valor: 150.0, nome_aluno: "Júlia A. Ribeiro" },
+  { id: 7, nome: 'Taxa Matrícula', data: '04/11/2025', descricao: "Taxa Matrícula - Gui", categoria: "Alunos", valor: 50.0, nome_aluno: "Guilherme S. Rodrigues" },
+  { id: 8, nome: 'Venda Suplemento', data: '05/11/2025', descricao: "Venda de Whey", categoria: "Outras", valor: 250.0 },
 ];
 
 const despesasData = [
-  { id: 1, descricao: "Mensalidade Aluno(a)", categoria: "Receita", valor: 120.0, },
-  { id: 2, descricao: "Água", categoria: "Despesa", valor: 100.0 },
-  { id: 3, descricao: "Aluguel", categoria: "Despesa", valor: 1200.0 },
-  { id: 4, descricao: "Mensalidade Aluno(a)", categoria: "Receita", valor: 120.0, },
-  { id: 5, descricao: "Energia", categoria: "Despesa", valor: 500.0 }, 
+  { id: 10, nome: 'Água', data: '02/11/2025', descricao: "Pagamento conta de água", categoria: "Contas Fixas", valor: 100.0 },
+  { id: 11, nome: 'Aluguel', data: '05/11/2025', descricao: "Pagamento aluguel", categoria: "Contas Fixas", valor: 1200.0 },
+  { id: 12, nome: 'Energia', data: '06/11/2025', descricao: "Pagamento conta de energia", categoria: "Contas Fixas", valor: 500.0 },
+  { id: 13, nome: 'Manutenção Esteira', data: '07/11/2025', descricao: "Concerto esteira 02", categoria: "Manutenção", valor: 350.0 },
+  { id: 14, nome: 'Compra Halteres', data: '08/11/2025', descricao: "Kit halteres 1-10kg", categoria: "Patrimônio", valor: 800.0 },
 ];
 
 export default function FinanceiroPage() {
   const [receitasPage, setReceitasPage] = useState(0);
   const [despesasPage, setDespesasPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const [currentItem, setCurrentItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isCurrentRecipe, setIsCurrentRecipe] = useState(true);
 
+  const [tabValue, setTabValue] = useState(0);
+  const [anchorElReport, setAnchorElReport] = useState(null);
+  const [receitaSearch, setReceitaSearch] = useState('');
+  const [receitaCategory, setReceitaCategory] = useState('Todas');
+  const [despesaSearch, setDespesaSearch] = useState('');
+  const [despesaCategory, setDespesaCategory] = useState('Todas');
+
+  const { receitasAlunos, outrasReceitas, despesas, resultado } = useMemo(() => {
+    const rAlunos = receitasData.filter(r => r.categoria === 'Alunos').reduce((acc, r) => acc + r.valor, 0);
+    const rOutras = receitasData.filter(r => r.categoria !== 'Alunos').reduce((acc, r) => acc + r.valor, 0);
+    const rDespesas = despesasData.reduce((acc, r) => acc + r.valor, 0);
+    const saldoTotal = rAlunos + rOutras - rDespesas;
+    return { 
+        receitasAlunos: `R$ ${rAlunos.toFixed(2).replace(".", ",")}`,
+        outrasReceitas: `R$ ${rOutras.toFixed(2).replace(".", ",")}`,
+        despesas: `R$ ${rDespesas.toFixed(2).replace(".", ",")}`,
+        resultado: `R$ ${saldoTotal.toFixed(2).replace(".", ",")}`
+    };
+  }, [receitasData, despesasData]);
+
   const handleReceitasPageChange = (event, newPage) => setReceitasPage(newPage);
   const handleDespesasPageChange = (event, newPage) => setDespesasPage(newPage);
-  const handleRowsPerPageChange = (event) => {
+  const handleRowsPerPageChange = (event) => { // Simplificado
     setRowsPerPage(+event.target.value);
     setReceitasPage(0);
     setDespesasPage(0);
@@ -54,23 +109,19 @@ export default function FinanceiroPage() {
     setCurrentItem(null);
     setIsAddDialogOpen(true);
   };
-
   const handleEdit = (item, isRecipe) => {
     setIsCurrentRecipe(isRecipe);
     setCurrentItem(item);
     setIsEditDialogOpen(true);
   };
-
   const handleDelete = (id, isRecipe) => {
     setItemToDelete({ id, type: isRecipe ? "Receita" : "Despesa" });
     setIsDeleteDialogOpen(true);
   };
-
   const confirmDelete = () => {
     console.log(`Excluindo ${itemToDelete.type} com ID: ${itemToDelete.id}`);
     handleCloseDialogs();
   };
-
   const handleCloseDialogs = () => {
     setIsAddDialogOpen(false);
     setIsEditDialogOpen(false);
@@ -78,19 +129,104 @@ export default function FinanceiroPage() {
     setCurrentItem(null);
     setItemToDelete(null);
   };
-
   const handleSaveNewItem = (data) => {
     console.log(`Salvando NOVA Transação (${data.type}):`, data);
     handleCloseDialogs();
   };
-
   const handleUpdateItem = (data) => {
     console.log(
-      `Atualizando Transação (${data.type}) com ID ${currentItem.id}:`,
+      `Atualizando Transação (${data.type}) com ID ${currentItem?.id}:`,
       data
     );
     handleCloseDialogs();
   };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  const handleReportMenuClick = (event) => setAnchorElReport(event.currentTarget);
+  const handleReportMenuClose = () => setAnchorElReport(null);
+  const handleDownloadReport = async (reportType) => {
+      handleReportMenuClose();
+      let dataToExport = [];
+      let reportTitle = "Relatório Financeiro";
+      let headers = ['ID', 'Nome', 'Categoria', 'Aluno', 'Data', 'Descrição', 'Valor (R$)'];
+      let columnWidths = [50, 120, 100, 150, 80, 150, 100];
+      
+      const allData = [
+          ...receitasData.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`})), 
+          ...despesasData.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}))
+      ];
+
+      switch(reportType) {
+          case 'receitas':
+              dataToExport = receitasData.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`}));
+              reportTitle = "Relatório de Receitas";
+              break;
+          case 'despesas':
+              dataToExport = despesasData.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}));
+              reportTitle = "Relatório de Despesas";
+              break;
+          case 'completo':
+          default:
+              dataToExport = allData;
+              reportTitle = "Relatório Financeiro Completo";
+              break;
+      }
+      
+      const reportOptions = {
+          title: reportTitle,
+          defaultFileName: `relatorio_financeiro_${reportType}.pdf`,
+          headers: headers,
+          columnWidths: columnWidths, 
+          data: dataToExport.map(row => [
+              row.id,
+              row.nome || '-',
+              row.categoria || '-',
+              row.nome_aluno || '-',
+              row.data || '-', 
+              row.descricao || '-',
+              row.valorStr
+          ])
+      };
+
+      try {
+          const result = await window.electronAPI.generateReport(reportOptions);
+          if (result.success) {
+              alert(`Relatório salvo com sucesso em:\n${result.path}`);
+          } else if (result.error !== 'Save dialog canceled') {
+              alert(`Falha ao salvar relatório: ${result.error}`);
+          }
+      } catch (error) {
+          alert(`Erro ao gerar relatório: ${error.message}`);
+      }
+  };
+
+  const filteredReceitas = useMemo(() => {
+    let temp = receitasData;
+    if (receitaCategory !== 'Todas') {
+      temp = temp.filter(r => r.categoria === receitaCategory);
+    }
+    if (receitaSearch) {
+      const search = receitaSearch.toLowerCase();
+      temp = temp.filter(r => r.nome.toLowerCase().includes(search) || r.descricao.toLowerCase().includes(search));
+    }
+    return temp;
+  }, [receitasData, receitaSearch, receitaCategory]);
+
+  const filteredDespesas = useMemo(() => {
+    let temp = despesasData;
+    if (despesaCategory !== 'Todas') {
+      temp = temp.filter(d => d.categoria === despesaCategory);
+    }
+    if (despesaSearch) {
+      const search = despesaSearch.toLowerCase();
+      temp = temp.filter(d => d.nome.toLowerCase().includes(search) || d.descricao.toLowerCase().includes(search));
+    }
+    return temp;
+  }, [despesasData, despesaSearch, despesaCategory]);
+
 
   return (
     <Paper
@@ -104,96 +240,158 @@ export default function FinanceiroPage() {
         backgroundColor: "transparent",
       }}
     >
-      <Typography
-        variant="h4"
-        component="h1"
-        gutterBottom
-        sx={{ fontWeight: "bold", mb: 4 }}
-      >
-        Financeiro
-      </Typography>
-
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard
-            title="RECEITAS DE ALUNOS"
-            value="R$ 15.200"
-            isGreen={true}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard title="OUTRAS RECEITAS" value="R$ 10.000" />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard title="DESPESAS (MÊS)" value="R$ 4.200" isRed={true} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard title="RESULTADO" value="R$ 25.200" />
-        </Grid>
-      </Grid>
-
-      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mb: 4 }}>
-        <Button
-          variant="contained"
-          endIcon={<AddIcon />}
-          onClick={() => handleOpenAdd(false)}
-          sx={{
-            backgroundColor: "#F2D95C",
-            color: "black",
-            fontWeight: "normal",
-            borderRadius: "50px",
-            "&:hover": { backgroundColor: "#e0c850" },
-          }}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2 }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{ fontWeight: "bold" }}
         >
-          REGISTRAR DESPESA
-        </Button>
+          Financeiro
+        </Typography>
+        
         <Button
-          variant="contained"
-          endIcon={<AddIcon />}
-          onClick={() => handleOpenAdd(true)}
-          sx={{
-            backgroundColor: "#F2D95C",
-            color: "black",
-            fontWeight: "normal",
-            borderRadius: "50px",
-            "&:hover": { backgroundColor: "#e0c850" },
-          }}
+            variant="outlined"
+            onClick={handleReportMenuClick}
+            endIcon={<ArrowDropDownIcon />}
+            sx={{
+                color: 'text.secondary',
+                borderColor: 'grey.400',
+                fontWeight: 'bold',
+                borderRadius: '25px',
+                textTransform: 'uppercase'
+            }}
         >
-          REGISTRAR RECEITA
+            Relatórios
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <FinanceTable
-            title="Receitas"
-            rows={receitasData}
-            isRecipe={true}
-            page={receitasPage}
-            rowsPerPage={rowsPerPage}
-            count={receitasData.length}
-            onPageChange={handleReceitasPageChange}
-            onRowsPerPageChange={handleRowsPerPageChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </Grid>
+      <Box sx={{ width: '100%', flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={tabValue} onChange={handleTabChange} aria-label="Abas do financeiro">
+            <Tab label="Visão Geral" id="finance-tab-0" />
+            <Tab label="Receitas" id="finance-tab-1" />
+            <Tab label="Despesas" id="finance-tab-2" />
+          </Tabs>
+        </Box>
 
-        <Grid item xs={12} md={6}>
-          <FinanceTable
-            title="Despesas"
-            rows={despesasData}
-            isRecipe={false}
-            page={despesasPage}
-            rowsPerPage={rowsPerPage}
-            count={despesasData.length}
-            onPageChange={handleDespesasPageChange}
-            onRowsPerPageChange={handleRowsPerPageChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </Grid>
-      </Grid>
+        <TabPanel value={tabValue} index={0}>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <SummaryCard
+                title="RECEITAS DE ALUNOS"
+                value={receitasAlunos}
+                isGreen={true}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <SummaryCard title="OUTRAS RECEITAS" value={outrasReceitas} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <SummaryCard title="DESPESAS (MÊS)" value={despesas} isRed={true} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <SummaryCard title="RESULTADO" value={resultado} isGreen={parseFloat(resultado.replace('R$ ', '').replace('.', '').replace(',', '.')) >= 0} isRed={parseFloat(resultado.replace('R$ ', '').replace('.', '').replace(',', '.')) < 0} />
+            </Grid>
+          </Grid>
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={1}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1, minHeight: 0 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, mb: 0, flex: '0 0 auto' }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                      size="small"
+                      placeholder="Pesquisar em receitas..."
+                      value={receitaSearch}
+                      onChange={(e) => setReceitaSearch(e.target.value)}
+                      InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>)}}
+                      sx={{ width: '300px' }}
+                  />
+                  <FormControl size="small" sx={{ minWidth: 180 }}>
+                      <InputLabel>Categoria</InputLabel>
+                      <Select value={receitaCategory} label="Categoria" onChange={(e) => setReceitaCategory(e.target.value)}>
+                          <MenuItem value="Todas">Todas</MenuItem>
+                          <MenuItem value="Alunos">Alunos</MenuItem>
+                          <MenuItem value="Outras">Outras</MenuItem>
+                      </Select>
+                  </FormControl>
+              </Box>
+              <Button
+                variant="contained"
+                endIcon={<AddIcon />}
+                onClick={() => handleOpenAdd(true)}
+                sx={{ backgroundColor: "#F2D95C", color: "black", fontWeight: "bold", borderRadius: "50px", "&:hover": { backgroundColor: "#e0c850" }, textTransform: 'uppercase', flex: '0 0 auto' }}
+              >
+                Registrar Receita
+              </Button>
+            </Box>
+
+            <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+              <FinanceTable
+                title=""
+                rows={filteredReceitas}
+                isRecipe={true}
+                page={receitasPage}
+                rowsPerPage={rowsPerPage}
+                count={filteredReceitas.length}
+                onPageChange={handleReceitasPageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </Box>
+          </Box>
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={2}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1, minHeight: 0 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, mb: 0, flex: '0 0 auto' }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                      size="small"
+                      placeholder="Pesquisar em despesas..."
+                      value={despesaSearch}
+                      onChange={(e) => setDespesaSearch(e.target.value)}
+                      InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>)}}
+                      sx={{ width: '300px' }}
+                  />
+                  <FormControl size="small" sx={{ minWidth: 180 }}>
+                      <InputLabel>Categoria</InputLabel>
+                      <Select value={despesaCategory} label="Categoria" onChange={(e) => setDespesaCategory(e.target.value)}>
+                          <MenuItem value="Todas">Todas</MenuItem>
+                          <MenuItem value="Contas Fixas">Contas Fixas</MenuItem>
+                          <MenuItem value="Patrimônio">Patrimônio</MenuItem>
+                          <MenuItem value="Manutenção">Manutenção</MenuItem>
+                      </Select>
+                  </FormControl>
+              </Box>
+              <Button
+                variant="contained"
+                endIcon={<AddIcon />}
+                onClick={() => handleOpenAdd(false)}
+                sx={{ backgroundColor: "#F2D95C", color: "black", fontWeight: "bold", borderRadius: "50px", "&:hover": { backgroundColor: "#e0c850" }, textTransform: 'uppercase', flex: '0 0 auto' }}
+              >
+                Registrar Despesa
+              </Button>
+            </Box>
+
+            <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+              <FinanceTable
+                title=""
+                rows={filteredDespesas}
+                isRecipe={false}
+                page={despesasPage}
+                rowsPerPage={rowsPerPage}
+                count={filteredDespesas.length}
+                onPageChange={handleDespesasPageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </Box>
+          </Box>
+        </TabPanel>
+      </Box>
 
       <ItemDialog
         open={isAddDialogOpen}
@@ -202,7 +400,6 @@ export default function FinanceiroPage() {
         title={`Adicionar ${isCurrentRecipe ? "Receita" : "Despesa"}`}
         isRecipe={isCurrentRecipe}
       />
-
       <ItemDialog
         open={isEditDialogOpen}
         onClose={handleCloseDialogs}
@@ -211,13 +408,32 @@ export default function FinanceiroPage() {
         itemToEdit={currentItem}
         isRecipe={isCurrentRecipe}
       />
-
       <ConfirmaDialog
         open={isDeleteDialogOpen}
         onClose={handleCloseDialogs}
         onConfirm={confirmDelete}
         title={`Tem certeza que deseja excluir esta ${itemToDelete ? itemToDelete.type.toLowerCase() : "transação"}?`}
       />
+      <Menu
+          anchorEl={anchorElReport}
+          open={Boolean(anchorElReport)}
+          onClose={handleReportMenuClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      >
+          <MenuItem onClick={() => handleDownloadReport('completo')}>
+              <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
+              Relatório Completo (PDF)
+          </MenuItem>
+          <MenuItem onClick={() => handleDownloadReport('receitas')}>
+              <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
+              Relatório de Receitas
+          </MenuItem>
+          <MenuItem onClick={() => handleDownloadReport('despesas')}>
+              <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
+              Relatório de Despesas
+          </MenuItem>
+      </Menu>
     </Paper>
   );
 }
