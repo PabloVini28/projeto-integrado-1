@@ -19,8 +19,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import FinanceTable from "./FinanceiroComponents/FinanceTable.jsx";
 import ItemDialog from "./FinanceiroComponents/ItemDialog.jsx";
 import ConfirmaDialog from "./FinanceiroComponents/ConfirmaDialog.jsx";
-import VisaoGeralPainel from "./FinanceiroComponents/VisaoGeralPainel.jsx"; // Importa o componente 1
-import MenuRelatorios from "./FinanceiroComponents/MenuRelatorios.jsx"; // Importa o componente 2
+import VisaoGeralPainel from "./FinanceiroComponents/VisaoGeralPainel.jsx";
+import MenuRelatorios from "./FinanceiroComponents/MenuRelatorios.jsx";
 
 
 function TabPanel(props) {
@@ -40,46 +40,76 @@ function TabPanel(props) {
   );
 }
 
+const parseDateString = (dateStr) => {
+    const [day, month, year] = dateStr.split('/').map(Number);
+    return new Date(year, month - 1, day);
+};
+
+const formatDateToInput = (date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    return `${year}-${month}`;
+};
+
+
 const receitasData = [
   { id: 1, nome: 'Mensalidade', data: '01/11/2025', descricao: "Ref. Gabriel", categoria: "Alunos", valor: 80.0, nome_aluno: "Gabriel P. Souza" },
   { id: 2, nome: 'Mensalidade', data: '01/11/2025', descricao: "Ref. Ana Clara", categoria: "Alunos", valor: 80.0, nome_aluno: "Ana Clara Souza" },
   { id: 3, nome: 'Aluguel Loja', data: '02/11/2025', descricao: "Aluguel Loja 03", categoria: "Outras", valor: 1200.0 },
   { id: 6, nome: 'Mensalidade', data: '03/11/2025', descricao: "Ref. Júlia", categoria: "Alunos", valor: 150.0, nome_aluno: "Júlia A. Ribeiro" },
-  { id: 7, nome: 'Taxa Matrícula', data: '04/11/2025', descricao: "Taxa Matrícula - Gui", categoria: "Alunos", valor: 50.0, nome_aluno: "Guilherme S. Rodrigues" },
-  { id: 8, nome: 'Venda Suplemento', data: '05/11/2025', descricao: "Venda de Whey", categoria: "Outras", valor: 250.0 },
+  { id: 9, nome: 'Mensalidade', data: '01/10/2025', descricao: "Ref. Gabriel (Mês Antigo)", categoria: "Alunos", valor: 80.0, nome_aluno: "Gabriel P. Souza" },
 ];
 
 const despesasData = [
   { id: 10, nome: 'Água', data: '02/11/2025', descricao: "Pagamento conta de água", categoria: "Contas Fixas", valor: 100.0 },
   { id: 11, nome: 'Aluguel', data: '05/11/2025', descricao: "Pagamento aluguel", categoria: "Contas Fixas", valor: 1200.0 },
   { id: 12, nome: 'Energia', data: '06/11/2025', descricao: "Pagamento conta de energia", categoria: "Contas Fixas", valor: 500.0 },
-  { id: 13, nome: 'Manutenção Esteira', data: '07/11/2025', descricao: "Concerto esteira 02", categoria: "Manutenção", valor: 350.0 },
-  { id: 14, nome: 'Compra Halteres', data: '08/11/2025', descricao: "Kit halteres 1-10kg", categoria: "Patrimônio", valor: 800.0 },
+  { id: 15, nome: 'Energia', data: '06/10/2025', descricao: "Pagamento conta de energia (Mês Antigo)", categoria: "Contas Fixas", valor: 480.0 },
 ];
 
 export default function FinanceiroPage() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [receitasPage, setReceitasPage] = useState(0);
   const [despesasPage, setDespesasPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
   const [currentItem, setCurrentItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isCurrentRecipe, setIsCurrentRecipe] = useState(true);
-
   const [tabValue, setTabValue] = useState(0);
   const [receitaSearch, setReceitaSearch] = useState('');
   const [receitaCategory, setReceitaCategory] = useState('Todas');
   const [despesaSearch, setDespesaSearch] = useState('');
   const [despesaCategory, setDespesaCategory] = useState('Todas');
 
+
+  const receitasDoMes = useMemo(() => {
+    const selectedMonth = selectedDate.getMonth();
+    const selectedYear = selectedDate.getFullYear();
+    
+    return receitasData.filter(item => {
+        const itemDate = parseDateString(item.data);
+        return itemDate.getMonth() === selectedMonth && itemDate.getFullYear() === selectedYear;
+    });
+  }, [receitasData, selectedDate]);
+
+  const despesasDoMes = useMemo(() => {
+    const selectedMonth = selectedDate.getMonth();
+    const selectedYear = selectedDate.getFullYear();
+    
+    return despesasData.filter(item => {
+        const itemDate = parseDateString(item.data);
+        return itemDate.getMonth() === selectedMonth && itemDate.getFullYear() === selectedYear;
+    });
+  }, [despesasData, selectedDate]);
+
+
   const { receitasAlunos, outrasReceitas, despesas, resultado } = useMemo(() => {
-    const rAlunos = receitasData.filter(r => r.categoria === 'Alunos').reduce((acc, r) => acc + r.valor, 0);
-    const rOutras = receitasData.filter(r => r.categoria !== 'Alunos').reduce((acc, r) => acc + r.valor, 0);
-    const rDespesas = despesasData.reduce((acc, r) => acc + r.valor, 0);
+    const rAlunos = receitasDoMes.filter(r => r.categoria === 'Alunos').reduce((acc, r) => acc + r.valor, 0);
+    const rOutras = receitasDoMes.filter(r => r.categoria !== 'Alunos').reduce((acc, r) => acc + r.valor, 0);
+    const rDespesas = despesasDoMes.reduce((acc, r) => acc + r.valor, 0);
     const saldoTotal = rAlunos + rOutras - rDespesas;
     return { 
         receitasAlunos: `R$ ${rAlunos.toFixed(2).replace(".", ",")}`,
@@ -87,7 +117,33 @@ export default function FinanceiroPage() {
         despesas: `R$ ${rDespesas.toFixed(2).replace(".", ",")}`,
         resultado: `R$ ${saldoTotal.toFixed(2).replace(".", ",")}`
     };
-  }, [receitasData, despesasData]);
+  }, [receitasDoMes, despesasDoMes]);
+
+
+  const filteredReceitas = useMemo(() => {
+    let temp = receitasDoMes;
+    if (receitaCategory !== 'Todas') {
+      temp = temp.filter(r => r.categoria === receitaCategory);
+    }
+    if (receitaSearch) {
+      const search = receitaSearch.toLowerCase();
+      temp = temp.filter(r => r.nome.toLowerCase().includes(search) || r.descricao.toLowerCase().includes(search));
+    }
+    return temp;
+  }, [receitasDoMes, receitaSearch, receitaCategory]);
+
+  const filteredDespesas = useMemo(() => {
+    let temp = despesasDoMes;
+    if (despesaCategory !== 'Todas') {
+      temp = temp.filter(d => d.categoria === despesaCategory);
+    }
+    if (despesaSearch) {
+      const search = despesaSearch.toLowerCase();
+      temp = temp.filter(d => d.nome.toLowerCase().includes(search) || d.descricao.toLowerCase().includes(search));
+    }
+    return temp;
+  }, [despesasDoMes, despesaSearch, despesaCategory]);
+
 
   const handleReceitasPageChange = (event, newPage) => setReceitasPage(newPage);
   const handleDespesasPageChange = (event, newPage) => setDespesasPage(newPage);
@@ -127,10 +183,7 @@ export default function FinanceiroPage() {
     handleCloseDialogs();
   };
   const handleUpdateItem = (data) => {
-    console.log(
-      `Atualizando Transação (${data.type}) com ID ${currentItem?.id}:`,
-      data
-    );
+    console.log(`Atualizando Transação (${data.type}) com ID ${currentItem?.id}:`, data);
     handleCloseDialogs();
   };
 
@@ -138,37 +191,50 @@ export default function FinanceiroPage() {
     setTabValue(newValue);
   };
 
-  
+  const handleDateChange = (event) => {
+      const dateString = event.target.value;
+      if (dateString) {
+          const [year, month] = dateString.split('-').map(Number);
+          setSelectedDate(new Date(year, month - 1, 1));
+      } else {
+          setSelectedDate(new Date());
+      }
+  };
+
+
   const handleDownloadReport = async (reportType) => {
+      const mesAno = selectedDate.toLocaleString('pt-BR', { month: '2-digit', year: 'numeric' });
+      const mesAnoArquivo = mesAno.replace('/', '-');
+
       let dataToExport = [];
-      let reportTitle = "Relatório Financeiro";
+      let reportTitle = `Relatório Financeiro (${mesAno})`;
       let headers = ['ID', 'Nome', 'Categoria', 'Aluno', 'Data', 'Descrição', 'Valor (R$)'];
       let columnWidths = [50, 120, 100, 150, 80, 150, 100];
       
       const allData = [
-          ...receitasData.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`})), 
-          ...despesasData.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}))
+          ...receitasDoMes.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`})), 
+          ...despesasDoMes.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}))
       ];
 
       switch(reportType) {
           case 'receitas':
-              dataToExport = receitasData.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`}));
-              reportTitle = "Relatório de Receitas";
+              dataToExport = receitasDoMes.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`}));
+              reportTitle = `Relatório de Receitas (${mesAno})`;
               break;
           case 'despesas':
-              dataToExport = despesasData.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}));
-              reportTitle = "Relatório de Despesas";
+              dataToExport = despesasDoMes.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}));
+              reportTitle = `Relatório de Despesas (${mesAno})`;
               break;
           case 'completo':
           default:
               dataToExport = allData;
-              reportTitle = "Relatório Financeiro Completo";
+              reportTitle = `Relatório Financeiro Completo (${mesAno})`;
               break;
       }
       
       const reportOptions = {
           title: reportTitle,
-          defaultFileName: `relatorio_financeiro_${reportType}.pdf`,
+          defaultFileName: `relatorio_financeiro_${reportType}_${mesAnoArquivo}.pdf`,
           headers: headers,
           columnWidths: columnWidths, 
           data: dataToExport.map(row => [
@@ -189,30 +255,6 @@ export default function FinanceiroPage() {
       }
   };
 
-  const filteredReceitas = useMemo(() => {
-    let temp = receitasData;
-    if (receitaCategory !== 'Todas') {
-      temp = temp.filter(r => r.categoria === receitaCategory);
-    }
-    if (receitaSearch) {
-      const search = receitaSearch.toLowerCase();
-      temp = temp.filter(r => r.nome.toLowerCase().includes(search) || r.descricao.toLowerCase().includes(search));
-    }
-    return temp;
-  }, [receitasData, receitaSearch, receitaCategory]);
-
-  const filteredDespesas = useMemo(() => {
-    let temp = despesasData;
-    if (despesaCategory !== 'Todas') {
-      temp = temp.filter(d => d.categoria === despesaCategory);
-    }
-    if (despesaSearch) {
-      const search = despesaSearch.toLowerCase();
-      temp = temp.filter(d => d.nome.toLowerCase().includes(search) || d.descricao.toLowerCase().includes(search));
-    }
-    return temp;
-  }, [despesasData, despesaSearch, despesaCategory]);
-
 
   return (
     <Paper
@@ -226,7 +268,14 @@ export default function FinanceiroPage() {
         backgroundColor: "transparent",
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2 }}>
+      
+      <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'baseline', 
+          mb: 2, 
+          gap: 2 
+        }}>
         <Typography
           variant="h4"
           component="h1"
@@ -235,13 +284,23 @@ export default function FinanceiroPage() {
           Financeiro
         </Typography>
         
-        
-        <MenuRelatorios
-          onDownloadCompleto={() => handleDownloadReport('completo')}
-          onDownloadReceitas={() => handleDownloadReport('receitas')}
-          onDownloadDespesas={() => handleDownloadReport('despesas')}
-        />
-
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <TextField
+                label="Mês/Ano"
+                type="month"
+                size="small"
+                value={formatDateToInput(selectedDate)}
+                onChange={handleDateChange}
+                InputLabelProps={{
+                    shrink: true,
+                }}
+            />
+            <MenuRelatorios
+              onDownloadCompleto={() => handleDownloadReport('completo')}
+              onDownloadReceitas={() => handleDownloadReport('receitas')}
+              onDownloadDespesas={() => handleDownloadReport('despesas')}
+            />
+        </Box>
       </Box>
 
       <Box sx={{ width: '100%', flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -360,7 +419,6 @@ export default function FinanceiroPage() {
         </TabPanel>
       </Box>
 
-      {/* Dialogs */}
       <ItemDialog
         open={isAddDialogOpen}
         onClose={handleCloseDialogs}
