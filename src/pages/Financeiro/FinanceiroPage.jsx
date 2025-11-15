@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { 
   Box, 
   Typography, 
-  Grid, 
   Button, 
   Paper,
   Tabs,
@@ -21,10 +20,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-import SummaryCard from "./FinanceiroComponents/SummaryCard.jsx";
 import FinanceTable from "./FinanceiroComponents/FinanceTable.jsx";
 import ItemDialog from "./FinanceiroComponents/ItemDialog.jsx";
 import ConfirmaDialog from "./FinanceiroComponents/ConfirmaDialog.jsx";
+import VisaoGeralPainel from "./FinanceiroComponents/VisaoGeralPainel.jsx"; // Importa o novo componente
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -35,13 +34,10 @@ function TabPanel(props) {
       id={`finance-tabpanel-${index}`}
       aria-labelledby={`finance-tab-${index}`}
       {...other}
-      style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} 
     >
-      {value === index && (
-        <Box sx={{ pt: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {children}
-        </Box>
-      )}
+      <Box sx={{ pt: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        {children}
+      </Box>
     </div>
   );
 }
@@ -98,7 +94,7 @@ export default function FinanceiroPage() {
 
   const handleReceitasPageChange = (event, newPage) => setReceitasPage(newPage);
   const handleDespesasPageChange = (event, newPage) => setDespesasPage(newPage);
-  const handleRowsPerPageChange = (event) => { // Simplificado
+  const handleRowsPerPageChange = (event) => {
     setRowsPerPage(+event.target.value);
     setReceitasPage(0);
     setDespesasPage(0);
@@ -181,13 +177,8 @@ export default function FinanceiroPage() {
           headers: headers,
           columnWidths: columnWidths, 
           data: dataToExport.map(row => [
-              row.id,
-              row.nome || '-',
-              row.categoria || '-',
-              row.nome_aluno || '-',
-              row.data || '-', 
-              row.descricao || '-',
-              row.valorStr
+              row.id, row.nome || '-', row.categoria || '-', row.nome_aluno || '-',
+              row.data || '-', row.descricao || '-', row.valorStr
           ])
       };
 
@@ -275,24 +266,12 @@ export default function FinanceiroPage() {
         </Box>
 
         <TabPanel value={tabValue} index={0}>
-          <Grid container spacing={3} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <SummaryCard
-                title="RECEITAS DE ALUNOS"
-                value={receitasAlunos}
-                isGreen={true}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <SummaryCard title="OUTRAS RECEITAS" value={outrasReceitas} />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <SummaryCard title="DESPESAS (MÊS)" value={despesas} isRed={true} />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <SummaryCard title="RESULTADO" value={resultado} isGreen={parseFloat(resultado.replace('R$ ', '').replace('.', '').replace(',', '.')) >= 0} isRed={parseFloat(resultado.replace('R$ ', '').replace('.', '').replace(',', '.')) < 0} />
-            </Grid>
-          </Grid>
+          <VisaoGeralPainel
+            receitasAlunos={receitasAlunos}
+            outrasReceitas={outrasReceitas}
+            despesas={despesas}
+            resultado={resultado}
+          />
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
@@ -414,6 +393,7 @@ export default function FinanceiroPage() {
         onConfirm={confirmDelete}
         title={`Tem certeza que deseja excluir esta ${itemToDelete ? itemToDelete.type.toLowerCase() : "transação"}?`}
       />
+
       <Menu
           anchorEl={anchorElReport}
           open={Boolean(anchorElReport)}
