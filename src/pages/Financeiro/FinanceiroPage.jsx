@@ -11,19 +11,17 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  Menu,
-  ListItemIcon
+  MenuItem 
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from '@mui/icons-material/Search';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 import FinanceTable from "./FinanceiroComponents/FinanceTable.jsx";
 import ItemDialog from "./FinanceiroComponents/ItemDialog.jsx";
 import ConfirmaDialog from "./FinanceiroComponents/ConfirmaDialog.jsx";
-import VisaoGeralPainel from "./FinanceiroComponents/VisaoGeralPainel.jsx"; // Importa o novo componente
+import VisaoGeralPainel from "./FinanceiroComponents/VisaoGeralPainel.jsx"; // Importa o componente 1
+import MenuRelatorios from "./FinanceiroComponents/MenuRelatorios.jsx"; // Importa o componente 2
+
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -73,7 +71,6 @@ export default function FinanceiroPage() {
   const [isCurrentRecipe, setIsCurrentRecipe] = useState(true);
 
   const [tabValue, setTabValue] = useState(0);
-  const [anchorElReport, setAnchorElReport] = useState(null);
   const [receitaSearch, setReceitaSearch] = useState('');
   const [receitaCategory, setReceitaCategory] = useState('Todas');
   const [despesaSearch, setDespesaSearch] = useState('');
@@ -141,10 +138,8 @@ export default function FinanceiroPage() {
     setTabValue(newValue);
   };
 
-  const handleReportMenuClick = (event) => setAnchorElReport(event.currentTarget);
-  const handleReportMenuClose = () => setAnchorElReport(null);
+  
   const handleDownloadReport = async (reportType) => {
-      handleReportMenuClose();
       let dataToExport = [];
       let reportTitle = "Relatório Financeiro";
       let headers = ['ID', 'Nome', 'Categoria', 'Aluno', 'Data', 'Descrição', 'Valor (R$)'];
@@ -240,20 +235,13 @@ export default function FinanceiroPage() {
           Financeiro
         </Typography>
         
-        <Button
-            variant="outlined"
-            onClick={handleReportMenuClick}
-            endIcon={<ArrowDropDownIcon />}
-            sx={{
-                color: 'text.secondary',
-                borderColor: 'grey.400',
-                fontWeight: 'bold',
-                borderRadius: '25px',
-                textTransform: 'uppercase'
-            }}
-        >
-            Relatórios
-        </Button>
+        
+        <MenuRelatorios
+          onDownloadCompleto={() => handleDownloadReport('completo')}
+          onDownloadReceitas={() => handleDownloadReport('receitas')}
+          onDownloadDespesas={() => handleDownloadReport('despesas')}
+        />
+
       </Box>
 
       <Box sx={{ width: '100%', flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -372,6 +360,7 @@ export default function FinanceiroPage() {
         </TabPanel>
       </Box>
 
+      {/* Dialogs */}
       <ItemDialog
         open={isAddDialogOpen}
         onClose={handleCloseDialogs}
@@ -394,26 +383,6 @@ export default function FinanceiroPage() {
         title={`Tem certeza que deseja excluir esta ${itemToDelete ? itemToDelete.type.toLowerCase() : "transação"}?`}
       />
 
-      <Menu
-          anchorEl={anchorElReport}
-          open={Boolean(anchorElReport)}
-          onClose={handleReportMenuClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-      >
-          <MenuItem onClick={() => handleDownloadReport('completo')}>
-              <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
-              Relatório Completo (PDF)
-          </MenuItem>
-          <MenuItem onClick={() => handleDownloadReport('receitas')}>
-              <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
-              Relatório de Receitas
-          </MenuItem>
-          <MenuItem onClick={() => handleDownloadReport('despesas')}>
-              <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
-              Relatório de Despesas
-          </MenuItem>
-      </Menu>
     </Paper>
   );
 }
