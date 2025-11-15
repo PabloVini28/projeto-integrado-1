@@ -7,7 +7,9 @@ import {
 } from '@mui/material';
 import {
   PersonOutline, DescriptionOutlined, AdminPanelSettingsOutlined,
-  ChevronRight, Add, Edit, Delete, NavigateNext
+  ChevronRight, Add, Edit, Delete, NavigateNext,
+  BadgeOutlined, 
+  MailOutline 
 } from '@mui/icons-material';
 
 import AdminArea from './ConfigComponents/AdminArea';
@@ -34,7 +36,7 @@ const grayButtonSx = {
 
 const mockUserAdmin = {
   id: 5,
-  nome: "Kelton Martins",
+  nome: "Kelton Martins Nojosa de Oliveira",
   matricula: "123456",
   cpf: "123.456.789-00",
   email: "kelton@admin.com",
@@ -50,7 +52,7 @@ const mockUserFuncionario = {
 };
 
 const mockFuncionarios = [
-  { id: 1, nome: "Julio Mateus Morais", cpf: "156.476.239-00", matricula: "123456", email: "julio@email.com", role: 'FUNCIONARIO' },
+  { id: 1, nome: "Julio Mateus Morais", cpf: "156.476.239-00", matricula: "123456", email: "eujuliomateusmorais@email.com", role: 'FUNCIONARIO' },
   { id: 2, nome: "Pablo", cpf: "987.654.321-00", matricula: "147897", email: "pablo@email.com", role: 'FUNCIONARIO' },
   { id: 3, nome: "Guilherme pinheiro", cpf: "123.783.456-00", matricula: "123783", email: "gui@email.com", role: 'FUNCIONARIO' },
   { id: 4, nome: "Victor", cpf: "192.845.678-00", matricula: "192845", email: "victor@email.com", role: 'FUNCIONARIO' },
@@ -371,11 +373,26 @@ export default function ConfigPage() {
       <Typography variant="h5"  mb={2}>Acesso</Typography>
       <Paper 
         variant="outlined" 
-        sx={{ p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}
+        sx={{ p: 3, borderRadius: 2 }} 
       >
-        <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
-        <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
-        <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
+        {/* Alterado 'spacing' para 'rowSpacing={4}' e 'columnSpacing={2}' */}
+        <Grid container rowSpacing={4} columnSpacing={2}>
+          <Grid item xs={12} sm={6} md={4}>
+            <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <InfoItem icon={<BadgeOutlined />} title="CPF:" value={user.cpf} /> 
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <InfoItem icon={<MailOutline />} title="E-mail:" value={user.email} /> 
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
+          </Grid>
+        </Grid>
       </Paper>
 
       <Box mb={3} mt={5}> 
