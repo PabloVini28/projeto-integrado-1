@@ -68,7 +68,6 @@ export default function PatrimonioPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
-    // <<< MUDANÇA 1: Estado para guardar o texto da pesquisa
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleChangePage = (event, newPage) => {
@@ -181,6 +180,15 @@ export default function PatrimonioPage() {
         return isValid(d) ? format(d, 'dd/MM/yyyy') : '';
     };
 
+    const displayStatus = (s) => {
+        if (!s) return '';
+        const v = String(s).toLowerCase();
+        if (v === 'ativo') return 'Ativo';
+        if (v === 'inativo') return 'Inativo';
+        if (v === 'em manutenção' || v === 'em manutencao') return 'Em manutenção';
+        return v.charAt(0).toUpperCase() + v.slice(1);
+    };
+
 
     return (
         <Paper
@@ -200,8 +208,8 @@ export default function PatrimonioPage() {
                 <TextField
                     size="small"
                     placeholder="Pesquisa por nome ou Código"
-                    value={searchTerm} // Controla o valor
-                    onChange={handleSearchChange} // Atualiza o estado
+                    value={searchTerm}
+                    onChange={handleSearchChange}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
@@ -278,6 +286,8 @@ export default function PatrimonioPage() {
                                                     </Box>
                                                 ) : column.id === 'dataAquisicao' ? (
                                                     formatDateValue(value)
+                                                ) : column.id === 'status' ? (
+                                                    displayStatus(value)
                                                 ) : (
                                                     value
                                                 )}
@@ -293,7 +303,6 @@ export default function PatrimonioPage() {
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
                 component="div"
-                // <<< MUDANÇA 5: Usar o 'count' da lista filtrada
                 count={filteredRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
