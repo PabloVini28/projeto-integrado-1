@@ -312,7 +312,7 @@ export default function FinanceiroPage() {
                 variant="contained"
                 endIcon={<AddIcon />}
                 onClick={() => handleOpenAdd(true)}
-                sx={{ backgroundColor: "#F2D95C", color: "black", fontWeight: "bold", borderRadius: "50px", "&:hover": { backgroundColor: "#e0c850" }, textTransform: 'uppercase', flex: '0 0 auto' }}
+                sx={{ backgroundColor: "#F2D95C", color: "black", fontWeight: "normal", borderRadius: "50px", "&:hover": { backgroundColor: "#e0c850" }, textTransform: 'uppercase', flex: '0 0 auto' }}
               >
                 Registrar Receita
               </Button>
@@ -365,7 +365,7 @@ export default function FinanceiroPage() {
                 variant="contained"
                 endIcon={<AddIcon />}
                 onClick={() => handleOpenAdd(false)}
-                sx={{ backgroundColor: "#F2D95C", color: "black", fontWeight: "bold", borderRadius: "50px", "&:hover": { backgroundColor: "#e0c850" }, textTransform: 'uppercase', flex: '0 0 auto' }}
+                sx={{ backgroundColor: "#F2D95C", color: "black", fontWeight: "normal", borderRadius: "50px", "&:hover": { backgroundColor: "#e0c850" }, textTransform: 'uppercase', flex: '0 0 auto' }}
               >
                 Registrar Despesa
               </Button>

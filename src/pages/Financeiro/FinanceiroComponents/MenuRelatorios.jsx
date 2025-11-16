@@ -36,7 +36,7 @@ export default function MenuRelatorios({ onDownloadCompleto, onDownloadReceitas,
                 sx={{
                     color: 'text.secondary',
                     borderColor: 'grey.400',
-                    fontWeight: 'bold',
+                    fontWeight: 'normal',
                     borderRadius: '25px',
                     textTransform: 'uppercase'
                 }}
