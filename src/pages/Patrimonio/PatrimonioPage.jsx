@@ -15,6 +15,8 @@ import {
     TablePagination,
     IconButton
 } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -70,6 +72,11 @@ export default function PatrimonioPage() {
 
     const [searchTerm, setSearchTerm] = useState('');
 
+    // notification state
+    const [notification, setNotification] = useState({ open: false, severity: 'info', message: '' });
+    const showNotification = (severity, message) => setNotification({ open: true, severity, message });
+    const handleCloseNotification = (event, reason) => { if (reason === 'clickaway') return; setNotification(prev => ({ ...prev, open: false })); };
+
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -122,8 +129,11 @@ export default function PatrimonioPage() {
         try {
             await patrimonioApi.deletePatrimonio(itemToDelete);
             await fetchPatrimonios();
+            showNotification('success', 'Patrimônio excluído com sucesso');
         } catch (err) {
             console.error('Erro ao deletar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao deletar';
+            showNotification('error', msg);
         } finally {
             handleCloseDialogs();
         }
@@ -141,8 +151,11 @@ export default function PatrimonioPage() {
         try {
             await patrimonioApi.createPatrimonio(data);
             await fetchPatrimonios();
+            showNotification('success', 'Patrimônio cadastrado com sucesso');
         } catch (err) {
             console.error('Erro ao criar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao criar';
+            showNotification('error', msg);
         } finally {
             handleCloseDialogs();
         }
@@ -153,8 +166,11 @@ export default function PatrimonioPage() {
         try {
             await patrimonioApi.updatePatrimonio(currentItem.id_patrimonio, data);
             await fetchPatrimonios();
+            showNotification('success', 'Patrimônio atualizado com sucesso');
         } catch (err) {
             console.error('Erro ao atualizar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao atualizar';
+            showNotification('error', msg);
         } finally {
             handleCloseDialogs();
         }
@@ -332,6 +348,11 @@ export default function PatrimonioPage() {
                 onConfirm={confirmDelete}
                 title="Tem certeza que deseja excluir?"
             />
+            <Snackbar open={notification.open} autoHideDuration={4000} onClose={handleCloseNotification} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>
+                    {notification.message}
+                </Alert>
+            </Snackbar>
         </Paper>
     );
 }
