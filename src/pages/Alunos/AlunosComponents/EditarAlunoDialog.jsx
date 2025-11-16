@@ -20,7 +20,6 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
     const [cpf, setCpf] = useState('');
     const [dataInicio, setDataInicio] = useState(null); 
     const [plano, setPlano] = useState('');
-    const [formaPagamento, setFormaPagamento] = useState('');
     const [genero, setGenero] = useState('prefiro');
 
     useEffect(() => {
@@ -28,22 +27,18 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             setNome(alunoParaEditar.nome || '');
             setPlano(alunoParaEditar.plano || '');
             setGenero(alunoParaEditar.genero || 'prefiro'); 
-            setFormaPagamento(alunoParaEditar.formaPagamento || '');
             setEmail(alunoParaEditar.email || '');
             setEndereco(alunoParaEditar.endereco || '');
             setTelefone(alunoParaEditar.telefone || '');
             setCpf(alunoParaEditar.cpf || '');
 
-            // Conversão de Data de Nascimento
             if (alunoParaEditar.dataNascimento) {
                 const [day, month, year] = alunoParaEditar.dataNascimento.split('/');
-                // data-fns usa o formato YYYY-MM-DD
+
                 setDataNascimento(new Date(`${year}-${month}-${day}`));
             } else {
                 setDataNascimento(null);
             }
-
-            // Conversão de Data de Matrícula (Data de Início)
             if (alunoParaEditar.data_matricula) { 
                 const [day, month, year] = alunoParaEditar.data_matricula.split('/');
                 setDataInicio(new Date(`${year}-${month}-${day}`));
@@ -60,7 +55,6 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             setCpf('');
             setDataInicio(null);
             setPlano('');
-            setFormaPagamento('');
             setGenero('prefiro');
         }
     }, [alunoParaEditar, open]); 
@@ -70,7 +64,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             id: alunoParaEditar.id, 
             nome, dataNascimento, email, endereco, telefone, cpf,
             dataInicio, 
-            plano, formaPagamento, genero
+            plano, genero
         };
         console.log("Salvando aluno editado:", alunoEditado);
         onSave(alunoEditado);
@@ -81,23 +75,22 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="xs" // Usado para garantir que o fullWidth funcione bem no PaperProps
+            maxWidth="xs"
             fullWidth
             PaperProps={{ 
                 sx: { 
                     borderRadius: 2,
-                    maxHeight: '450px', // Adicionado para telas menores
+                    maxHeight: '450px', 
                 } 
             }}
         >
             <DialogTitle 
-                // TÍTULO COMPACTO
                 sx={{ 
                     textAlign: 'left', 
                     fontSize: '1.5rem', 
                     fontWeight: 'bold', 
-                    pt: 2, // Reduzido
-                    pb: 0.5, // Reduzido
+                    pt: 2, 
+                    pb: 0.5, 
                     px: 3 
                 }}
             >
@@ -105,12 +98,10 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             </DialogTitle>
             
             <DialogContent 
-                // CONTENT PADDING E SCROLLBAR DISCRETA
                 sx={{ 
                     px: 3, 
                     pt: 1, 
                     pb: 0,
-                    // Estilização WebKit (Chrome, Safari, Edge)
                     '&::-webkit-scrollbar': {
                         width: '0.4em', 
                     },
@@ -128,12 +119,11 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             >
                 <Box 
                     component="form" 
-                    // GAP REDUZIDO
                     sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}
                 >
                     
                     <Typography 
-                        variant="subtitle1" // Título de seção menor
+                        variant="subtitle1"
                         sx={{ fontWeight: 'bold', mt: 1 }}
                     >
                         Informações Pessoais:
@@ -146,7 +136,8 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                             value={dataNascimento}
                             onChange={(newValue) => setDataNascimento(newValue)}
                             format="dd/MM/yyyy"
-                            slotProps={{ textField: { size: 'small' } }} // Campo menor
+                            slotProps={{ textField: { size: 'small' } }}
+                            disableFuture
                         />
                     </LocalizationProvider>
 
@@ -156,7 +147,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                     <TextField label="CPF" size="small" value={cpf} onChange={(e) => setCpf(e.target.value)} />
 
                     <Typography 
-                        variant="subtitle1" // Título de seção menor
+                        variant="subtitle1"
                         sx={{ fontWeight: 'bold', pt: 1 }}
                     >
                         Informações Administrativas e Financeiras:
@@ -168,28 +159,14 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                             value={dataInicio}
                             onChange={(newValue) => setDataInicio(newValue)}
                             format="dd/MM/yyyy"
-                            slotProps={{ textField: { size: 'small' } }} // Campo menor
-                            disabled={true} // Mantido desabilitado
+                            slotProps={{ textField: { size: 'small' } }} 
+                            disabled={true}
+                            disableFuture
                         />
                     </LocalizationProvider>
                     
                     <TextField label="Plano" size="small" value={plano} onChange={(e) => setPlano(e.target.value)} />
                     
-                    <FormControl variant="outlined" size="small">
-                        <InputLabel id="forma-pagamento-label">Forma de Pagamento</InputLabel>
-                        <Select
-                            labelId="forma-pagamento-label"
-                            value={formaPagamento}
-                            onChange={(e) => setFormaPagamento(e.target.value)}
-                            label="Forma de Pagamento"
-                        >
-                            <MenuItem value="pix">Pix</MenuItem>
-                            <MenuItem value="cartao">Cartão</MenuItem>
-                            <MenuItem value="boleto">Boleto</MenuItem>
-                            <MenuItem value="outro">Outro</MenuItem>
-                        </Select>
-                    </FormControl>
-
                     <FormControl sx={{ pt: 1, pb: 1 }}>
                         <FormLabel 
                             sx={{ 
@@ -202,28 +179,26 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                             Gênero:
                         </FormLabel>
                          <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
-                                                    <FormControlLabel value="masculino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Masculino</Typography>} />
-                                                    <FormControlLabel value="feminino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Feminino</Typography>} />
-                                                    <FormControlLabel value="prefiro" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
-                                                </RadioGroup>
+                                     <FormControlLabel value="masculino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Masculino</Typography>} />
+                                     <FormControlLabel value="feminino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Feminino</Typography>} />
+                                     <FormControlLabel value="prefiro" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
+                                 </RadioGroup>
                     </FormControl>
                 </Box>
             </DialogContent>
             
             <DialogActions 
-                // AÇÕES COMPACTAS, botões size="small" implicito pelo padding reduzido
+                
                 sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
             >
                 <Button 
                     onClick={onClose} 
                     variant="contained" 
-                    size="small" // Botão menor
                     sx={{ 
                         backgroundColor: '#343a40', 
                         color: 'white', 
                         '&:hover': { backgroundColor: '#23272b' }, 
                         fontWeight: 'normal', 
-                        // Removidos width e height fixos
                     }}
                 >
                     Cancelar
@@ -231,13 +206,11 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                 <Button 
                     onClick={handleSave} 
                     variant="contained" 
-                    size="small" // Botão menor
                     sx={{ 
                         backgroundColor: '#F2D95C', 
                         color: 'black', 
                         '&:hover': { backgroundColor: '#e0c850' }, 
                         fontWeight: 'normal', 
-                        // Removidos width e height fixos
                     }}
                 >
                     Salvar
