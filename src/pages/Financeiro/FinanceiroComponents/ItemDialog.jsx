@@ -440,14 +440,12 @@ export default function ItemDialog({
       >
         <Button
           onClick={onClose}
-          variant="contained"
-          size="small" 
+          variant="contained" 
           sx={{
             backgroundColor: "#343a40",
             color: "white",
             "&:hover": { backgroundColor: "#23272b" },
             fontWeight: "normal",
-            borderRadius: '8px',
           }}
         >
           CANCELAR
@@ -455,13 +453,11 @@ export default function ItemDialog({
         <Button
           onClick={handleSave}
           variant="contained"
-          size="small" 
           sx={{
             backgroundColor: "#F2D95C",
             color: "black",
             "&:hover": { backgroundColor: "#e0c850" },
             fontWeight: "normal", 
-            borderRadius: '8px',
           }}
         >
           SALVAR {type.toUpperCase()}
