@@ -10,33 +10,35 @@ import { ptBR } from 'date-fns/locale';
 
 export default function ItemDialog({ open, onClose, onSave, title, itemToEdit }) {
 
-    //estados internos para controlar os campos do formulário
     const [nome, setNome] = useState('');
-    const [codigo, setCodigo] = useState('');
     const [dataAquisicao, setDataAquisicao] = useState(null);
-    const [status, setStatus] = useState('ativo');
+    const [status, setStatus] = useState('Ativo');
 
-    // useEffect preenche o formulário quando um item é passado para edição
     useEffect(() => {
         if (itemToEdit) {
             setNome(itemToEdit.nome || '');
-            setCodigo(itemToEdit.codigo || '');
-            // Converte a string de data para um objeto Date
-            const [day, month, year] = itemToEdit.dataAquisicao.split('/');
-            setDataAquisicao(new Date(`${year}-${month}-${day}`));
-            setStatus(itemToEdit.status.toLowerCase() || 'ativo');
+            setDataAquisicao(itemToEdit.data_aquisicao ? new Date(itemToEdit.data_aquisicao) : null);
+            // normalize incoming status to capitalized values expected by backend
+            const s = itemToEdit.status_patrimonio || itemToEdit.status || '';
+            const sv = String(s).toLowerCase();
+            if (sv === 'ativo' || sv === 'em uso') setStatus('Ativo');
+            else if (sv === 'inativo') setStatus('Inativo');
+            else if (sv.includes('manut')) setStatus('Em Manutenção');
+            else setStatus('Ativo');
         } else {
-            // Limpa o formulário para o modo de adição
             setNome('');
-            setCodigo('');
             setDataAquisicao(null);
-            setStatus('ativo');
+            setStatus('Ativo');
         }
     }, [itemToEdit, open]);
 
     const handleSave = () => {
-        const itemData = { nome, codigo, dataAquisicao, status };
-        console.log("Salvando item:", itemData);
+        const formattedDate = dataAquisicao ? dataAquisicao.toISOString().split('T')[0] : null;
+        const itemData = {
+            nome,
+            data_aquisicao: formattedDate,
+            status_patrimonio: status,
+        };
         onSave(itemData);
     };
 
@@ -49,8 +51,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
             PaperProps={{ sx: { borderRadius: 2 } }}
         >
             <DialogTitle sx={{ textAlign: 'center', fontWeight: 'normal', fontSize: '1.5rem', pb: 0 }}>
-                {/*O título é dinâmico */}
-                {title || "Cadastre um novo Item"}
+                {title || 'Cadastre um novo Item'}
             </DialogTitle>
             <DialogContent>
                 <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
@@ -64,23 +65,16 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                         value={nome}
                         onChange={(e) => setNome(e.target.value)}
                     />
-                    <TextField
-                        id="codigo"
-                        label="Código"
-                        fullWidth
-                        size="small"
-                        value={codigo}
-                        onChange={(e) => setCodigo(e.target.value)}
-                    />
+
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
                         <DatePicker
                             label="Data de Aquisição"
-                            format="dd/MM/yyyy"
                             value={dataAquisicao}
                             onChange={(newValue) => setDataAquisicao(newValue)}
                             slotProps={{ textField: { size: 'small' } }}
                         />
                     </LocalizationProvider>
+
                     <FormControl>
                         <FormLabel
                             sx={{
@@ -92,14 +86,15 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                         >
                             Status:
                         </FormLabel>
-                        <RadioGroup
+            <RadioGroup
                             row
                             name="status-group"
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                         >
-                            <FormControlLabel value="ativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Ativo" />
-                            <FormControlLabel value="inativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Inativo" />
+                                <FormControlLabel value="Ativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Ativo" />
+                                <FormControlLabel value="Em Manutenção" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Em Manutenção" />
+                                <FormControlLabel value="Inativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Inativo" />
                         </RadioGroup>
                     </FormControl>
                 </Box>

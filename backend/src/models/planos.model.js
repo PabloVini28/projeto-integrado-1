@@ -1,0 +1,30 @@
+const STATUSES = ['Ativo', 'Inativo', 'Promocional'];
+
+function validatePlano(payload) {
+  const errors = [];
+  if (!payload) {
+    errors.push('Payload é obrigatório');
+    return { valid: false, errors };
+  }
+
+  if (!payload.cod_plano || String(payload.cod_plano).trim() === '') {
+    errors.push('Código do Plano é obrigatório!');
+  }
+
+  if (!payload.nome_plano || String(payload.nome_plano).trim() === '') {
+    errors.push('Nome do Plano é obrigatório!');
+  }
+
+  const valor = parseFloat(payload.valor_plano);
+  if (Number.isNaN(valor) || valor <= 0) {
+    errors.push('Valor do Plano deve ser um número positivo!');
+  }
+
+  if (payload.status_plano && !STATUSES.includes(payload.status_plano)) {
+    errors.push(`Status do Plano inválido! Valores permitidos: ${STATUSES.join(', ')}`);
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+module.exports = { STATUSES, validatePlano };

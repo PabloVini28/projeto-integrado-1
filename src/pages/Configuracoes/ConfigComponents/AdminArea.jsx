@@ -39,7 +39,7 @@ export default function AdminArea({ funcionarios, onAddUser, onEditUser, onDelet
   };
 
   const capitalizeRole = (role) => {
-    if (!role) return 'Funcionário'; // Padrão
+    if (!role) return 'Funcionário'; 
     return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
   };
 
@@ -49,12 +49,7 @@ export default function AdminArea({ funcionarios, onAddUser, onEditUser, onDelet
         <Typography variant="h5" fontWeight="Semi bold">Área do Administrador</Typography>
       </Box>
 
-      <TableContainer 
-        component={Paper} 
-        variant="outlined" 
-        sx={{ borderRadius: 2 }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}> 
           <Button
             variant="contained"
             endIcon={<Add/>}
@@ -63,7 +58,14 @@ export default function AdminArea({ funcionarios, onAddUser, onEditUser, onDelet
           >
             Cadastrar Novo Usuário
           </Button>
-        </Box>
+      </Box>
+
+      <TableContainer 
+        component={Paper} 
+        variant="outlined" 
+        sx={{ borderRadius: 2 }}
+      >
+        
         <Table>
           <TableHead>
             <TableRow>

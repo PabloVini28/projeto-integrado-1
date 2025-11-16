@@ -14,7 +14,7 @@ async function findById(id) {
 
 async function create(p) {
   const q = `INSERT INTO patrimonio (nome, status_patrimonio, data_aquisicao) VALUES ($1,$2,$3) RETURNING id_patrimonio, nome, status_patrimonio, data_aquisicao, created_at`;
-  const vals = [p.nome, p.status_patrimonio || 'Em uso', p.data_aquisicao];
+  const vals = [p.nome, p.status_patrimonio || 'Ativo', p.data_aquisicao];
   const r = await pool.query(q, vals);
   return r.rows[0];
 }

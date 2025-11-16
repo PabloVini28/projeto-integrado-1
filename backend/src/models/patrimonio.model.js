@@ -1,4 +1,4 @@
-const STATUSES = ['Em uso', 'Em manutenção', 'Disponível', 'Descartado'];
+const STATUSES = ['Ativo', 'Inativo', 'Em Manutenção'];
 
 function validatePatrimonio(payload) {
   const errors = [];
@@ -19,7 +19,7 @@ function validatePatrimonio(payload) {
     else if (d > new Date()) errors.push('data de aquisição não pode ser no futuro');
   }
 
-  if (payload.status_patrimonio && !STATUSES.includes(payload.status_patrimonio)) {
+  if (payload.status_patrimonio && !STATUSES.includes(String(payload.status_patrimonio))) {
     errors.push(`status de patrimônio deve ser um dos seguintes: ${STATUSES.join(', ')}`);
   }
 
