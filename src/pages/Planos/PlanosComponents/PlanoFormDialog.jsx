@@ -148,8 +148,7 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
             <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end', gap: 1 }}>
                 <Button 
                     onClick={onClose} 
-                    variant="contained" 
-                    size="small"
+                    variant="contained"
                     sx={{ backgroundColor: '#343a40', color: 'white', fontWeight: 'normal', '&:hover': { backgroundColor: '#23272b' } }}
                 >
                     Cancelar
@@ -157,7 +156,6 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
                 <Button 
                     onClick={handleSave} 
                     variant="contained" 
-                    size="small"
                     sx={{ backgroundColor: '#F2D95C', color: 'black', fontWeight: 'normal', '&:hover': { backgroundColor: '#e0c850' } }}
                 >
                     {isEditMode ? "Salvar Alterações" : "Salvar Plano"}

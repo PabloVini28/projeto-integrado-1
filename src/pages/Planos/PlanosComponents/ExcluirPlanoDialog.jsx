@@ -29,7 +29,6 @@ export function ExcluirPlanoDialog({ open, onClose, onConfirm, planToDelete }) {
                 <Button
                     onClick={onClose}
                     variant="contained"
-                    size="small"
                     sx={{
                         backgroundColor: '#343a40',
                         color: 'white',
@@ -42,7 +41,6 @@ export function ExcluirPlanoDialog({ open, onClose, onConfirm, planToDelete }) {
                 <Button
                     onClick={onConfirm}
                     variant="contained"
-                    size="small"
                     sx={{
                         backgroundColor: '#F2D95C',
                         color: 'black',
