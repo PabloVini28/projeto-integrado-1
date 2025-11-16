@@ -72,6 +72,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                             value={dataAquisicao}
                             onChange={(newValue) => setDataAquisicao(newValue)}
                             slotProps={{ textField: { size: 'small' } }}
+                            disableFuture
                         />
                     </LocalizationProvider>
 
