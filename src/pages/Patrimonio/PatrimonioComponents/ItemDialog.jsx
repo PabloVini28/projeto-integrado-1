@@ -12,17 +12,17 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
 
     const [nome, setNome] = useState('');
     const [dataAquisicao, setDataAquisicao] = useState(null);
-    const [status, setStatus] = useState('Em uso');
+    const [status, setStatus] = useState('ativo');
 
     useEffect(() => {
         if (itemToEdit) {
             setNome(itemToEdit.nome || '');
             setDataAquisicao(itemToEdit.data_aquisicao ? new Date(itemToEdit.data_aquisicao) : null);
-            setStatus(itemToEdit.status_patrimonio || 'Em uso');
+            setStatus(itemToEdit.status_patrimonio || 'ativo');
         } else {
             setNome('');
             setDataAquisicao(null);
-            setStatus('Em uso');
+            setStatus('ativo');
         }
     }, [itemToEdit, open]);
 
@@ -80,16 +80,15 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                         >
                             Status:
                         </FormLabel>
-                        <RadioGroup
+            <RadioGroup
                             row
                             name="status-group"
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                         >
-                                <FormControlLabel value="Em uso" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Em uso" />
-                                <FormControlLabel value="Em manutenção" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Em manutenção" />
-                                <FormControlLabel value="Disponível" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Disponível" />
-                                <FormControlLabel value="Descartado" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Descartado" />
+                <FormControlLabel value="ativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Ativo" />
+                <FormControlLabel value="em manutenção" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Em manutenção" />
+                <FormControlLabel value="inativo" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Inativo" />
                         </RadioGroup>
                     </FormControl>
                 </Box>
