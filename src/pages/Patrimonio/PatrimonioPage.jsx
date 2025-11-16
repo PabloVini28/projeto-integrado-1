@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
     Box, 
     Typography, 
@@ -21,8 +21,6 @@ import {
     Menu,
     ListItemIcon
 } from '@mui/material';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
@@ -82,9 +80,10 @@ export default function PatrimonioPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
 
+    const [rows, setRows] = useState(allRows);
+
     const [anchorElReport, setAnchorElReport] = useState(null);
 
-    // notification state
     const [notification, setNotification] = useState({ open: false, severity: 'info', message: '' });
     const showNotification = (severity, message) => setNotification({ open: true, severity, message });
     const handleCloseNotification = (event, reason) => { if (reason === 'clickaway') return; setNotification(prev => ({ ...prev, open: false })); };
@@ -189,20 +188,49 @@ export default function PatrimonioPage() {
     };
 
     const filteredRows = useMemo(() => {
-        let tempRows = allRows;
+        let tempRows = rows || [];
 
         if (statusFilter !== 'Todos') {
-            tempRows = tempRows.filter(row => row.status === statusFilter);
+            tempRows = tempRows.filter(row => {
+                const s = String(row.status || '').toLowerCase();
+                if (statusFilter === 'Manutenção') return s.includes('manut') || s.includes('manutenção') || s.includes('em manutenção');
+                return s === String(statusFilter || '').toLowerCase();
+            });
         }
         if (searchTerm) {
             const lowerSearchTerm = searchTerm.toLowerCase();
             tempRows = tempRows.filter(row =>
-                row.nome.toLowerCase().includes(lowerSearchTerm) ||
-                row.codigo.toLowerCase().includes(lowerSearchTerm)
+                String(row.nome || '').toLowerCase().includes(lowerSearchTerm) ||
+                String(row.codigo || '').toLowerCase().includes(lowerSearchTerm)
             );
         }
         return tempRows;
-    }, [searchTerm, statusFilter]);
+    }, [searchTerm, statusFilter, rows]);
+
+    function formatDateValue(value) {
+        if (!value) return '-';
+        try {
+            let date;
+            if (String(value).includes('-')) {
+                date = new Date(value);
+            } else {
+                date = parse(String(value), 'dd/MM/yyyy', new Date());
+            }
+            if (!isValid(date)) return '-';
+            return format(date, 'dd/MM/yyyy');
+        } catch (e) {
+            return '-';
+        }
+    }
+
+    function displayStatus(value) {
+        if (!value) return '-';
+        const s = String(value || '').toLowerCase();
+        if (s === 'ativo') return 'Ativo';
+        if (s === 'inativo') return 'Inativo';
+        if (s.includes('manut') || s.includes('manutenção') || s === 'manutenção' || s === 'em manutenção') return 'Em Manutenção';
+        return String(value).charAt(0).toUpperCase() + String(value).slice(1);
+    }
 
     const handleReportMenuClick = (event) => {
         setAnchorElReport(event.currentTarget);
