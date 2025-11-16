@@ -65,12 +65,12 @@ const despesasData = [
   { id: 10, nome: 'Água', data: '02/11/2025', descricao: "Pagamento conta de água", categoria: "Outras", valor: 100.0 },
   { id: 11, nome: 'Aluguel', data: '05/11/2025', descricao: "Pagamento aluguel", categoria: "Outras", valor: 1200.0 },
   { id: 12, nome: 'Energia', data: '06/11/2025', descricao: "Pagamento conta de energia", categoria: "Pessoal", valor: 500.0 },
-  { id: 15, nome: 'Energia', data: '06/10/2025', descricao: "Pagamento conta de energia (Mês Antigo)", categoria: "Investimentos", valor: 480.0 }, 
+  { id: 15, nome: 'Energia', data: '06/10/2025', descricao: "Pagamento conta de energia (Mês Antigo)", categoria: "Investimento", valor: 480.0 },
 ];
 
 export default function FinanceiroPage() {
   
-  //Caso o usuário não seja admin, deve mudar para false
+  // Mudar 'true' para 'false' para mudar a visão de admin para funcionario
   const [isAdmin, setIsAdmin] = useState(true); 
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -211,59 +211,6 @@ export default function FinanceiroPage() {
 
 
   const handleDownloadReport = async (reportType) => {
-      const mesAno = selectedDate.toLocaleString('pt-BR', { month: '2-digit', year: 'numeric' });
-      const mesAnoArquivo = mesAno.replace('/', '-');
-
-      let dataToExport = [];
-      let reportTitle = `Relatório Financeiro (${mesAno})`;
-      let headers = ['ID', 'Nome', 'Categoria', 'Aluno', 'Data', 'Descrição', 'Valor (R$)'];
-      let columnWidths = [50, 120, 100, 150, 80, 150, 100];
-      
-      const allData = [
-          ...filteredReceitas.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`})), 
-          ...filteredDespesas.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}))
-      ];
-      if (reportType === 'completo') {
-          allData.sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
-      }
-
-      switch(reportType) {
-          case 'receitas':
-              dataToExport = filteredReceitas.map(r => ({...r, valorStr: `+ R$ ${r.valor.toFixed(2)}`}));
-              reportTitle = `Relatório de Receitas (${mesAno})`;
-              break;
-          case 'despesas':
-              dataToExport = filteredDespesas.map(d => ({...d, valorStr: `- R$ ${d.valor.toFixed(2)}`}));
-              reportTitle = `Relatório de Despesas (${mesAno})`;
-              break;
-          case 'completo':
-          default:
-              dataToExport = allData;
-              reportTitle = `Relatório Financeiro Completo (${mesAno})`;
-              break;
-      }
-      
-      const reportOptions = {
-          title: reportTitle,
-          defaultFileName: `relatorio_financeiro_${reportType}_${mesAnoArquivo}.pdf`,
-          headers: headers,
-          columnWidths: columnWidths, 
-          data: dataToExport.map(row => [
-              row.id, row.nome || '-', row.categoria || '-', row.nome_aluno || '-',
-              row.data || '-', row.descricao || '-', row.valorStr
-          ])
-      };
-
-      try {
-          const result = await window.electronAPI.generateReport(reportOptions);
-          if (result.success) {
-              alert(`Relatório salvo com sucesso em:\n${result.path}`);
-          } else if (result.error !== 'Save dialog canceled') {
-              alert(`Falha ao salvar relatório: ${result.error}`);
-          }
-      } catch (error) {
-          alert(`Erro ao gerar relatório: ${error.message}`);
-      }
   };
 
 
@@ -325,12 +272,18 @@ export default function FinanceiroPage() {
         </Box>
 
         <TabPanel value={tabValue} index={0}>
-          <VisaoGeralPainel
-            receitasAlunos={receitasAlunos}
-            outrasReceitas={outrasReceitas}
-            despesas={despesas}
-            resultado={resultado}
-          />
+          {isAdmin ? (
+            <VisaoGeralPainel
+              receitasAlunos={receitasAlunos}
+              outrasReceitas={outrasReceitas}
+              despesas={despesas}
+              resultado={resultado}
+            />
+          ) : (
+            <Typography sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+              A visão geral é restrita a administradores.
+            </Typography>
+          )}
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
@@ -354,6 +307,7 @@ export default function FinanceiroPage() {
                       </Select>
                   </FormControl>
               </Box>
+              
               <Button
                 variant="contained"
                 endIcon={<AddIcon />}
@@ -397,18 +351,16 @@ export default function FinanceiroPage() {
                   <FormControl size="small" sx={{ minWidth: 180 }}>
                       <InputLabel>Categoria</InputLabel>
                       <Select value={despesaCategory} label="Categoria" onChange={(e) => setDespesaCategory(e.target.value)}>
-                          
-                          
                           <MenuItem value="Todas">Todas</MenuItem>
                           <MenuItem value="Instalações e infraestrutura">Instalações e infraestrutura</MenuItem>
                           <MenuItem value="Pessoal">Pessoal</MenuItem>
-                          <MenuItem value="Investimentos">Investimentos</MenuItem>
+                          <MenuItem value="Investimento">Investimento</MenuItem>
                           <MenuItem value="Operacional e Administrativo">Operacional e Administrativo</MenuItem>
                           <MenuItem value="Outras">Outras</MenuItem>
-
                       </Select>
                   </FormControl>
               </Box>
+              
               <Button
                 variant="contained"
                 endIcon={<AddIcon />}
