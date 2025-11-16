@@ -375,7 +375,6 @@ export default function FinanceiroPage() {
           </Box>
         </TabPanel>
 
-        {/* Aba 2: Despesas */}
         <TabPanel value={tabValue} index={2}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1, minHeight: 0 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, mb: 0, flex: '0 0 auto' }}>

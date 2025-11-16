@@ -19494,7 +19494,6 @@ if (started) {
 }
 const createWindow = () => {
   const mainWindow = new require$$3$1.BrowserWindow({
-    // ALTERADO: Aumentei o tamanho da janela para o layout ficar melhor
     width: 1200,
     height: 800,
     webPreferences: {
