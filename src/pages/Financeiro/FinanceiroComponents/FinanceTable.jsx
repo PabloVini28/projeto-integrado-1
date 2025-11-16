@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -19,16 +19,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-const tableColumns = [
-  { id: "expand", label: "", width: "5%" },
-  { id: "id", label: "ID", width: "10%" },
-  { id: "nome", label: "Nome", width: "25%" },
-  { id: "categoria", label: "Categoria", width: "20%" },
-  { id: "data", label: "Data", width: "15%", align: "left" },
-  { id: "valor", label: "Valor", align: "right", width: "15%" },
-  { id: "acao", label: "Ação", align: "center", width: "10%" },
-];
-
 function RowDetails({ item, isRecipe }) {
   return (
     <Box
@@ -41,7 +31,6 @@ function RowDetails({ item, isRecipe }) {
       }}
     >
       <Grid container spacing={2}>
-
         <Grid item xs={12}>
           <Typography
             variant="caption"
@@ -59,7 +48,7 @@ function RowDetails({ item, isRecipe }) {
   );
 }
 
-function RowItem({ row, isRecipe, onEdit, onDelete }) {
+function RowItem({ row, isRecipe, onEdit, onDelete, isAdmin, columns }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -70,41 +59,49 @@ function RowItem({ row, isRecipe, onEdit, onDelete }) {
           "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
         }}
       >
-        {tableColumns.map((column) => {
+        {columns.map((column) => { 
           const value = row[column.id];
 
           return (
             <TableCell
               key={column.id}
-              align={column.align || "left"}
+              align={column.align || "left"} 
+              padding="none" 
               sx={{
                 py: 1.5,
                 borderBottom: "1px solid #eee",
+                px: column.id === 'expand' ? 1 : 2, 
+                width: column.width,
               }}
             >
               {column.id === "expand" ? (
-                <IconButton size="small" onClick={() => setOpen(!open)}>
-                  {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                </IconButton>
+                <Box sx={{ textAlign: 'center' }}> 
+                  <IconButton size="small" onClick={() => setOpen(!open)} sx={{ p: 0.5 }}>
+                    {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                  </IconButton>
+                </Box>
               ) : column.id === "valor" ? (
                 `R$ ${value.toFixed(2).replace(".", ",")}`
               ) : column.id === "acao" ? (
-                <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center" }}>
-                  <IconButton
-                    size="small"
-                    sx={{ color: "#343a40" }}
-                    onClick={() => onEdit(row, isRecipe)}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-
-                  <IconButton
-                    size="small"
-                    sx={{ color: "#343a40" }}
-                    onClick={() => onDelete(row.id, isRecipe)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center", minHeight: '34px' }}>
+                  {isAdmin && (
+                    <>
+                      <IconButton
+                        size="small"
+                        sx={{ color: "#343a40" }}
+                        onClick={() => onEdit(row, isRecipe)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        sx={{ color: "#343a40" }}
+                        onClick={() => onDelete(row.id, isRecipe)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </>
+                  )}
                 </Box>
               ) : (
                 value
@@ -116,9 +113,10 @@ function RowItem({ row, isRecipe, onEdit, onDelete }) {
 
       <TableRow>
         <TableCell
-          colSpan={7} 
+          colSpan={columns.length} 
           sx={{
             py: 0,
+            px: 0, 
             borderBottom: "1px solid #eee",
           }}
         >
@@ -142,7 +140,27 @@ export default function FinanceTable({
   onRowsPerPageChange,
   onEdit,
   onDelete,
+  isAdmin 
 }) {
+
+  const columns = useMemo(() => {
+    const baseColumns = [
+      { id: "expand", label: "", width: "5%" },
+      { id: "id", label: "ID", width: "10%" },
+      { id: "nome", label: "Nome", width: "25%" },
+      { id: "categoria", label: "Categoria", width: "20%" },
+      { id: "data", label: "Data", width: "15%", align: "left" },
+      { id: "valor", label: "Valor", width: "15%" }, 
+    ];
+
+    if (isAdmin) {
+      return [
+        ...baseColumns,
+        { id: "acao", label: "Ação", align: "center", width: "10%" },
+      ];
+    }
+    return baseColumns;
+  }, [isAdmin]);
 
   return (
     <Box
@@ -171,14 +189,16 @@ export default function FinanceTable({
           <Table stickyHeader sx={{ tableLayout: 'fixed' }}>
             <TableHead>
               <TableRow>
-                {tableColumns.map((column) => (
+                {columns.map((column) => (
                   <TableCell
                     key={column.id}
-                    align={column.align || "left"}
+                    align={column.align || "left"} 
+                    padding="none" 
                     sx={{
                       fontWeight: "bold",
                       backgroundColor: "#fff",
                       py: 1.5,
+                      px: column.id === 'expand' ? 1 : 2, 
                       width: column.width,
                       borderBottom: "1px solid #eee",
                     }}
@@ -199,6 +219,8 @@ export default function FinanceTable({
                     isRecipe={isRecipe}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    isAdmin={isAdmin}
+                    columns={columns}
                   />
                 ))}
             </TableBody>

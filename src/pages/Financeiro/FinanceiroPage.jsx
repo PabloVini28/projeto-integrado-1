@@ -62,13 +62,17 @@ const receitasData = [
 ];
 
 const despesasData = [
-  { id: 10, nome: 'Água', data: '02/11/2025', descricao: "Pagamento conta de água", categoria: "Contas Fixas", valor: 100.0 },
-  { id: 11, nome: 'Aluguel', data: '05/11/2025', descricao: "Pagamento aluguel", categoria: "Contas Fixas", valor: 1200.0 },
-  { id: 12, nome: 'Energia', data: '06/11/2025', descricao: "Pagamento conta de energia", categoria: "Contas Fixas", valor: 500.0 },
-  { id: 15, nome: 'Energia', data: '06/10/2025', descricao: "Pagamento conta de energia (Mês Antigo)", categoria: "Contas Fixas", valor: 480.0 },
+  { id: 10, nome: 'Água', data: '02/11/2025', descricao: "Pagamento conta de água", categoria: "Outras", valor: 100.0 },
+  { id: 11, nome: 'Aluguel', data: '05/11/2025', descricao: "Pagamento aluguel", categoria: "Outras", valor: 1200.0 },
+  { id: 12, nome: 'Energia', data: '06/11/2025', descricao: "Pagamento conta de energia", categoria: "Pessoal", valor: 500.0 },
+  { id: 15, nome: 'Energia', data: '06/10/2025', descricao: "Pagamento conta de energia (Mês Antigo)", categoria: "Investimentos", valor: 480.0 }, 
 ];
 
 export default function FinanceiroPage() {
+  
+  //Caso o usuário não seja admin, deve mudar para false
+  const [isAdmin, setIsAdmin] = useState(true); 
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [receitasPage, setReceitasPage] = useState(0);
   const [despesasPage, setDespesasPage] = useState(0);
@@ -301,11 +305,13 @@ export default function FinanceiroPage() {
                     shrink: true,
                 }}
             />
-            <MenuRelatorios
-              onDownloadCompleto={() => handleDownloadReport('completo')}
-              onDownloadReceitas={() => handleDownloadReport('receitas')}
-              onDownloadDespesas={() => handleDownloadReport('despesas')}
-            />
+            {isAdmin && (
+              <MenuRelatorios
+                onDownloadCompleto={() => handleDownloadReport('completo')}
+                onDownloadReceitas={() => handleDownloadReport('receitas')}
+                onDownloadDespesas={() => handleDownloadReport('despesas')}
+              />
+            )}
         </Box>
       </Box>
 
@@ -370,6 +376,7 @@ export default function FinanceiroPage() {
                 onRowsPerPageChange={handleRowsPerPageChange}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                isAdmin={isAdmin} 
               />
             </Box>
           </Box>
@@ -390,10 +397,15 @@ export default function FinanceiroPage() {
                   <FormControl size="small" sx={{ minWidth: 180 }}>
                       <InputLabel>Categoria</InputLabel>
                       <Select value={despesaCategory} label="Categoria" onChange={(e) => setDespesaCategory(e.target.value)}>
+                          
+                          
                           <MenuItem value="Todas">Todas</MenuItem>
-                          <MenuItem value="Contas Fixas">Contas Fixas</MenuItem>
-                          <MenuItem value="Patrimônio">Patrimônio</MenuItem>
-                          <MenuItem value="Manutenção">Manutenção</MenuItem>
+                          <MenuItem value="Instalações e infraestrutura">Instalações e infraestrutura</MenuItem>
+                          <MenuItem value="Pessoal">Pessoal</MenuItem>
+                          <MenuItem value="Investimentos">Investimentos</MenuItem>
+                          <MenuItem value="Operacional e Administrativo">Operacional e Administrativo</MenuItem>
+                          <MenuItem value="Outras">Outras</MenuItem>
+
                       </Select>
                   </FormControl>
               </Box>
@@ -419,6 +431,7 @@ export default function FinanceiroPage() {
                 onRowsPerPageChange={handleRowsPerPageChange}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                isAdmin={isAdmin} 
               />
             </Box>
           </Box>

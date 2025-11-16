@@ -59,7 +59,7 @@ export default function ItemDialog({
   const [loadingAlunos, setLoadingAlunos] = useState(false);
 
   const type = isRecipe ? "receita" : "despesa";
-  const categoriasReceita = ["Mensalidade de Aluno", "Outras"];
+  const categoriasReceita = ["Alunos", "Outras"];
   const categoriasDespesa = [
     "Instalações e infraestrutura",
     "Pessoal",
@@ -69,7 +69,7 @@ export default function ItemDialog({
   ];
 
   useEffect(() => {
-    if (!isRecipe || categoria !== 'Mensalidade de Aluno') {
+    if (!isRecipe || categoria !== 'Alunos') {
         setOpcoesAlunos([]);
         return;
     }
@@ -108,7 +108,7 @@ export default function ItemDialog({
             setValor(String(itemToEdit.valor) || "");
             setDescricao(itemToEdit.descricao || "");
             
-            if (isRecipe && itemToEdit.categoria === 'Mensalidade de Aluno' && itemToEdit.nome_aluno) {
+            if (isRecipe && itemToEdit.categoria === 'Alunos' && itemToEdit.nome_aluno) {
                 const aluno = mockAlunos.find(a => a.nome === itemToEdit.nome_aluno);
                 setAlunoSelecionado(aluno || null);
                 if (aluno) {
@@ -140,7 +140,7 @@ export default function ItemDialog({
     if (!valor || parseFloat(valor) <= 0) newErrors.valor = true;
 
     if (isRecipe) {
-        if (categoria === 'Mensalidade de Aluno' && !alunoSelecionado) {
+        if (categoria === 'Alunos' && !alunoSelecionado) {
             newErrors.aluno = true;
         }
         if (categoria === 'Outras' && !nome.trim()) {
@@ -176,7 +176,7 @@ export default function ItemDialog({
     };
 
     if (isRecipe) {
-        if (categoria === 'Mensalidade de Aluno') {
+        if (categoria === 'Alunos') {
             itemData.nome = 'Mensalidade';
             itemData.aluno_id = alunoSelecionado?.id || null;
             itemData.nome_aluno = alunoSelecionado?.nome || null;
@@ -213,7 +213,7 @@ export default function ItemDialog({
         </FormControl>
       </Grid>
       
-      {categoria === 'Mensalidade de Aluno' && (
+      {categoria === 'Alunos' && (
         <Grid item xs={12}>
           <Autocomplete
             fullWidth
