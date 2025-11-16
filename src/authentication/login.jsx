@@ -109,7 +109,7 @@ function LoginPage() {
             disabled={loading}
             error={displayEmailError}
             helperText={displayEmailError ? 'Formato de e-mail inválido.' : ''}
-s          />
+          />
           <TextField
             margin="dense"
             size="small"
