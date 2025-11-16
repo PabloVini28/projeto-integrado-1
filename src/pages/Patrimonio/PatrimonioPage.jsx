@@ -21,6 +21,8 @@ import {
     Menu,
     ListItemIcon
 } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit'; 
@@ -29,6 +31,8 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ItemDialog from './PatrimonioComponents/ItemDialog';
 import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
+import * as patrimonioApi from '../../services/patrimonioApiService';
+import { format, parse, isValid } from 'date-fns';
 
 
 const createData = (id, nome, codigo, dataAquisicao, status) => {
@@ -50,6 +54,8 @@ const allRows = [
   createData(12, 'Anilhas', '012', '15/02/2021', 'Ativo'),
   createData(13, 'Halteres', '013', '15/02/2022', 'Inativo'),
 ];
+
+const useInitialRows = () => sampleRows;
 
 const columns = [
     { id: 'nome', label: 'Nome do Item' },
@@ -78,12 +84,46 @@ export default function PatrimonioPage() {
 
     const [anchorElReport, setAnchorElReport] = useState(null);
 
+    // notification state
+    const [notification, setNotification] = useState({ open: false, severity: 'info', message: '' });
+    const showNotification = (severity, message) => setNotification({ open: true, severity, message });
+    const handleCloseNotification = (event, reason) => { if (reason === 'clickaway') return; setNotification(prev => ({ ...prev, open: false })); };
+
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
+    const fetchPatrimonios = async () => {
+        try {
+            const res = await patrimonioApi.getPatrimonios();
+            const normalized = (res.data || []).map(r => ({
+                id: r.id_patrimonio || r.id,
+                id_patrimonio: r.id_patrimonio || r.id,
+                nome: r.nome,
+                codigo: r.id_patrimonio ? String(r.id_patrimonio) : (r.codigo || ''),
+                dataAquisicao: r.data_aquisicao || r.dataAquisicao || null,
+                data_aquisicao: r.data_aquisicao || r.dataAquisicao || null,
+                status: r.status_patrimonio || r.status || '',
+                status_patrimonio: r.status_patrimonio || r.status || '',
+                _raw: r,
+            }));
+            setRows(normalized);
+        } catch (err) {
+            console.error('Erro ao buscar patrimônio', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchPatrimonios();
+    }, []);
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
         setPage(0);
     };
 
@@ -97,9 +137,18 @@ export default function PatrimonioPage() {
         setIsDeleteDialogOpen(true); 
     };
 
-    const confirmDelete = () => {
-        console.log(`Excluindo item com ID: ${itemToDelete}`);
-        handleCloseDialogs();
+    const confirmDelete = async () => {
+        try {
+            await patrimonioApi.deletePatrimonio(itemToDelete);
+            await fetchPatrimonios();
+            showNotification('success', 'Patrimônio excluído com sucesso');
+        } catch (err) {
+            console.error('Erro ao deletar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao deletar';
+            showNotification('error', msg);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
     const handleCloseDialogs = () => {
@@ -110,14 +159,33 @@ export default function PatrimonioPage() {
         setItemToDelete(null); 
     };
 
-    const handleSaveNewItem = (data) => {
-        console.log("Salvando NOVO item:", data);
-        handleCloseDialogs();
+    const handleSaveNewItem = async (data) => {
+        try {
+            await patrimonioApi.createPatrimonio(data);
+            await fetchPatrimonios();
+            showNotification('success', 'Patrimônio cadastrado com sucesso');
+        } catch (err) {
+            console.error('Erro ao criar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao criar';
+            showNotification('error', msg);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
-    const handleUpdateItem = (data) => {
-        console.log("Atualizando item:", data);
-        handleCloseDialogs();
+    const handleUpdateItem = async (data) => {
+        if (!currentItem || !currentItem.id_patrimonio) return;
+        try {
+            await patrimonioApi.updatePatrimonio(currentItem.id_patrimonio, data);
+            await fetchPatrimonios();
+            showNotification('success', 'Patrimônio atualizado com sucesso');
+        } catch (err) {
+            console.error('Erro ao atualizar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao atualizar';
+            showNotification('error', msg);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
     const filteredRows = useMemo(() => {
@@ -307,6 +375,10 @@ export default function PatrimonioPage() {
                                                             <DeleteIcon fontSize="small" />
                                                         </IconButton>
                                                     </Box>
+                                                ) : column.id === 'dataAquisicao' ? (
+                                                    formatDateValue(value)
+                                                ) : column.id === 'status' ? (
+                                                    displayStatus(value)
                                                 ) : (
                                                     value
                                                 )}
