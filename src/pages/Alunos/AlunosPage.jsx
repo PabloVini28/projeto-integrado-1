@@ -283,7 +283,7 @@ export default function AlunosPage() {
                         sx={{
                             color: 'text.secondary',
                             borderColor: 'grey.400',
-                            fontWeight: 'bold',
+                            fontWeight: 'normal',
                             borderRadius: '25px',
                         }}
                     >
@@ -297,7 +297,7 @@ export default function AlunosPage() {
                             backgroundColor: '#F2D95C', 
                             color: 'black',
                             '&:hover': { backgroundColor: '#e0c850' },
-                            fontWeight: 'bold',
+                            fontWeight: 'normal',
                             borderRadius: '25px' 
                         }}
                     >
