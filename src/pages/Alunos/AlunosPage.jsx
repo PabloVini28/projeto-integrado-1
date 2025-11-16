@@ -170,7 +170,7 @@ export default function AlunosPage() {
     const handleReportMenuClose = () => setAnchorElReport(null);
 
     /**
-     * Lógica de download 
+     * Lógica do download 
      * @param {'todos' | 'ativos' | 'inativos' | 'todos-detalhado' | 'ativos-detalhado' | 'inativos-detalhado'} reportType
      */
     const handleDownloadReport = async (reportType) => {
@@ -241,7 +241,7 @@ export default function AlunosPage() {
                 display: 'flex', 
                 flexDirection: 'column', 
                 height: '100%',
-                backgroundColor: 'white'
+                backgroundColor: 'white' 
             }}>
             
             <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
@@ -306,94 +306,108 @@ export default function AlunosPage() {
                 </Box>
             </Box>
 
-            <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
-                <Table stickyHeader aria-label="sticky table">
-                    <TableHead>
-                        <TableRow>
-                            {studentColumns.map((column) => (
-                                <TableCell
-                                    key={column.id}
-                                    align={column.align || 'left'} 
-                                    sx={{ fontWeight: 'bold', backgroundColor: '#fff', width: column.width }}
-                                >
-                                    {column.label}
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredRows
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((row) => {
-                                const isRowOpen = openRowId === row.id;
-                                return (
-                                    <React.Fragment key={row.id}>
-                                        <TableRow hover role="checkbox" tabIndex={-1}
-                                            sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
-                                        >
-                                            {studentColumns.map((column) => {
-                                                const value = row[column.id];
-                                                
-                                                if (column.id === 'expand') {
+            <Paper
+                variant="outlined" 
+                elevation={0} 
+                sx={{ 
+                    borderRadius: 2, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    flexGrow: 1, 
+                    overflow: 'hidden' 
+                }}
+            >
+                <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
+                    <Table stickyHeader aria-label="sticky table">
+                        <TableHead>
+                            <TableRow>
+                                {studentColumns.map((column) => (
+                                    <TableCell
+                                        key={column.id}
+                                        align={column.align || 'left'} 
+                                        sx={{ fontWeight: 'bold', backgroundColor: '#fff', width: column.width }}
+                                    >
+                                        {column.label}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredRows
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((row) => {
+                                    const isRowOpen = openRowId === row.id;
+                                    return (
+                                        <React.Fragment key={row.id}>
+                                            <TableRow hover role="checkbox" tabIndex={-1}
+                                                sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
+                                            >
+                                                {studentColumns.map((column) => {
+                                                    const value = row[column.id];
+                                                    
+                                                    if (column.id === 'expand') {
+                                                        return (
+                                                            <TableCell padding="checkbox" sx={{ width: column.width }}>
+                                                                <IconButton
+                                                                    aria-label="expand row"
+                                                                    size="small"
+                                                                    onClick={() => setOpenRowId(isRowOpen ? null : row.id)}
+                                                                >
+                                                                    {isRowOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                                                                </IconButton>
+                                                            </TableCell>
+                                                        );
+                                                    }
+                                                    
+                                                    let cellContent = value;
+                                                    if (column.id === 'actions') {
+                                                        cellContent = (
+                                                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                                <IconButton size="small" onClick={() => handleEdit(row.id)}>
+                                                                    <EditIcon fontSize="small" />
+                                                                </IconButton>
+                                                                <IconButton size="small" onClick={() => handleDelete(row.id)}>
+                                                                    <DeleteIcon fontSize="small" />
+                                                                </IconButton>
+                                                            </Box>
+                                                        );
+                                                    }
+
                                                     return (
-                                                        <TableCell padding="checkbox" sx={{ width: column.width }}>
-                                                            <IconButton
-                                                                aria-label="expand row"
-                                                                size="small"
-                                                                onClick={() => setOpenRowId(isRowOpen ? null : row.id)}
-                                                            >
-                                                                {isRowOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                                                            </IconButton>
+                                                        <TableCell key={column.id} align={column.align || 'left'}>
+                                                            {cellContent}
                                                         </TableCell>
                                                     );
-                                                }
-                                                
-                                                let cellContent = value;
-                                                if (column.id === 'actions') {
-                                                    cellContent = (
-                                                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                            <IconButton size="small" onClick={() => handleEdit(row.id)}>
-                                                                <EditIcon fontSize="small" />
-                                                            </IconButton>
-                                                            <IconButton size="small" onClick={() => handleDelete(row.id)}>
-                                                                <DeleteIcon fontSize="small" />
-                                                            </IconButton>
-                                                        </Box>
-                                                    );
-                                                }
+                                                })}
+                                            </TableRow>
+                                            
+                                            <TableRow>
+                                                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+                                                    <Collapse in={isRowOpen} timeout="auto" unmountOnExit>
+                                                        <RowDetails row={row} />
+                                                    </Collapse>
+                                                </TableCell>
+                                            </TableRow>
+                                        </React.Fragment>
+                                    );
+                                })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
-                                                return (
-                                                    <TableCell key={column.id} align={column.align || 'left'}>
-                                                        {cellContent}
-                                                    </TableCell>
-                                                );
-                                            })}
-                                        </TableRow>
-                                        
-                                        <TableRow>
-                                            <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
-                                                <Collapse in={isRowOpen} timeout="auto" unmountOnExit>
-                                                    <RowDetails row={row} />
-                                                </Collapse>
-                                            </TableCell>
-                                        </TableRow>
-                                    </React.Fragment>
-                                );
-                            })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-
-            <TablePagination
-                rowsPerPageOptions={[10, 25, 100]}
-                component="div"
-                count={filteredRows.length} 
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                labelRowsPerPage="Alunos por página:"
-            />
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    component="div"
+                    count={filteredRows.length} 
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage="Alunos por página:"
+                    sx={{ borderTop: '1px solid rgba(224, 224, 224, 1)' }} 
+                />
+            
+            </Paper>
 
             <CadastroAlunoDialog 
                 open={cadastroOpen} 
