@@ -3,35 +3,35 @@ import {
   Box, Typography, Paper, Grid, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, TablePagination, IconButton,
-  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,Fab
+  Breadcrumbs, Link, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Fab
 } from '@mui/material';
 import {
   PersonOutline, DescriptionOutlined, AdminPanelSettingsOutlined,
   ChevronRight, Add, Edit, Delete, NavigateNext,
-  BadgeOutlined, 
-  MailOutline 
+  BadgeOutlined,
+  MailOutline
 } from '@mui/icons-material';
 
 import AdminArea from './ConfigComponents/AdminArea';
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
-  color: '#1F2937',
-  fontWeight: 'bold',
+  color: 'black',
+  fontWeight: 'normal',
   '&:hover': {
-    bgcolor: '#EAB308',
+    bgcolor: '#e0c850',
   },
-  textTransform: 'none', 
+  textTransform: 'none',
 };
 
 const grayButtonSx = {
-  bgcolor: '#6B7280',
-  color: '#F2D95C',
-  fontWeight: 'bold',
+  bgcolor: '#343a40',
+  color: 'white',
+  fontWeight: 'normal',
   '&:hover': {
-    bgcolor: '#4B5563',
+    bgcolor: '#23272b',
   },
-  textTransform: 'none', 
+  textTransform: 'none',
 };
 
 const mockUserAdmin = {
@@ -78,9 +78,11 @@ function AlterarSenhaModal({ open, onClose }) {
         />
       </DialogContent>
       <DialogActions sx={{ p: '0 24px 16px' }}>
-        <Button onClick={onClose} sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Cancelar</Button>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
+          CANCELAR
+        </Button>
         <Button onClick={onClose} variant="contained" sx={yellowButtonSx}>
-          Enviar Link
+          ENVIAR LINK
         </Button>
       </DialogActions>
     </Dialog>
@@ -89,7 +91,7 @@ function AlterarSenhaModal({ open, onClose }) {
 
 
 function AlterarEmailModal({ open, onClose }) {
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
 
   useEffect(() => {
     if (!open) {
@@ -129,10 +131,10 @@ function AlterarEmailModal({ open, onClose }) {
             </DialogContent>
             <DialogActions sx={{ p: '0 24px 16px' }}>
               <Button onClick={handleClose} variant="contained" sx={grayButtonSx}>
-                Cancelar
+                CANCELAR
               </Button>
               <Button onClick={handleNextStep} variant="contained" sx={yellowButtonSx}>
-                Continuar
+                CONTINUAR
               </Button>
             </DialogActions>
           </>
@@ -150,10 +152,10 @@ function AlterarEmailModal({ open, onClose }) {
             </DialogContent>
             <DialogActions sx={{ p: '0 24px 16px' }}>
               <Button onClick={handlePrevStep} variant="contained" sx={grayButtonSx}>
-                Cancelar
+                CANCELAR
               </Button>
               <Button onClick={handleNextStep} variant="contained" sx={yellowButtonSx}>
-                Continuar
+                CONTINUAR
               </Button>
             </DialogActions>
           </>
@@ -167,9 +169,9 @@ function AlterarEmailModal({ open, onClose }) {
                 Parabéns! Seu e-mail foi alterado com sucesso.
               </Typography>
             </DialogContent>
-            <DialogActions sx={{ p: '0 24px 16px', justifyContent: 'center' }}>
+            <DialogActions sx={{ p: '0 24px 16px', justifyContent: 'flex-end' }}>
               <Button onClick={handleClose} variant="contained" sx={yellowButtonSx}>
-                Concluído
+                CONCLUÍDO
               </Button>
             </DialogActions>
           </>
@@ -191,31 +193,38 @@ function CadastrarUsuarioModal({ open, onClose, onSave }) {
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '500px' } }}>
       <DialogTitle fontWeight="bold" textAlign="center" >Cadastrar um novo Usuário</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
-        <TextField autoFocus label="Nome Completo*"/>
+        <TextField autoFocus label="Nome Completo*" />
         <TextField label="E-mail*" type="email" />
         <TextField label="Senha*" type="password" />
-        <TextField label="Confirmar Senha*" type="password"  />
-        <TextField label="CPF*"/>
+        <TextField label="Confirmar Senha*" type="password" />
+        <TextField label="CPF*" />
       </DialogContent>
-      <FormControl component="fieldset" sx={{ mt: 1, pl: 3 }}> 
-          <FormLabel component="legend">Tipo de Usuário:</FormLabel>
-          <RadioGroup
-            row
-            aria-label="tipo de usuário"
-            name="tipo-usuario-group"
-            defaultValue="funcionario"
-          >
-            <FormControlLabel value="administrador" control={<Radio />} label="Administrador" />
-            <FormControlLabel value="funcionario" control={<Radio />} label="Funcionário" />
-          </RadioGroup>
+      <FormControl component="fieldset" sx={{ mt: 1, pl: 3 }}>
+        <FormLabel
+          sx={{
+            color: '#23272b',
+            '&.Mui-focused': {
+              color: '#23272b',
+            },
+          }}
+          component="legend">Tipo de Usuário:</FormLabel>
+        <RadioGroup
+          row
+          aria-label="tipo de usuário"
+          name="tipo-usuario-group"
+          defaultValue="funcionario"
+        >
+          <FormControlLabel value="administrador" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
+          <FormControlLabel value="funcionario" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+        </RadioGroup>
       </FormControl>
-      <DialogActions sx={{ p: 3, justifyContent: 'flex-start', gap: 1.5 }}>
-          <Button onClick={onClose} variant="contained" sx={grayButtonSx} >
-            Cancelar
-          </Button>
-          <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
-            Cadastrar Usuário
-          </Button>
+      <DialogActions sx={{ p: 3, justifyContent: 'flex-end', gap: 1.5 }}>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx} >
+          CANCELAR
+        </Button>
+        <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
+          CADASTRAR USUÁRIO
+        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -258,10 +267,10 @@ function EditarUsuarioModal({ open, onClose, onSave, user }) {
       </DialogContent>
       <DialogActions sx={{ p: '0 24px 16px' }}>
         <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
-          Cancelar
+          CANCELAR
         </Button>
         <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>
-          Salvar Usuário
+          SALVAR USUÁRIO
         </Button>
       </DialogActions>
     </Dialog>
@@ -280,10 +289,10 @@ function ExcluirUsuarioModal({ open, onClose, onConfirm, user }) {
       </DialogContent>
       <DialogActions sx={{ p: '0 24px 16px' }}>
         <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
-          Voltar
+          VOLTAR
         </Button>
         <Button onClick={onConfirm} variant="contained" sx={yellowButtonSx}>
-          Excluir
+          EXCLUIR
         </Button>
       </DialogActions>
     </Dialog>
@@ -311,9 +320,9 @@ function CodigoInput() {
 function InfoItem({ icon, title, value }) {
   const capitalizeRole = (val) => {
     if (typeof val === 'string' && (val === 'ADMINISTRADOR' || val === 'FUNCIONARIO')) {
-        return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+      return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
     }
-    return val; 
+    return val;
   };
 
   return (
@@ -328,11 +337,11 @@ function InfoItem({ icon, title, value }) {
 }
 
 export default function ConfigPage() {
-  
+
   const [user, setUser] = useState(mockUserAdmin);
   const [funcionarios, setFuncionarios] = useState(mockFuncionarios);
 
-  const [modalOpen, setModalOpen] = useState(null); 
+  const [modalOpen, setModalOpen] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const handleOpenModal = (modalName, user = null) => {
@@ -354,7 +363,7 @@ export default function ConfigPage() {
     console.log("Editando usuário:", userData);
     handleCloseModal();
   };
-  
+
   const handleDeleteUser = () => {
     console.log("Excluindo usuário:", selectedUser);
     setFuncionarios(funcionarios.filter(f => f.id !== selectedUser.id));
@@ -363,17 +372,17 @@ export default function ConfigPage() {
 
 
   return (
-    
-    <Box sx={{ p: 4 }}> 
-      
+
+    <Box sx={{ p: 4 }}>
+
       <Typography variant="h4" fontWeight="bold" mb={4}>
         Configurações
       </Typography>
 
-      <Typography variant="h5"  mb={2}>Acesso</Typography>
-      <Paper 
-        variant="outlined" 
-        sx={{ p: 3, borderRadius: 2 }} 
+      <Typography variant="h5" mb={2}>Acesso</Typography>
+      <Paper
+        variant="outlined"
+        sx={{ p: 3, borderRadius: 2 }}
       >
         {/* Alterado 'spacing' para 'rowSpacing={4}' e 'columnSpacing={2}' */}
         <Grid container rowSpacing={4} columnSpacing={2}>
@@ -384,10 +393,10 @@ export default function ConfigPage() {
             <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <InfoItem icon={<BadgeOutlined />} title="CPF:" value={user.cpf} /> 
+            <InfoItem icon={<BadgeOutlined />} title="CPF:" value={user.cpf} />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <InfoItem icon={<MailOutline />} title="E-mail:" value={user.email} /> 
+            <InfoItem icon={<MailOutline />} title="E-mail:" value={user.email} />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
@@ -395,11 +404,11 @@ export default function ConfigPage() {
         </Grid>
       </Paper>
 
-      <Box mb={3} mt={5}> 
-        <Typography variant="h5" mb={2}>Segurança</Typography> 
-        <Paper 
-            variant="outlined" 
-            sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2}}
+      <Box mb={3} mt={5}>
+        <Typography variant="h5" mb={2}>Segurança</Typography>
+        <Paper
+          variant="outlined"
+          sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, width: '100%' }}>
             <Button
@@ -407,10 +416,10 @@ export default function ConfigPage() {
               onClick={() => handleOpenModal('senha')}
               endIcon={
                 <Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20,  }} />
+                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20, }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight: "bold", textTransform: 'none' }}
             >
               Alterar Senha
             </Button>
@@ -422,7 +431,7 @@ export default function ConfigPage() {
                   <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
                 </Box>
               }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}
+              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight: "bold", textTransform: 'none' }}
             >
               Alterar Email
             </Button>
