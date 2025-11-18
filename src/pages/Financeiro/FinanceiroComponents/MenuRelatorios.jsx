@@ -3,12 +3,20 @@ import {
     Button,
     Menu,
     MenuItem,
-    ListItemIcon
+    ListItemIcon,
+    Typography, 
+    Divider    
 } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-export default function MenuRelatorios({ onDownloadCompleto, onDownloadReceitas, onDownloadDespesas }) {
+export default function MenuRelatorios({ 
+    onDownloadBalancete,
+    onDownloadReceitasAlunos,
+    onDownloadOutrasReceitas,
+    onDownloadTodasReceitas,
+    onDownloadTodasDespesas
+}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
@@ -50,17 +58,42 @@ export default function MenuRelatorios({ onDownloadCompleto, onDownloadReceitas,
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
             >
-                <MenuItem onClick={() => handleSelect(onDownloadCompleto)}>
-                    <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
-                    Relatório Completo (PDF)
+                <MenuItem 
+                    disabled 
+                    sx={{ 
+                        opacity: '1 !important', 
+                        fontSize: '0.8rem', 
+                        color: 'text.secondary' 
+                    }}
+                >
+                    <Typography variant="caption">
+                        Ajuste o período no calendário antes de emitir o relatório.
+                    </Typography>
                 </MenuItem>
-                <MenuItem onClick={() => handleSelect(onDownloadReceitas)}>
+                <Divider sx={{ my: 0.5 }} />
+
+                <MenuItem onClick={() => handleSelect(onDownloadBalancete)}>
                     <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
-                    Relatório de Receitas
+                    Demonstrativo contábil do mês
                 </MenuItem>
-                <MenuItem onClick={() => handleSelect(onDownloadDespesas)}>
+                
+                <Divider sx={{ my: 0.5 }} />
+
+                <MenuItem onClick={() => handleSelect(onDownloadReceitasAlunos)}>
                     <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
-                    Relatório de Despesas
+                    Receitas de alunos
+                </MenuItem>
+                <MenuItem onClick={() => handleSelect(onDownloadOutrasReceitas)}>
+                    <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
+                    Outras receitas
+                </MenuItem>
+                <MenuItem onClick={() => handleSelect(onDownloadTodasReceitas)}>
+                    <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
+                    Todas as receitas
+                </MenuItem>
+                <MenuItem onClick={() => handleSelect(onDownloadTodasDespesas)}>
+                    <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
+                    Todas as despesas
                 </MenuItem>
             </Menu>
         </>

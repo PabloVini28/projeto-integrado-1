@@ -4,6 +4,11 @@ import fs from 'node:fs';
 import started from 'electron-squirrel-startup';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 if (started) {
   app.quit();
 }
@@ -28,9 +33,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   app.commandLine.appendSwitch('disable-gpu-sandbox');
-
   createWindow();
-
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -48,9 +51,9 @@ app.on('window-all-closed', () => {
 
 // LÓGICA DE GERAÇÃO DE PDF
 
-/**
- * Cabeçalho universal para todos os relatórios.
- */
+
+//Cabeçalho universal para todos os relatórios.
+
 async function drawPageHeader(page, logoImage, fonts, title) {
     const { width, height } = page.getSize();
     const margin = 50;
@@ -59,73 +62,37 @@ async function drawPageHeader(page, logoImage, fonts, title) {
     page.drawImage(logoImage, { x: margin, y: y - 40, width: 40, height: 40 });
 
     let textY = y - 10;
-    page.drawText('Corpo em Forma', {
-        x: margin + 50, 
-        y: textY, 
-        size: 16, 
-        font: fonts.bold 
-    });
+    page.drawText('Corpo em Forma', { x: margin + 50, y: textY, size: 16, font: fonts.bold });
     textY -= 15;
-    page.drawText('Rua Tabelião Eneas, 60, Centro, Quixadá, Ceará', {
-        x: margin + 50, 
-        y: textY, 
-        size: 9, 
-        font: fonts.normal, 
-        color: rgb(0.3, 0.3, 0.3) 
-    });
+    page.drawText('Rua Tabelião Eneas, 60, Centro, Quixadá, Ceará', { x: margin + 50, y: textY, size: 9, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
     textY -= 12;
-    page.drawText('CNPJ: 40.522.014/0001-90 | Tel: (88) 996106590', {
-        x: margin + 50, 
-        y: textY, 
-        size: 9, 
-        font: fonts.normal, 
-        color: rgb(0.3, 0.3, 0.3) 
-    });
+    page.drawText('CNPJ: 40.522.014/0001-90 | Tel: (88) 996106590', { x: margin + 50, y: textY, size: 9, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
     
     const emissionDate = new Date().toLocaleDateString('pt-BR');
     const emissionText = `Emitido em: ${emissionDate}`;
     const titleWidth = fonts.bold.widthOfTextAtSize(title, 14);
     const dateWidth = fonts.normal.widthOfTextAtSize(emissionText, 10);
     
-    page.drawText(title, { 
-        x: width - margin - titleWidth, 
-        y: y - 10, 
-        size: 14, 
-        font: fonts.bold, 
-        color: rgb(0, 0, 0) 
-    });
-    
-    page.drawText(emissionText, {
-        x: width - margin - dateWidth, 
-        y: y - 28, 
-        size: 10, 
-        font: fonts.normal, 
-        color: rgb(0.3, 0.3, 0.3) 
-    });
+    page.drawText(title, { x: width - margin - titleWidth, y: y - 10, size: 14, font: fonts.bold, color: rgb(0, 0, 0) });
+    page.drawText(emissionText, { x: width - margin - dateWidth, y: y - 28, size: 10, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
     
     return height - margin - 80;
 }
 
-/**
- * Rodapé universal com numeração de página
- */
+
+//Rodapé universal com numeração de página
+ 
 function drawPageFooter(page, pageNum, totalPages, font) {
     const { width, height } = page.getSize();
     const margin = 50;
     const footerText = `Página ${pageNum} de ${totalPages}`;
     const textWidth = font.widthOfTextAtSize(footerText, 9);
     
-    page.drawText(footerText, {
-        x: width - margin - textWidth, // Alinhado à direita
-        y: margin / 2, // Na base da página
-        size: 9,
-        font: font,
-        color: rgb(0.3, 0.3, 0.3)
-    });
+    page.drawText(footerText, { x: width - margin - textWidth, y: margin / 2, size: 9, font: font, color: rgb(0.3, 0.3, 0.3) });
 }
 
 
-// --- LÓGICA DE PDF (TABELA REUTILIZÁVEL) ---
+// LÓGICA DE PDF (TABELA REUTILIZÁVEL)
 async function createPdf(options) {
   const { title, headers, columnWidths, data, defaultFileName } = options;
   const { canceled, filePath } = await dialog.showSaveDialog({
@@ -145,12 +112,15 @@ async function createPdf(options) {
     if (app.isPackaged) {
       logoPath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/assets/logo/icon.png`);
     } else {
-      logoPath = path.join(__dirname, '../../src/assets/logo/icon.png');
+      logoPath = path.join(process.cwd(), 'src/assets/logo/icon.png');
     }
     const logoBytes = fs.readFileSync(logoPath);
     const logoImage = await pdfDoc.embedPng(logoBytes);
     
-    let page = pdfDoc.addPage([841.89, 595.28]); // A4 Paisagem
+    // O Balancete usa Retrato (A4), o resto usa Paisagem.
+    const isPortrait = title.toLowerCase().includes('demonstrativo');
+    let page = pdfDoc.addPage(isPortrait ? [595.28, 841.89] : [841.89, 595.28]);
+    
     const { width, height } = page.getSize();
     const margin = 50;
     const rowHeight = 20;
@@ -169,23 +139,29 @@ async function createPdf(options) {
     };
     
     let y = await drawPageHeader(page, logoImage, fonts, title); 
-    y = drawTableHeader(page, y, margin, columnWidths, helveticaBoldFont);
+    y = drawTableHeader(page, y);
     
     page.setFont(helveticaFont);
     page.setFontSize(10);
     
     for (const [index, row] of data.entries()) {
       if (y < margin + rowHeight) {
-        page = pdfDoc.addPage([841.89, 595.28]);
+        page = pdfDoc.addPage(isPortrait ? [595.28, 841.89] : [841.89, 595.28]);
         y = await drawPageHeader(page, logoImage, fonts, title); 
-        y = drawTableHeader(page, y, margin, columnWidths, helveticaBoldFont);
+        y = drawTableHeader(page, y);
       }
       if (index % 2 === 0) {
         page.drawRectangle({ x: margin, y: y - rowHeight, width: width - (margin * 2), height: rowHeight, color: rgb(0.97, 0.97, 0.97) });
       }
+      
       let currentX = margin + 5;
       row.forEach((text, i) => {
-        page.drawText(text || '-', { x: currentX, y: y - 14, color: rgb(0, 0, 0) });
+        let textColor = rgb(0, 0, 0);
+        if (isPortrait) {
+            if (String(text).includes('(')) textColor = rgb(0.7, 0, 0); // Vermelho
+            if (String(text).includes('RESULTADO') && !String(row[1]).includes('(')) textColor = rgb(0, 0.5, 0); // Verde
+        }
+        page.drawText(text || '-', { x: currentX, y: y - 14, color: textColor });
         currentX += columnWidths[i];
       });
       y -= rowHeight;
@@ -210,7 +186,6 @@ ipcMain.handle('generate-report', async (event, options) => {
 });
 
 
-// --- LÓGICA DO RELATÓRIO DETALHADO (VISUAL COMPACTO) ---
 ipcMain.handle('generate-detailed-student-report', async (event, data) => {
   const { canceled, filePath } = await dialog.showSaveDialog({
     title: 'Salvar Relatório Detalhado de Alunos',
@@ -232,7 +207,7 @@ ipcMain.handle('generate-detailed-student-report', async (event, data) => {
     if (app.isPackaged) {
       logoPath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/assets/logo/icon.png`);
     } else {
-      logoPath = path.join(__dirname, '../../src/assets/logo/icon.png');
+      logoPath = path.join(process.cwd(), 'src/assets/logo/icon.png');
     }
     const logoBytes = fs.readFileSync(logoPath);
     const logoImage = await pdfDoc.embedPng(logoBytes);
@@ -242,7 +217,7 @@ ipcMain.handle('generate-detailed-student-report', async (event, data) => {
     const margin = 40;
     const lineGap = 13; 
     const sectionGap = 18; 
-    const blockHeight = 100; // Altura compactada
+    const blockHeight = 100; 
 
     let y = await drawPageHeader(page, logoImage, fonts, "Relatório Detalhado de Alunos"); 
     
@@ -267,22 +242,19 @@ ipcMain.handle('generate-detailed-student-report', async (event, data) => {
             font: helveticaFont, 
             color: rgb(0, 0, 0) 
         });
-        return yPos - lineGap; // Espaçamento de linha compacto
+        return yPos - lineGap;
     };
 
-    // Loop para cada aluno
     for (const [index, student] of data.entries()) {
         if (y < margin + blockHeight) { 
             page = pdfDoc.addPage([841.89, 595.28]);
             y = await drawPageHeader(page, logoImage, fonts, "Relatório Detalhado de Alunos");
         }
 
-        // --- Desenha o Bloco do Aluno ---
         let y_col1 = y;
         let y_col2 = y;
         let y_col3 = y;
 
-        // Coluna 1
         y_col1 = drawField('Nome:', student.nome, col1_x, y_col1);
         y_col1 = drawField('Matrícula:', student.matricula, col1_x, y_col1);
         y_col1 = drawField('Plano:', student.plano, col1_x, y_col1);
@@ -290,12 +262,10 @@ ipcMain.handle('generate-detailed-student-report', async (event, data) => {
         y_col1 = drawField('Expiração:', student.data_expiracao, col1_x, y_col1);
         y_col1 = drawField('Status:', student.status, col1_x, y_col1);
 
-        // Coluna 2
         y_col2 = drawField('CPF:', student.cpf, col2_x, y_col2);
         y_col2 = drawField('Data de Nasc.:', student.dataNascimento, col2_x, y_col2);
         y_col2 = drawField('Gênero:', student.genero, col2_x, y_col2);
         
-        // Coluna 3
         y_col3 = drawField('Email:', student.email, col3_x, y_col3);
         y_col3 = drawField('Telefone:', student.telefone, col3_x, y_col3);
         const address = student.endereco ? `${student.endereco.logradouro}, ${student.endereco.numero}` : 'Não informado';
@@ -312,7 +282,6 @@ ipcMain.handle('generate-detailed-student-report', async (event, data) => {
         y -= sectionGap;
     }
     
-    // Adiciona a numeração em TODAS as páginas
     const totalPages = pdfDoc.getPageCount();
     pdfDoc.getPages().forEach((p, i) => {
         drawPageFooter(p, i + 1, totalPages, helveticaFont);

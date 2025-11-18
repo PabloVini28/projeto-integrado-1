@@ -8,6 +8,8 @@ const require$$0 = require("tty");
 const require$$1 = require("util");
 const require$$3 = require("fs");
 const require$$4 = require("net");
+const node_url = require("node:url");
+var _documentCurrentScript = typeof document !== "undefined" ? document.currentScript : null;
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -19489,6 +19491,8 @@ var PDFButton = (
     return PDFButton2;
   }(PDFField)
 );
+const __filename$1 = node_url.fileURLToPath(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("main.js", document.baseURI).href);
+const __dirname$1 = path$1.dirname(__filename$1);
 if (started) {
   require$$3$1.app.quit();
 }
@@ -19497,7 +19501,7 @@ const createWindow = () => {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path$1.join(__dirname, "preload.js")
+      preload: path$1.join(__dirname$1, "preload.js")
     }
   });
   {
@@ -19525,46 +19529,17 @@ async function drawPageHeader(page, logoImage, fonts, title) {
   const y = height - margin;
   page.drawImage(logoImage, { x: margin, y: y - 40, width: 40, height: 40 });
   let textY = y - 10;
-  page.drawText("Corpo em Forma", {
-    x: margin + 50,
-    y: textY,
-    size: 16,
-    font: fonts.bold
-  });
+  page.drawText("Corpo em Forma", { x: margin + 50, y: textY, size: 16, font: fonts.bold });
   textY -= 15;
-  page.drawText("Rua Tabelião Eneas, 60, Centro, Quixadá, Ceará", {
-    x: margin + 50,
-    y: textY,
-    size: 9,
-    font: fonts.normal,
-    color: rgb(0.3, 0.3, 0.3)
-  });
+  page.drawText("Rua Tabelião Eneas, 60, Centro, Quixadá, Ceará", { x: margin + 50, y: textY, size: 9, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
   textY -= 12;
-  page.drawText("CNPJ: 40.522.014/0001-90 | Tel: (88) 996106590", {
-    x: margin + 50,
-    y: textY,
-    size: 9,
-    font: fonts.normal,
-    color: rgb(0.3, 0.3, 0.3)
-  });
+  page.drawText("CNPJ: 40.522.014/0001-90 | Tel: (88) 996106590", { x: margin + 50, y: textY, size: 9, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
   const emissionDate = (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR");
   const emissionText = `Emitido em: ${emissionDate}`;
   const titleWidth = fonts.bold.widthOfTextAtSize(title, 14);
   const dateWidth = fonts.normal.widthOfTextAtSize(emissionText, 10);
-  page.drawText(title, {
-    x: width - margin - titleWidth,
-    y: y - 10,
-    size: 14,
-    font: fonts.bold,
-    color: rgb(0, 0, 0)
-  });
-  page.drawText(emissionText, {
-    x: width - margin - dateWidth,
-    y: y - 28,
-    size: 10,
-    font: fonts.normal,
-    color: rgb(0.3, 0.3, 0.3)
-  });
+  page.drawText(title, { x: width - margin - titleWidth, y: y - 10, size: 14, font: fonts.bold, color: rgb(0, 0, 0) });
+  page.drawText(emissionText, { x: width - margin - dateWidth, y: y - 28, size: 10, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
   return height - margin - 80;
 }
 function drawPageFooter(page, pageNum, totalPages, font) {
@@ -19572,15 +19547,7 @@ function drawPageFooter(page, pageNum, totalPages, font) {
   const margin = 50;
   const footerText = `Página ${pageNum} de ${totalPages}`;
   const textWidth = font.widthOfTextAtSize(footerText, 9);
-  page.drawText(footerText, {
-    x: width - margin - textWidth,
-    // Alinhado à direita
-    y: margin / 2,
-    // Na base da página
-    size: 9,
-    font,
-    color: rgb(0.3, 0.3, 0.3)
-  });
+  page.drawText(footerText, { x: width - margin - textWidth, y: margin / 2, size: 9, font, color: rgb(0.3, 0.3, 0.3) });
 }
 async function createPdf(options) {
   const { title, headers, columnWidths, data, defaultFileName } = options;
@@ -19597,13 +19564,14 @@ async function createPdf(options) {
     const fonts = { normal: helveticaFont, bold: helveticaBoldFont };
     let logoPath;
     if (require$$3$1.app.isPackaged) {
-      logoPath = path$1.join(__dirname, `../renderer/${"main_window"}/assets/logo/icon.png`);
+      logoPath = path$1.join(__dirname$1, `../renderer/${"main_window"}/assets/logo/icon.png`);
     } else {
-      logoPath = path$1.join(__dirname, "../../src/assets/logo/icon.png");
+      logoPath = path$1.join(process.cwd(), "src/assets/logo/icon.png");
     }
     const logoBytes = fs.readFileSync(logoPath);
     const logoImage = await pdfDoc.embedPng(logoBytes);
-    let page = pdfDoc.addPage([841.89, 595.28]);
+    const isPortrait = title.toLowerCase().includes("demonstrativo");
+    let page = pdfDoc.addPage(isPortrait ? [595.28, 841.89] : [841.89, 595.28]);
     const { width, height } = page.getSize();
     const margin = 50;
     const rowHeight = 20;
@@ -19620,21 +19588,26 @@ async function createPdf(options) {
       return yPos - tableRowHeight;
     };
     let y = await drawPageHeader(page, logoImage, fonts, title);
-    y = drawTableHeader(page, y, margin, columnWidths, helveticaBoldFont);
+    y = drawTableHeader(page, y);
     page.setFont(helveticaFont);
     page.setFontSize(10);
     for (const [index, row] of data.entries()) {
       if (y < margin + rowHeight) {
-        page = pdfDoc.addPage([841.89, 595.28]);
+        page = pdfDoc.addPage(isPortrait ? [595.28, 841.89] : [841.89, 595.28]);
         y = await drawPageHeader(page, logoImage, fonts, title);
-        y = drawTableHeader(page, y, margin, columnWidths, helveticaBoldFont);
+        y = drawTableHeader(page, y);
       }
       if (index % 2 === 0) {
         page.drawRectangle({ x: margin, y: y - rowHeight, width: width - margin * 2, height: rowHeight, color: rgb(0.97, 0.97, 0.97) });
       }
       let currentX = margin + 5;
       row.forEach((text, i) => {
-        page.drawText(text || "-", { x: currentX, y: y - 14, color: rgb(0, 0, 0) });
+        let textColor = rgb(0, 0, 0);
+        if (isPortrait) {
+          if (String(text).includes("(")) textColor = rgb(0.7, 0, 0);
+          if (String(text).includes("RESULTADO") && !String(row[1]).includes("(")) textColor = rgb(0, 0.5, 0);
+        }
+        page.drawText(text || "-", { x: currentX, y: y - 14, color: textColor });
         currentX += columnWidths[i];
       });
       y -= rowHeight;
@@ -19670,9 +19643,9 @@ require$$3$1.ipcMain.handle("generate-detailed-student-report", async (event, da
     const fonts = { normal: helveticaFont, bold: helveticaBoldFont };
     let logoPath;
     if (require$$3$1.app.isPackaged) {
-      logoPath = path$1.join(__dirname, `../renderer/${"main_window"}/assets/logo/icon.png`);
+      logoPath = path$1.join(__dirname$1, `../renderer/${"main_window"}/assets/logo/icon.png`);
     } else {
-      logoPath = path$1.join(__dirname, "../../src/assets/logo/icon.png");
+      logoPath = path$1.join(process.cwd(), "src/assets/logo/icon.png");
     }
     const logoBytes = fs.readFileSync(logoPath);
     const logoImage = await pdfDoc.embedPng(logoBytes);
