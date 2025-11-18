@@ -116,7 +116,7 @@ export default function FinanceiroPage() {
     return { 
         receitasAlunos: `R$ ${rAlunos.toFixed(2).replace(".", ",")}`,
         outrasReceitas: `R$ ${rOutras.toFixed(2).replace(".", ",")}`,
-        despesas: `R$ ${rDespesas.toFixed(2).replace(".", ",")}`,
+        despesas: `(R$ ${rDespesas.toFixed(2).replace(".", ",")})`,
         resultado: `R$ ${saldoTotal.toFixed(2).replace(".", ",")}`
     };
   }, [receitasDoMes, despesasDoMes]);
@@ -204,9 +204,101 @@ export default function FinanceiroPage() {
       }
   };
 
-
   const handleDownloadReport = async (reportType) => {
-    console.log(`Gerando relatório: ${reportType}`);
+    const mesAno = selectedDate.toLocaleString('pt-BR', { month: '2-digit', year: 'numeric' });
+    const mesAnoArquivo = mesAno.replace('/', '-');
+
+    let reportOptions = {
+        title: `Relatório (${mesAno})`,
+        defaultFileName: `relatorio_${reportType}_${mesAnoArquivo}.pdf`,
+        headers: [],
+        columnWidths: [],
+        data: []
+    };
+    
+    let apiToCall = window.electronAPI.generateReport;
+
+    const receitasAlunosDoMes = receitasDoMes.filter(r => r.categoria === 'Alunos');
+    const outrasReceitasDoMes = receitasDoMes.filter(r => r.categoria !== 'Alunos');
+
+    const headersSimples = ['ID', 'Nome', 'Data', 'Categoria', 'Valor (R$)'];
+    const widthsSimples = [50, 200, 100, 150, 100];
+    const formatRowSimples = (row) => [
+        String(row.id), 
+        row.nome || '-', 
+        row.data || '-', 
+        row.categoria || '-', 
+        `R$ ${row.valor.toFixed(2).replace(".", ",")}`
+    ];
+    
+    const headersDespesas = ['ID', 'Nome', 'Data', 'Categoria', 'Descrição', 'Valor (R$)'];
+    const widthsDespesas = [40, 120, 70, 100, 180, 80];
+    const formatDespesaRow = (row) => [
+        String(row.id), 
+        row.nome || '-', 
+        row.data || '-', 
+        row.categoria || '-', 
+        row.descricao || '-', 
+        `(R$ ${row.valor.toFixed(2).replace(".", ",")})`
+    ];
+
+    switch (reportType) {
+        case 'balancete_mes':
+            reportOptions.title = `Demonstrativo Contábil (${mesAno})`;
+            reportOptions.headers = ['Descrição', 'Valor (R$)'];
+            reportOptions.columnWidths = [400, 200]; 
+            reportOptions.data = [
+                ['Receitas de Alunos', receitasAlunos], 
+                ['Outras Receitas', outrasReceitas],   
+                ['TOTAL DE DESPESAS', despesas],      
+                ['RESULTADO DO MÊS', resultado]       
+            ];
+            break;
+
+        case 'receitas_alunos':
+            reportOptions.title = `Relatório - Receitas de Alunos (${mesAno})`;
+            reportOptions.headers = headersSimples;
+            reportOptions.columnWidths = widthsSimples;
+            reportOptions.data = receitasAlunosDoMes.map(formatRowSimples);
+            break;
+
+        case 'outras_receitas':
+            reportOptions.title = `Relatório - Outras Receitas (${mesAno})`;
+            reportOptions.headers = headersSimples;
+            reportOptions.columnWidths = widthsSimples;
+            reportOptions.data = outrasReceitasDoMes.map(formatRowSimples);
+            break;
+
+        case 'todas_receitas':
+            reportOptions.title = `Relatório - Todas as Receitas (${mesAno})`;
+            reportOptions.headers = headersSimples;
+            reportOptions.columnWidths = widthsSimples;
+            reportOptions.data = receitasDoMes.map(formatRowSimples);
+            break;
+
+        case 'todas_despesas':
+            reportOptions.title = `Relatório - Todas as Despesas (${mesAno})`;
+            reportOptions.headers = headersDespesas;
+            reportOptions.columnWidths = widthsDespesas;
+            reportOptions.data = despesasDoMes.map(formatDespesaRow);
+            break;
+
+        default:
+            console.warn(`Tipo de relatório desconhecido: ${reportType}`);
+            return;
+    }
+
+    try {
+        const result = await apiToCall(reportOptions); 
+        if (result.success) {
+            alert(`Relatório salvo com sucesso em:\n${result.path}`);
+        } else if (result.error !== 'Save dialog canceled') {
+            alert(`Falha ao salvar relatório: ${result.error}`);
+        }
+    } catch (error) {
+        console.error("Erro ao chamar API do Electron:", error);
+        alert(`Erro ao gerar relatório: ${error.message}`);
+    }
   };
 
 
@@ -260,9 +352,11 @@ export default function FinanceiroPage() {
             
             {isAdmin && (
               <MenuRelatorios
-                onDownloadCompleto={() => handleDownloadReport('completo')}
-                onDownloadReceitas={() => handleDownloadReport('receitas')}
-                onDownloadDespesas={() => handleDownloadReport('despesas')}
+                onDownloadBalancete={() => handleDownloadReport('balancete_mes')}
+                onDownloadReceitasAlunos={() => handleDownloadReport('receitas_alunos')}
+                onDownloadOutrasReceitas={() => handleDownloadReport('outras_receitas')}
+                onDownloadTodasReceitas={() => handleDownloadReport('todas_receitas')}
+                onDownloadTodasDespesas={() => handleDownloadReport('todas_despesas')}
               />
             )}
         </Box>
