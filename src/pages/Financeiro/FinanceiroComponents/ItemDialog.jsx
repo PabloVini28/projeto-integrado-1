@@ -18,23 +18,19 @@ import {
   Typography 
 } from "@mui/material";
 
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { ptBR } from 'date-fns/locale';
+import { parse } from 'date-fns/parse'; 
+import { format } from 'date-fns/format'; 
+
+
 const mockAlunos = [
     { id: 1, nome: 'Gabriel Pereira de Souza' },
     { id: 2, nome: 'Ana Clara Souza' },
     { id: 3, nome: 'Rafael Oliveira Almeida' },
 ];
-
-
-const formatDateToInput = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
-
-const today = formatDateToInput(new Date());
 
 export default function ItemDialog({
   open,
@@ -47,7 +43,9 @@ export default function ItemDialog({
   const [categoria, setCategoria] = useState("");
   const [nome, setNome] = useState("");
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
-  const [data, setData] = useState("");
+  
+  const [data, setData] = useState(new Date()); 
+
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
   const [errors, setErrors] = useState({});
@@ -59,11 +57,11 @@ export default function ItemDialog({
   const [loadingAlunos, setLoadingAlunos] = useState(false);
 
   const type = isRecipe ? "receita" : "despesa";
-  const categoriasReceita = ["Alunos", "Outras"];
+  const categoriasReceita = ["Alunos", "Outras"]; 
   const categoriasDespesa = [
     "Instalações e infraestrutura",
     "Pessoal",
-    "Investimentos",
+    "Investimentos", 
     "Operacional e Administrativo",
     "Outras"
   ];
@@ -94,33 +92,29 @@ export default function ItemDialog({
         if (itemToEdit) {
             setCategoria(itemToEdit.categoria || "");
             setNome(itemToEdit.nome || "");
-            
-            let dataFormatada = today;
-            if (itemToEdit.data) {
-                if (itemToEdit.data.includes('/')) {
-                    const [dia, mes, ano] = itemToEdit.data.split('/');
-                    dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-                } else {
-                    dataFormatada = itemToEdit.data;
-                }
-            }
-            setData(dataFormatada);
             setValor(String(itemToEdit.valor) || "");
             setDescricao(itemToEdit.descricao || "");
+            
+            let dataObjeto = new Date();
+            if (itemToEdit.data) {
+                const parsedDate = parse(itemToEdit.data, 'dd/MM/yyyy', new Date());
+                if (parsedDate.toString() !== 'Invalid Date') {
+                    dataObjeto = parsedDate;
+                }
+            }
+            setData(dataObjeto);
             
             if (isRecipe && itemToEdit.categoria === 'Alunos' && itemToEdit.nome_aluno) {
                 const aluno = mockAlunos.find(a => a.nome === itemToEdit.nome_aluno);
                 setAlunoSelecionado(aluno || null);
-                if (aluno) {
-                    setOpcoesAlunos([aluno]);
-                }
+                if (aluno) { setOpcoesAlunos([aluno]); }
             } else {
                 setAlunoSelecionado(null);
             }
         } else {
             setCategoria("");
             setNome("");
-            setData(today);
+            setData(new Date()); 
             setValor("");
             setDescricao("");
             setAlunoSelecionado(null);
@@ -136,7 +130,7 @@ export default function ItemDialog({
     const newErrors = {};
 
     if (!categoria) newErrors.categoria = true;
-    if (!data) newErrors.data = true;
+    if (!data || data.toString() === 'Invalid Date') newErrors.data = true; 
     if (!valor || parseFloat(valor) <= 0) newErrors.valor = true;
 
     if (isRecipe) {
@@ -156,7 +150,6 @@ export default function ItemDialog({
     return Object.keys(newErrors).length === 0;
   };
 
-
   const handleSave = () => {
     if (!validateForm()) {
         setShowErrorText(true); 
@@ -164,12 +157,11 @@ export default function ItemDialog({
     }
     setShowErrorText(false); 
 
-    const [ano, mes, dia] = data.split('-');
-    const dataFormatadaSalvar = `${dia}/${mes}/${ano}`;
+    const dataFormatadaSalvar = format(data, 'dd/MM/yyyy');
 
     let itemData = {
       categoria,
-      data: dataFormatadaSalvar,
+      data: dataFormatadaSalvar, 
       valor: parseFloat(valor) || 0,
       descricao,
       type: type,
@@ -270,18 +262,20 @@ export default function ItemDialog({
       )}
 
       <Grid item xs={12} sm={6}>
-        <TextField
-          required
-          error={!!errors.data}
-          id="data"
-          label="Data"
-          type="date"
-          fullWidth
-          size="small"
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ max: today }}
+        <DatePicker
+            label="Data"
+            value={data}
+            onChange={(newDate) => setData(newDate || new Date())}
+            format="dd/MM/yyyy"
+            disableFuture 
+            slotProps={{
+                textField: {
+                    size: 'small',
+                    fullWidth: true,
+                    required: true,
+                    error: !!errors.data
+                }
+            }}
         />
       </Grid>
       
@@ -355,18 +349,20 @@ export default function ItemDialog({
       </Grid>
 
       <Grid item xs={12} sm={6}>
-       <TextField
-          required
-          error={!!errors.data}
-          id="data"
-          label="Data"
-          type="date"
-          fullWidth
-          size="small"
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ max: today }}
+       <DatePicker
+            label="Data"
+            value={data}
+            onChange={(newDate) => setData(newDate || new Date())}
+            format="dd/MM/yyyy"
+            disableFuture 
+            slotProps={{
+                textField: {
+                    size: 'small',
+                    fullWidth: true,
+                    required: true,
+                    error: !!errors.data
+                }
+            }}
         />
       </Grid>
       
@@ -403,66 +399,70 @@ export default function ItemDialog({
   );
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{ sx: { borderRadius: 2 } }}
-    >
-      <DialogTitle
-        sx={{
-          textAlign: "center",
-          fontWeight: "normal",
-          fontSize: "1.5rem",
-          pb: 0,
-        }}
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
       >
-        {title}
-      </DialogTitle>
-      
-      <DialogContent>
-        {isRecipe ? renderReceitaForm() : renderDespesaForm()}
-        
-        {showErrorText && (
-            <Typography 
-              variant="body2" 
-              color="error" 
-              sx={{ textAlign: 'center', mt: 2 }}
-            >
-              Por favor, preencha os campos obrigatórios.
-            </Typography>
-        )}
-      </DialogContent>
-      
-      <DialogActions
-        sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
-      >
-        <Button
-          onClick={onClose}
-          variant="contained" 
+        <DialogTitle
           sx={{
-            backgroundColor: "#343a40",
-            color: "white",
-            "&:hover": { backgroundColor: "#23272b" },
+            textAlign: "center",
             fontWeight: "normal",
+            fontSize: "1.5rem",
+            pb: 0,
           }}
         >
-          CANCELAR
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          sx={{
-            backgroundColor: "#F2D95C",
-            color: "black",
-            "&:hover": { backgroundColor: "#e0c850" },
-            fontWeight: "normal", 
-          }}
+          {title}
+        </DialogTitle>
+        
+        <DialogContent>
+          {isRecipe ? renderReceitaForm() : renderDespesaForm()}
+          
+          {showErrorText && (
+              <Typography 
+                variant="body2" 
+                color="error" 
+                sx={{ textAlign: 'center', mt: 2 }}
+              >
+                Por favor, preencha os campos obrigatórios.
+              </Typography>
+          )}
+        </DialogContent>
+        
+        <DialogActions
+          sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
         >
-          SALVAR {type.toUpperCase()}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <Button
+            onClick={onClose}
+            variant="contained" 
+            sx={{
+              backgroundColor: "#343a40",
+              color: "white",
+              "&:hover": { backgroundColor: "#23272b" },
+              fontWeight: "normal",
+              borderRadius: '8px',
+            }}
+          >
+            CANCELAR
+          </Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            sx={{
+              backgroundColor: "#F2D95C",
+              color: "black",
+              "&:hover": { backgroundColor: "#e0c850" },
+              fontWeight: "normal", 
+              borderRadius: '8px', 
+            }}
+          >
+            SALVAR {type.toUpperCase()}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </LocalizationProvider>
   );
 }

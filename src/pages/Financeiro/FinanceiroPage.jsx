@@ -16,7 +16,11 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from '@mui/icons-material/Search';
 
-// Componentes importados
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { ptBR } from 'date-fns/locale'; 
+
 import FinanceTable from "./FinanceiroComponents/FinanceTable.jsx";
 import ItemDialog from "./FinanceiroComponents/ItemDialog.jsx";
 import ConfirmaDialog from "./FinanceiroComponents/ConfirmaDialog.jsx";
@@ -45,13 +49,6 @@ const parseDateString = (dateStr) => {
     const [day, month, year] = dateStr.split('/').map(Number);
     return new Date(year, month - 1, day);
 };
-
-const formatDateToInput = (date) => {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    return `${year}-${month}`;
-};
-
 
 const receitasData = [
   { id: 1, nome: 'Mensalidade', data: '01/11/2025', descricao: "Ref. Gabriel", categoria: "Alunos", valor: 80.0, nome_aluno: "Gabriel P. Souza" },
@@ -199,18 +196,17 @@ export default function FinanceiroPage() {
     setTabValue(newValue);
   };
 
-  const handleDateChange = (event) => {
-      const dateString = event.target.value;
-      if (dateString) {
-          const [year, month] = dateString.split('-').map(Number);
-          setSelectedDate(new Date(year, month - 1, 1));
+  const handleDateChange = (newDate) => {
+      if (newDate && newDate.toString() !== 'Invalid Date') {
+          setSelectedDate(newDate);
       } else {
-          setSelectedDate(new Date());
+          setSelectedDate(new Date()); 
       }
   };
 
 
   const handleDownloadReport = async (reportType) => {
+    console.log(`Gerando relatório: ${reportType}`);
   };
 
 
@@ -242,16 +238,26 @@ export default function FinanceiroPage() {
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <TextField
-                label="Mês/Ano"
-                type="month"
-                size="small"
-                value={formatDateToInput(selectedDate)}
-                onChange={handleDateChange}
-                InputLabelProps={{
-                    shrink: true,
-                }}
-            />
+            
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                <DatePicker
+                    label="Mês/Ano"
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    views={['year', 'month']} 
+                    format="MM/yyyy" 
+                    slotProps={{
+                        textField: {
+                            size: 'small',
+                            InputLabelProps: {
+                                shrink: true,
+                            },
+                            sx: { width: '150px' } 
+                        }
+                    }}
+                />
+            </LocalizationProvider>
+            
             {isAdmin && (
               <MenuRelatorios
                 onDownloadCompleto={() => handleDownloadReport('completo')}
