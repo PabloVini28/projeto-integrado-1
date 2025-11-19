@@ -28,22 +28,53 @@ function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  
   const [showError, setShowError] = useState(false); 
+  const [apiError, setApiError] = useState('');      
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(String(email).toLowerCase());
   };
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
-    setShowError(true); 
+    setShowError(true);
+    setApiError(''); 
     
     if (!validateEmail(email)) {
       return; 
     }
-    console.log("Navegando para a página inicial...");
-    navigate('/');
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:4000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Login realizado com sucesso:", data);
+        
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userData', JSON.stringify(data.user)); 
+        
+        navigate('/');
+      } else {
+        setApiError(data.error || 'Falha ao realizar login.');
+      }
+    } catch (error) {
+      console.error('Erro de conexão:', error);
+      setApiError('Não foi possível conectar ao servidor.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgotPasswordClick = (event) => {
@@ -51,9 +82,14 @@ function LoginPage() {
     navigate('/esqueci-senha');
   };
 
-
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
+    if (apiError) setApiError('');
+  };
+
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+    if (apiError) setApiError('');
   };
 
   const isEmailValid = validateEmail(email);
@@ -93,6 +129,18 @@ function LoginPage() {
         </Typography>
 
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1, width: '100%' }}>
+          
+          {apiError && (
+            <Typography 
+              color="error" 
+              variant="body2" 
+              align="center" 
+              sx={{ mb: 2, fontWeight: 'bold', backgroundColor: '#ffebee', p: 1, borderRadius: 1 }}
+            >
+              {apiError}
+            </Typography>
+          )}
+
           <TextField
             margin="dense"
             size="small"
@@ -121,7 +169,7 @@ function LoginPage() {
             id="password"
             autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
             disabled={loading}
           />
           <Box
@@ -161,7 +209,7 @@ function LoginPage() {
               },
             }}
           >
-            Entrar
+            {loading ? 'Entrando...' : 'Entrar'}
           </Button>
           
         </Box>
