@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { 
   Box, 
   Typography, 
@@ -70,8 +70,25 @@ const despesasData = [
 
 export default function FinanceiroPage() {
   
-  // Mudar 'true' para 'false' para mudar a visão de admin para funcionario
-  const [isAdmin, setIsAdmin] = useState(true); 
+  const [isAdmin, setIsAdmin] = useState(false); 
+
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem('userData');
+      if (storedData) {
+        const parsedUser = JSON.parse(storedData);
+        // Verifica se existe o nível de acesso e se é ADMINISTRADOR (case insensitive)
+        if (parsedUser && parsedUser.nivel_acesso && parsedUser.nivel_acesso.toUpperCase() === 'ADMINISTRADOR') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao verificar permissão de administrador:", error);
+      setIsAdmin(false);
+    }
+  }, []);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [receitasPage, setReceitasPage] = useState(0);
