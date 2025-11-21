@@ -76,10 +76,6 @@ function LoginPage() {
       return;
     }
     
-    // =================================================================
-    // SIMULAÇÃO DE LOGIN MOCK
-    // E-mail: admin@cf.com | Senha: 123
-    // =================================================================
     if (email === 'admin@cf.com' && password === '123') {
         console.log("Navegando para a página inicial...");
         navigate('/');

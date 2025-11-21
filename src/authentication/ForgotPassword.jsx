@@ -83,10 +83,6 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      // =================================================================
-      // SIMULAÇÃO DE RECUPERAÇÃO DE SENHA MOCK
-      // E-mail de Sucesso: test@admin.com
-      // =================================================================
       const result = await new Promise(resolve => {
           setTimeout(() => {
               if (email === "test@admin.com") {
