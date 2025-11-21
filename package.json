@@ -31,14 +31,18 @@
     "vite": "^5.3.1"
   },
   "dependencies": {
+    "@date-io/date-fns": "^3.2.1",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
     "@mui/x-date-pickers": "^8.14.1",
     "@vitejs/plugin-react": "^4.3.1",
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
     "electron-squirrel-startup": "^1.0.1",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1"
