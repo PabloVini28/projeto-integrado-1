@@ -32,6 +32,17 @@ import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
 import * as patrimonioApi from '../../services/patrimonioApiService';
 import { format, parse, isValid } from 'date-fns';
 
+const blackFocusedStyle = {
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'black',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+        color: 'black',
+    },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: '#343a40',
+    },
+};
 
 const createData = (id, nome, codigo, dataAquisicao, status) => {
   return { id, nome, codigo, dataAquisicao, status };
@@ -40,7 +51,6 @@ const createData = (id, nome, codigo, dataAquisicao, status) => {
 const allRows = [
   createData(1, 'Leg Press', '001', '25/07/2020', 'Ativo'),
   createData(2, 'Esteira Ergométrica', '002', '13/06/2021', 'Ativo'),
-  // ... (etc)
   createData(13, 'Halteres', '013', '15/02/2022', 'Inativo'),
 ];
 
@@ -162,7 +172,6 @@ export default function PatrimonioPage() {
         }
     };
 
-    // handleUpdateItem (da 'develop')
     const handleUpdateItem = async (data) => {
         if (!currentItem || !currentItem.id_patrimonio) return;
         try {
@@ -294,12 +303,14 @@ export default function PatrimonioPage() {
                         variant="outlined"
                         sx={{ 
                             width: '400px',
+                            ...blackFocusedStyle
                         }}
                     />
                     <FormControl 
                         size="small" 
                         sx={{ 
                             minWidth: 180,
+                            ...blackFocusedStyle
                         }}
                     >
                         <InputLabel>Filtrar por Status</InputLabel>
@@ -326,6 +337,10 @@ export default function PatrimonioPage() {
                             borderColor: 'grey.400',
                             fontWeight: 'normal',
                             borderRadius: '25px',
+                            '&:hover': {
+                                backgroundColor: '#f5f5f5',
+                                borderColor: 'black',
+                            }
                         }}
                     >
                         Relatórios

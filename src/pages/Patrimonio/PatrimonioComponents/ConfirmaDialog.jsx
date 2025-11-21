@@ -19,7 +19,7 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
                 }
             }}
         >
-            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'normal', fontSize: '1.5rem', textAlign: 'left' }}>
+            <DialogTitle sx={{ px: 3, pt: 3, pb: 2, fontWeight: 'bold', fontSize: '1.5rem', textAlign: 'center' }}>
                 {title || "Tem certeza que deseja excluir?"}
             </DialogTitle>
             
