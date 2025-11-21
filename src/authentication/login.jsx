@@ -10,6 +10,35 @@ import {
 } from '@mui/material';
 import logoImage from '../assets/logo/icon.png';
 
+const blackFocusedTextFieldStyle = {
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'black',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'black',
+  },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#343a40',
+  },
+};
+
+const errorTextFieldStyle = {
+    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'red !important',
+    },
+    '& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'darkred !important',
+    },
+    '& .MuiInputLabel-root.Mui-error': {
+        color: 'red !important',
+    },
+};
+
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+};
+
 const Logo = () => (
   <Box
     component="img"
@@ -28,22 +57,33 @@ function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showError, setShowError] = useState(false); 
-
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
+  const [error, setError] = useState(false); 
+  const [errorMessage, setErrorMessage] = useState(''); 
+  const [fieldErrors, setFieldErrors] = useState({}); 
 
   const handleLogin = (event) => {
     event.preventDefault();
-    setShowError(true); 
-    
-    if (!validateEmail(email)) {
-      return; 
+    setError(false);
+    setErrorMessage('');
+    setFieldErrors({});
+
+    const isEmailValid = validateEmail(email);
+
+    if (!isEmailValid) {
+      setFieldErrors({email: true});
+      setErrorMessage("Formato de e-mail inválido.");
+      setError(true);
+      return;
     }
-    console.log("Navegando para a página inicial...");
-    navigate('/');
+    
+    if (email === 'admin@cf.com' && password === '123') {
+        console.log("Navegando para a página inicial...");
+        navigate('/');
+    } else {
+        setFieldErrors({email: true, password: true});
+        setErrorMessage("E-mail ou senha incorretos.");
+        setError(true);
+    }
   };
 
   const handleForgotPasswordClick = (event) => {
@@ -54,10 +94,25 @@ function LoginPage() {
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
+    if (error) {
+        setError(false);
+        setFieldErrors({});
+        setErrorMessage('');
+    }
   };
 
-  const isEmailValid = validateEmail(email);
-  const displayEmailError = showError && !isEmailValid;
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+    if (error) {
+        setError(false);
+        setFieldErrors({});
+        setErrorMessage('');
+    }
+  };
+
+  const isEmailError = !!fieldErrors.email;
+  const isPasswordError = !!fieldErrors.password;
+  const showHelperText = Object.keys(fieldErrors).length > 1;
 
   return (
     <Container
@@ -92,6 +147,12 @@ function LoginPage() {
           Corpo em Forma Gestão
         </Typography>
 
+        {error && (
+            <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
+                {errorMessage}
+            </Typography>
+        )}
+
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1, width: '100%' }}>
           <TextField
             margin="dense"
@@ -107,8 +168,9 @@ function LoginPage() {
             value={email}
             onChange={handleEmailChange}
             disabled={loading}
-            error={displayEmailError}
-            helperText={displayEmailError ? 'Formato de e-mail inválido.' : ''}
+            error={isEmailError}
+            helperText={showHelperText && isEmailError ? fieldErrors.email : ''}
+            sx={{...blackFocusedTextFieldStyle, ...(isEmailError && errorTextFieldStyle)}}
           />
           <TextField
             margin="dense"
@@ -121,8 +183,11 @@ function LoginPage() {
             id="password"
             autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
             disabled={loading}
+            error={isPasswordError}
+            helperText={showHelperText && isPasswordError ? fieldErrors.password : ''}
+            sx={{...blackFocusedTextFieldStyle, ...(isPasswordError && errorTextFieldStyle)}}
           />
           <Box
             sx={{
@@ -145,7 +210,7 @@ function LoginPage() {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={loading || !email || !password} 
+            disabled={loading || !email.trim() || !password.trim()} 
             sx={{
               mt: 2,
               mb: 2,
