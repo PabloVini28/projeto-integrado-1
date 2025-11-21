@@ -64,7 +64,7 @@ export default function AlterarSenhaDialog({ open, onClose }) {
     setErrorMessage('');
     
     if (!email.trim()) {
-      setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
+      setErrorMessage("Por favor, preencha o campo obrigatório.");
       setError(true);
       setFieldErrors({email: true});
       return;
