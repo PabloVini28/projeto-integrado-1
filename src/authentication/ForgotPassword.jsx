@@ -12,6 +12,36 @@ import {
 } from '@mui/material';
 import logoImage from '../assets/logo/icon.png';
 
+const blackFocusedTextFieldStyle = {
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'black',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'black',
+  },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#343a40',
+  },
+};
+
+const errorTextFieldStyle = {
+    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'red !important',
+    },
+    '& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'darkred !important',
+    },
+    '& .MuiInputLabel-root.Mui-error': {
+        color: 'red !important',
+    },
+};
+
+
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+};
+
 const Logo = () => (
   <Box
     component="img"
@@ -29,40 +59,57 @@ function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState({ message: '', type: '' });
-  const [showError, setShowError] = useState(false); 
-
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
+  const [ipcStatus, setIpcStatus] = useState({ message: '', type: '' });
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (loading) return;
 
-    setShowError(true);
-    setStatus({ message: '', type: '' });
+    setError(false);
+    setErrorMessage('');
+    setFieldErrors({});
+    setIpcStatus({ message: '', type: '' });
 
     if (!validateEmail(email)) {
-      return; 
+        setFieldErrors({email: true});
+        setErrorMessage("Formato de e-mail inválido.");
+        setError(true);
+        return;
     }
 
     setLoading(true);
 
     try {
-      const result = await window.api.solicitarResetSenha(email);
+      // =================================================================
+      // SIMULAÇÃO DE RECUPERAÇÃO DE SENHA MOCK
+      // E-mail de Sucesso: test@admin.com
+      // =================================================================
+      const result = await new Promise(resolve => {
+          setTimeout(() => {
+              if (email === "test@admin.com") {
+                  resolve({ success: true, message: 'Link de recuperação enviado com sucesso!' });
+              } else {
+                  resolve({ success: false, message: 'E-mail não encontrado.' });
+              }
+          }, 1500);
+      });
       
       if (result.success) {
-        setStatus({ message: result.message, type: 'success' });
+        setIpcStatus({ message: result.message, type: 'success' });
         setEmail('');
-        setShowError(false); 
+        setError(false); 
       } else {
-        setStatus({ message: result.message, type: 'error' });
+        setIpcStatus({ message: result.message, type: 'error' });
+        setErrorMessage(result.message);
+        setError(true);
       }
     } catch (error) {
-      console.error("Erro na comunicação IPC:", error);
-      setStatus({ message: 'Erro: Falha na comunicação com o sistema.', type: 'error' });
+      console.error("Erro na comunicação:", error);
+      setIpcStatus({ message: 'Erro: Falha na comunicação com o sistema.', type: 'error' });
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -73,8 +120,19 @@ function ForgotPassword() {
     navigate('/login');
   };
 
-  const isEmailValid = validateEmail(email);
-  const displayEmailError = showError && !isEmailValid;
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (error) {
+        setError(false);
+        setFieldErrors({});
+        setErrorMessage('');
+        setIpcStatus({message: '', type: ''});
+    }
+  };
+
+  const isEmailError = !!fieldErrors.email || (error && ipcStatus.message);
+
+  const displayErrorMessage = isEmailError ? errorMessage || ipcStatus.message : '';
 
   return (
     <Container
@@ -147,15 +205,16 @@ function ForgotPassword() {
             autoFocus
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             disabled={loading}
-            error={displayEmailError} 
-            helperText={displayEmailError ? 'Formato de e-mail inválido.' : ''}
+            error={isEmailError} 
+            helperText={isEmailError ? displayErrorMessage : ''}
+            sx={{...blackFocusedTextFieldStyle, ...(isEmailError && errorTextFieldStyle)}}
           />
           
-          {!displayEmailError && status.message && (
-            <Alert severity={status.type} sx={{ mt: 2, mb: 1 }}>
-              {status.message}
+          {ipcStatus.type === 'success' && (
+            <Alert severity={ipcStatus.type} sx={{ mt: 2, mb: 1 }}>
+              {ipcStatus.message}
             </Alert>
           )}
 
@@ -163,7 +222,7 @@ function ForgotPassword() {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={loading || !email}
+            disabled={loading || !email.trim()}
             sx={{
               mt: 2,
               mb: 3,
