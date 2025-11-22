@@ -4,13 +4,13 @@ import {
     Menu,
     MenuItem,
     ListItemIcon,
-    Typography, 
-    Divider    
+    Typography,
+    Divider
 } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-export default function MenuRelatorios({ 
+export default function MenuRelatorios({
     onDownloadBalancete,
     onDownloadReceitasAlunos,
     onDownloadOutrasReceitas,
@@ -30,9 +30,21 @@ export default function MenuRelatorios({
 
     const handleSelect = (action) => {
         if (action) {
-            action(); 
+            action();
         }
-        handleClose(); 
+        handleClose();
+    };
+
+    const blackFocusedTextFieldStyle = {
+        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'black',
+        },
+        '& .MuiInputLabel-root.Mui-focused': {
+            color: 'black',
+        },
+        '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#343a40',
+        },
     };
 
     return (
@@ -41,12 +53,23 @@ export default function MenuRelatorios({
                 variant="outlined"
                 onClick={handleClick}
                 endIcon={<ArrowDropDownIcon />}
+
                 sx={{
                     color: 'text.secondary',
                     borderColor: 'grey.400',
                     fontWeight: 'normal',
                     borderRadius: '25px',
-                    textTransform: 'uppercase'
+                    textTransform: 'uppercase',
+                    '&:hover': {
+                        borderColor: 'black',
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        color: 'black',
+                    },
+
+                    '&.Mui-focusVisible': {
+                        borderColor: 'black',
+                        boxShadow: '0 0 0 2px rgba(0, 0, 0, 0.2)',
+                    }
                 }}
             >
                 Relatórios
@@ -58,12 +81,12 @@ export default function MenuRelatorios({
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
             >
-                <MenuItem 
-                    disabled 
-                    sx={{ 
-                        opacity: '1 !important', 
-                        fontSize: '0.8rem', 
-                        color: 'text.secondary' 
+                <MenuItem
+                    disabled
+                    sx={{
+                        opacity: '1 !important',
+                        fontSize: '0.8rem',
+                        color: 'text.secondary'
                     }}
                 >
                     <Typography variant="caption">
@@ -76,7 +99,7 @@ export default function MenuRelatorios({
                     <ListItemIcon><PictureAsPdfIcon fontSize="small" /></ListItemIcon>
                     Demonstrativo contábil do mês
                 </MenuItem>
-                
+
                 <Divider sx={{ my: 0.5 }} />
 
                 <MenuItem onClick={() => handleSelect(onDownloadReceitasAlunos)}>

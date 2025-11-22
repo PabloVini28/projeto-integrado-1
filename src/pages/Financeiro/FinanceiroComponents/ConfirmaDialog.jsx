@@ -19,9 +19,9 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
           px: 3,
           pt: 3,
           pb: 2,
-          fontWeight: "normal",
+          fontWeight: "bold",
           fontSize: "1.5rem",
-          textAlign: "left",
+          textAlign: "center",
         }}
       >
         {title || "Tem certeza que deseja excluir?"}
