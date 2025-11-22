@@ -170,10 +170,8 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
   };
 
   const hasSpecificError = error && !errorMessage.includes("preencha todos");
-  // Determina se devemos mostrar o helperText. Só mostramos se houver MÚLTIPLOS erros lógicos.
   const isMultipleSpecificErrors = hasSpecificError && !errorMessage.includes("As senhas digitadas não coincidem") && !errorMessage.includes("Formato") && !errorMessage.includes("CPF");
-  
-  // Condição para que o helperText de senha apareça: ou há múltiplos erros, ou o campo está vazio (que usa o hasEmptyError)
+
   const showHelperText = isMultipleSpecificErrors;
 
   return (
@@ -244,10 +242,10 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
               color: '#23272b',
             },
           }}
-          component="legend">Tipo de Usuário:</FormLabel>
+          component="legend">Nível de Acesso:</FormLabel>
         <RadioGroup
           row
-          aria-label="tipo de usuário"
+          aria-label="Nível de Acesso:"
           name="role"
           value={formData.role}
           onChange={handleChange}
