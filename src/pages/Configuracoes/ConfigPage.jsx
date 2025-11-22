@@ -112,26 +112,58 @@ function AlterarEmailModal({ open, onClose }) {
 }
 
 function CadastrarUsuarioModal({ open, onClose, onSave }) {
+  const [dados, setDados] = useState({
+    nome: '',
+    email: '',
+    senha: '',
+    confirmarSenha: '',
+    cpf: '',
+    tipo: 'funcionario'
+  });
+
+  useEffect(() => {
+    if (open) {
+      setDados({ nome: '', email: '', senha: '', confirmarSenha: '', cpf: '', tipo: 'funcionario' });
+    }
+  }, [open]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setDados((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleConfirmar = () => {
+    if (dados.senha !== dados.confirmarSenha) {
+        alert("As senhas não coincidem!");
+        return;
+    }
+    if (!dados.nome || !dados.email || !dados.senha || !dados.cpf) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+    }
+    onSave(dados);
+  };
+
   return (
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '500px' } }}>
       <DialogTitle fontWeight="bold" textAlign="center" >Cadastrar um novo Usuário</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
-        <TextField autoFocus label="Nome Completo*"/>
-        <TextField label="E-mail*" type="email" />
-        <TextField label="Senha*" type="password" />
-        <TextField label="Confirmar Senha*" type="password"  />
-        <TextField label="CPF*"/>
+        <TextField autoFocus label="Nome Completo*" name="nome" value={dados.nome} onChange={handleChange} />
+        <TextField label="E-mail*" type="email" name="email" value={dados.email} onChange={handleChange} />
+        <TextField label="Senha*" type="password" name="senha" value={dados.senha} onChange={handleChange} />
+        <TextField label="Confirmar Senha*" type="password" name="confirmarSenha" value={dados.confirmarSenha} onChange={handleChange} />
+        <TextField label="CPF*" name="cpf" value={dados.cpf} onChange={handleChange} />
       </DialogContent>
       <FormControl component="fieldset" sx={{ mt: 1, pl: 3 }}> 
           <FormLabel component="legend">Tipo de Usuário:</FormLabel>
-          <RadioGroup row aria-label="tipo de usuário" name="tipo-usuario-group" defaultValue="funcionario">
+          <RadioGroup row aria-label="tipo de usuário" name="tipo" value={dados.tipo} onChange={handleChange}>
             <FormControlLabel value="administrador" control={<Radio />} label="Administrador" />
             <FormControlLabel value="funcionario" control={<Radio />} label="Funcionário" />
           </RadioGroup>
       </FormControl>
       <DialogActions sx={{ p: 3, justifyContent: 'flex-start', gap: 1.5 }}>
           <Button onClick={onClose} variant="contained" sx={grayButtonSx} >Cancelar</Button>
-          <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>Cadastrar Usuário</Button>
+          <Button onClick={handleConfirmar} variant="contained" sx={yellowButtonSx}>Cadastrar Usuário</Button>
       </DialogActions>
     </Dialog>
   );
@@ -145,11 +177,13 @@ function EditarUsuarioModal({ open, onClose, onSave, user }) {
     if (user) {
       setNome(user.nome || '');
       setEmail(user.email || '');
-    } else {
-      setNome('');
-      setEmail('');
     }
   }, [user, open]);
+
+  const handleSalvar = () => {
+    // Retorna os dados editados
+    onSave({ nome, email });
+  };
 
   return (
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
@@ -157,10 +191,12 @@ function EditarUsuarioModal({ open, onClose, onSave, user }) {
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
         <TextField autoFocus label="Nome" fullWidth variant="outlined" value={nome} onChange={(e) => setNome(e.target.value)} />
         <TextField label="E-mail" type="email" fullWidth variant="outlined" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Typography variant="caption" color="text.secondary">
+        </Typography>
       </DialogContent>
       <DialogActions sx={{ p: '0 24px 16px' }}>
         <Button onClick={onClose} variant="contained" sx={grayButtonSx}>Cancelar</Button>
-        <Button onClick={onSave} variant="contained" sx={yellowButtonSx}>Salvar Usuário</Button>
+        <Button onClick={handleSalvar} variant="contained" sx={yellowButtonSx}>Salvar Usuário</Button>
       </DialogActions>
     </Dialog>
   );
@@ -228,19 +264,15 @@ export default function ConfigPage() {
     role: ''
   });
 
-  // Estado para a lista de funcionários (Admin)
   const [funcionarios, setFuncionarios] = useState([]);
-
   const [modalOpen, setModalOpen] = useState(null); 
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     try {
         const storedData = localStorage.getItem('userData');
-        
         if (storedData) {
             const parsedUser = JSON.parse(storedData);
-            
             setUser({
                 id: parsedUser.id_funcionario,
                 nome: parsedUser.nome_funcionario,
@@ -251,11 +283,10 @@ export default function ConfigPage() {
             });
         }
     } catch (error) {
-        console.error("Erro ao ler dados do usuário do localStorage:", error);
+        console.error("Erro ao ler dados do usuário:", error);
     }
   }, []);
 
-  // Se for Admin, busca a lista de todos os funcionários na API
   useEffect(() => {
     const fetchFuncionarios = async () => {
         const token = localStorage.getItem('authToken');
@@ -264,10 +295,7 @@ export default function ConfigPage() {
         try {
             const response = await fetch('http://localhost:4000/api/funcionario', {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                }
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
             });
 
             if (response.ok) {
@@ -281,20 +309,16 @@ export default function ConfigPage() {
                     role: f.nivel_acesso ? f.nivel_acesso.toUpperCase() : 'FUNCIONARIO'
                 }));
                 setFuncionarios(listaFormatada);
-            } else {
-                console.error("Falha ao buscar lista de funcionários");
             }
         } catch (error) {
             console.error("Erro de conexão com a API:", error);
         }
     };
 
-    // Só executa se o usuário já foi carregado e é ADMINISTRADOR
     if (user.role === 'ADMINISTRADOR') {
         fetchFuncionarios();
     }
   }, [user.role]); 
-
 
   const handleOpenModal = (modalName, userToEdit = null) => {
     setSelectedUser(userToEdit);
@@ -306,47 +330,122 @@ export default function ConfigPage() {
     setSelectedUser(null);
   };
 
-  const handleAddUser = (userData) => {
-    console.log("Adicionando usuário:", userData);
-    handleCloseModal();
+  const handleAddUser = async (userData) => {
+    const token = localStorage.getItem('authToken');
+    const tempId = Math.floor(Math.random() * 100000);
+    const payload = {
+        id_funcionario: tempId,
+        nome_funcionario: userData.nome,
+        email_funcionario: userData.email,
+        cpf_funcionario: userData.cpf,
+        senha: userData.senha,
+        nivel_acesso: userData.tipo === 'administrador' ? 'Administrador' : 'Funcionário'
+    };
+
+    try {
+        const response = await fetch('http://localhost:4000/api/funcionario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            const novo = await response.json();
+            const novoTela = {
+                id: novo.id_funcionario,
+                nome: novo.nome_funcionario,
+                cpf: novo.cpf_funcionario,
+                matricula: novo.id_funcionario.toString(),
+                email: novo.email_funcionario,
+                role: novo.nivel_acesso ? novo.nivel_acesso.toUpperCase() : 'FUNCIONARIO'
+            };
+            setFuncionarios([...funcionarios, novoTela]);
+            alert("Usuário cadastrado com sucesso!");
+            handleCloseModal();
+        } else {
+            const err = await response.json();
+            alert("Erro ao cadastrar: " + (err.error || response.statusText));
+        }
+    } catch (error) {
+        alert("Erro de conexão.");
+    }
   };
 
-  const handleEditUser = (userData) => {
-    console.log("Editando usuário:", userData);
-    handleCloseModal();
+  const handleEditUser = async (updatedData) => {
+    const token = localStorage.getItem('authToken');
+    
+    const payload = {
+        nome_funcionario: updatedData.nome,
+        email_funcionario: updatedData.email
+    };
+
+    try {
+        const response = await fetch(`http://localhost:4000/api/funcionario/${selectedUser.cpf}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            const atualizado = await response.json();
+            
+            const novaLista = funcionarios.map(f => {
+                if (f.id === selectedUser.id) {
+                    return {
+                        ...f,
+                        nome: atualizado.nome_funcionario,
+                        email: atualizado.email_funcionario
+                    };
+                }
+                return f;
+            });
+
+            setFuncionarios(novaLista);
+            alert("Usuário atualizado com sucesso!");
+            handleCloseModal();
+        } else {
+            alert("Erro ao atualizar usuário.");
+        }
+    } catch (error) {
+        console.error("Erro:", error);
+        alert("Erro de conexão.");
+    }
   };
   
-  const handleDeleteUser = () => {
-    console.log("Excluindo usuário:", selectedUser);
-    setFuncionarios(funcionarios.filter(f => f.id !== selectedUser.id));
-    handleCloseModal();
+  const handleDeleteUser = async () => {
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch(`http://localhost:4000/api/funcionario/${selectedUser.cpf}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            setFuncionarios(funcionarios.filter(f => f.id !== selectedUser.id));
+            alert("Usuário removido com sucesso!");
+            handleCloseModal();
+        } else {
+            alert("Erro ao excluir usuário.");
+        }
+    } catch (error) {
+        console.error("Erro:", error);
+        alert("Erro de conexão.");
+    }
   };
 
   return (
     <Box sx={{ p: 4 }}> 
-      
-      <Typography variant="h4" fontWeight="bold" mb={4}>
-        Configurações
-      </Typography>
+      <Typography variant="h4" fontWeight="bold" mb={4}>Configurações</Typography>
 
       <Typography variant="h5"  mb={2}>Acesso</Typography>
       <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
         <Grid container rowSpacing={4} columnSpacing={2}>
-          <Grid item xs={12} sm={6} md={4}>
-            <InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} />
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} />
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <InfoItem icon={<BadgeOutlined />} title="CPF:" value={user.cpf} /> 
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <InfoItem icon={<MailOutline />} title="E-mail:" value={user.email} /> 
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} />
-          </Grid>
+          <Grid item xs={12} sm={6} md={4}><InfoItem icon={<PersonOutline />} title="Logado como:" value={user.nome} /></Grid>
+          <Grid item xs={12} sm={6} md={4}><InfoItem icon={<DescriptionOutlined />} title="Matrícula:" value={user.matricula} /></Grid>
+          <Grid item xs={12} sm={6} md={4}><InfoItem icon={<BadgeOutlined />} title="CPF:" value={user.cpf} /></Grid>
+          <Grid item xs={12} sm={6} md={4}><InfoItem icon={<MailOutline />} title="E-mail:" value={user.email} /></Grid>
+          <Grid item xs={12} sm={6} md={4}><InfoItem icon={<AdminPanelSettingsOutlined />} title="Nível:" value={user.role} /></Grid>
         </Grid>
       </Paper>
 
@@ -354,35 +453,12 @@ export default function ConfigPage() {
         <Typography variant="h5" mb={2}>Segurança</Typography> 
         <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 2}}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, width: '100%' }}>
-            <Button
-              variant="contained"
-              onClick={() => handleOpenModal('senha')}
-              endIcon={
-                <Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20,  }} />
-                </Box>
-              }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}
-            >
-              Alterar Senha
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => handleOpenModal('email')}
-              endIcon={
-                <Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} />
-                </Box>
-              }
-              sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}
-            >
-              Alterar Email
-            </Button>
+            <Button variant="contained" onClick={() => handleOpenModal('senha')} endIcon={<Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronRight sx={{ color: '#1F2937', fontSize: 20,  }} /></Box>} sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}>Alterar Senha</Button>
+            <Button variant="contained" onClick={() => handleOpenModal('email')} endIcon={<Box sx={{ bgcolor: '#F2D95C', width: 36, height: 36, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronRight sx={{ color: '#1F2937', fontSize: 20 }} /></Box>} sx={{ bgcolor: 'white', color: 'black', boxShadow: 'none', border: '1px solid #e0e0e0', justifyContent: 'space-between', p: 2, '&:hover': { bgcolor: '#f9f9f9' }, fontWeight:"bold", textTransform: 'none' }}>Alterar Email</Button>
           </Box>
         </Paper>
       </Box>
 
-      {/* Renderiza tabela de Admin SOMENTE se o role convertido for ADMINISTRADOR */}
       {user.role === 'ADMINISTRADOR' && (
         <Box>
           <AdminArea
