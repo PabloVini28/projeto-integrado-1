@@ -96,10 +96,10 @@ export default function AdminArea({ funcionarios, onAddUser, onEditUser, onDelet
                   <TableCell>{capitalizeRole(user.role)}</TableCell> 
                   <TableCell align="center">
                     <IconButton onClick={() => onEditUser(user)}>
-                      <Edit />
+                      <Edit fontSize="small" />
                     </IconButton>
                     <IconButton onClick={() => onDeleteUser(user)}>
-                      <Delete />
+                      <Delete fontSize="small" />
                     </IconButton>
                   </TableCell>
                 </TableRow>
