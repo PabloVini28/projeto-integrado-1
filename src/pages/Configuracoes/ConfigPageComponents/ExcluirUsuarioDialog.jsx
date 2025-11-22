@@ -28,13 +28,7 @@ const grayButtonSx = {
 export default function ExcluirUsuarioDialog({ open, onClose, onConfirm, user }) {
   return (
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-      <DialogTitle fontWeight="bold" textAlign="center">Excluir Usuário</DialogTitle>
-      <DialogContent>
-        <Typography>
-          Tem certeza que deseja excluir o usuário <strong>{user?.nome}</strong>?
-          Esta ação não pode ser desfeita.
-        </Typography>
-      </DialogContent>
+      <DialogTitle fontWeight="bold" textAlign="center">Tem certeza que deseja excluir o usuário: {user?.nome}?</DialogTitle>
       <DialogActions sx={{ p: '0 24px 16px' }}>
         <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
           VOLTAR
