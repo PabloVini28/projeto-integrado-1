@@ -7,10 +7,6 @@ function validatePlano(payload) {
     return { valid: false, errors };
   }
 
-  if (!payload.cod_plano || String(payload.cod_plano).trim() === '') {
-    errors.push('Código do Plano é obrigatório!');
-  }
-
   if (!payload.nome_plano || String(payload.nome_plano).trim() === '') {
     errors.push('Nome do Plano é obrigatório!');
   }
