@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Typography, Button, Dialog, DialogTitle, DialogContent,
-    DialogActions, TextField,
+    DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,
 } from '@mui/material';
 
 const yellowButtonSx = {
@@ -66,6 +66,7 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
     const [email, setEmail] = useState('');
+    const [role, setRole] = useState('FUNCIONARIO'); 
     const [error, setError] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
     const [errorMessage, setErrorMessage] = useState("");
@@ -76,10 +77,12 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
             setNome(user.nome || '');
             setCpf(user.cpf || '');
             setEmail(user.email || '');
+            setRole(user.role || 'FUNCIONARIO'); 
         } else {
             setNome('');
             setCpf('');
             setEmail('');
+            setRole('FUNCIONARIO');
         }
         if (!open) {
             setError(false);
@@ -97,6 +100,10 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const handleNomeChange = (e) => {
         setNome(e.target.value);
         resetFieldError('nome');
+    };
+
+    const handleRoleChange = (e) => {
+        setRole(e.target.value);
     };
 
     const resetFieldError = (name) => {
@@ -139,7 +146,8 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
         setError(false);
         setFieldErrors({});
         setErrorMessage("");
-        onSave({ ...user, nome, cpf }); 
+        
+        onSave({ ...user, nome, cpf, role }); 
     }
 
     const hasSpecificError = error && !errorMessage.includes("preencha todos");
@@ -147,8 +155,8 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
 
     const disabledSx = {
         '& .MuiInputBase-input.Mui-disabled': { 
-            WebkitTextFillColor: '#343a40', 
-            color: '#343a40',
+            WebkitTextFillColor: 'rgba(0, 0, 0, 0.87)', 
+            color: 'rgba(0, 0, 0, 0.87)',
         },
         '& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline': {
              borderColor: 'rgba(0, 0, 0, 0.23) !important', 
@@ -177,7 +185,7 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
                     sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle)}}
                 />
                 
-                 <TextField
+                <TextField
                     label="E-mail"
                     fullWidth
                     variant="outlined"
@@ -196,6 +204,28 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
                     helperText={showHelperText && fieldErrors.cpf ? fieldErrors.cpf : ""}
                     sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle)}}
                 />
+
+                <FormControl component="fieldset" sx={{ mt: 1 }}>
+                    <FormLabel
+                        sx={{
+                            color: '#23272b',
+                            '&.Mui-focused': {
+                                color: '#23272b',
+                            },
+                        }}
+                        component="legend">Nível de Acesso:</FormLabel>
+                    <RadioGroup
+                        row
+                        aria-label="Nível de Acesso:"
+                        name="role"
+                        value={role}
+                        onChange={handleRoleChange}
+                    >
+                        <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
+                        <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+                    </RadioGroup>
+                </FormControl>
+
             </DialogContent>
             <DialogActions sx={{ p: '0 24px 16px' }}>
                 <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
