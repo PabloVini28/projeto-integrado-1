@@ -44,9 +44,11 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                         '&:hover .MuiOutlinedInput-notchedOutline': {
                             borderColor: '#343a40',
                         },
-                        // Garante que a borda fique vermelha em erro
                         '&.Mui-error .MuiOutlinedInput-notchedOutline': {
                              borderColor: 'red !important', 
+                        },
+                        '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgba(0, 0, 0, 0.23) !important', 
                         },
                     }
                 }
@@ -57,9 +59,11 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                         '&.Mui-focused': {
                             color: '#000000',
                         },
-                        // Garante que o label fique vermelho em erro
                         '&.Mui-error': {
                             color: 'red !important', 
+                        },
+                        '&.Mui-disabled': {
+                            color: 'rgba(0, 0, 0, 0.6)', 
                         }
                     }
                 }
@@ -70,14 +74,19 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
     const [nome, setNome] = useState('');
     const [dataAquisicao, setDataAquisicao] = useState(null);
     const [status, setStatus] = useState('Ativo');
+    const [codigo, setCodigo] = useState('');
 
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+
+    const isEditMode = !!itemToEdit;
 
     useEffect(() => {
         if (itemToEdit) {
             setNome(itemToEdit.nome || '');
             
+            setCodigo(itemToEdit.codigo || itemToEdit.id_patrimonio || ''); 
+
             let initialDate = null;
             if (itemToEdit.data_aquisicao) {
                 const parsedDate = new Date(itemToEdit.data_aquisicao);
@@ -95,6 +104,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
             else setStatus('Ativo');
         } else {
             setNome('');
+            setCodigo(''); 
             setDataAquisicao(null);
             setStatus('Ativo');
         }
@@ -118,6 +128,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
         const formattedDate = dataAquisicao.toISOString().split('T')[0];
         const itemData = {
             nome,
+            codigo: isEditMode ? codigo : undefined, 
             data_aquisicao: formattedDate,
             status_patrimonio: status,
         };
@@ -156,8 +167,19 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                             onChange={(e) => setNome(e.target.value)}
                             error={error && nome.trim() === ''} 
                         />
+                        
+                        {isEditMode && (
+                             <TextField
+                                id="codigo"
+                                label="Código (Não Editável)"
+                                fullWidth
+                                size="small"
+                                value={codigo}
+                                disabled={true} 
+                            />
+                        )}
 
-                        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <DatePicker
                                 label="Data de Aquisição"
                                 value={dataAquisicao}
@@ -165,7 +187,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
                                 slotProps={{
                                     textField: { 
                                         size: 'small',
-                                        error: error && dataAquisicao === null, // Aplica erro se for null
+                                        error: error && dataAquisicao === null, 
                                     }
                                 }}
                                 disableFuture
