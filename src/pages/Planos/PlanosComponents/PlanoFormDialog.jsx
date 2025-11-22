@@ -268,7 +268,7 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
                     variant="contained" 
                     sx={{ backgroundColor: '#F2D95C', color: 'black', fontWeight: 'normal', textTransform: 'uppercase', '&:hover': { backgroundColor: '#e0c850' } }}
                 >
-                    {isEditMode ? "Salvar Alterações" : "Salvar Plano"}
+                    {isEditMode ? "Salvar Plano" : "Salvar Plano"}
                 </Button>
             </DialogActions>
         </Dialog>
