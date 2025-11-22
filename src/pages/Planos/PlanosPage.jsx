@@ -45,6 +45,18 @@ const columns = [
     { id: 'actions', label: 'Ação', align: 'center' } 
 ];
 
+const blackFocusedStyle = {
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'black',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+        color: 'black',
+    },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: '#343a40',
+    },
+};
+
 export default function PlanosPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -190,7 +202,7 @@ export default function PlanosPage() {
                         placeholder="Pesquisa por Nome ou Código"
                         variant="outlined"
                         value={searchTerm} 
-                        onChange={handleSearchChange} 
+                        onChange={handleSearchChange}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -198,9 +210,9 @@ export default function PlanosPage() {
                                 </InputAdornment>
                             ),
                         }}
-                        sx={{ width: '400px' }} 
+                        sx={{ width: '400px', ...blackFocusedStyle}} 
                     />
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <FormControl size="small" sx={{ minWidth: 180, ...blackFocusedStyle}}>
                         <InputLabel>Filtrar por Status</InputLabel>
                         <Select
                             value={statusFilter}
@@ -214,7 +226,7 @@ export default function PlanosPage() {
                     </FormControl>
                 </Box>
                 
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2}}>
                     <Button
                         variant="outlined"
                         onClick={handleReportMenuClick}
@@ -224,6 +236,10 @@ export default function PlanosPage() {
                             borderColor: 'grey.400',
                             fontWeight: 'normal', 
                             borderRadius: '25px',
+                            '&:hover': {
+                                backgroundColor: '#f5f5f5',
+                                borderColor: 'black',
+                            }
                         }}
                     >
                         Relatórios
@@ -291,14 +307,14 @@ export default function PlanosPage() {
                                                             <IconButton 
                                                                 size="small" 
                                                                 onClick={() => handleEdit(row.id)}
-                                                                sx={{ color: '#343a40' }}
+                                                                sx={{ '&:hover': { color: '#343a40' } }}
                                                             >
                                                                 <EditIcon fontSize="small" />
                                                             </IconButton>
                                                             <IconButton 
                                                                 size="small" 
                                                                 onClick={() => handleDelete(row.id)}
-                                                                sx={{ color: '#343a40' }}
+                                                                sx={{ '&:hover': { color: '#343a40' } }}
                                                             >
                                                                 <DeleteIcon fontSize="small" />
                                                             </IconButton>
