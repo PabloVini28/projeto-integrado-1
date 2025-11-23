@@ -26,6 +26,22 @@ services:
     networks:
       - projeto-network
 
+
+  api:
+    build: ./backend      
+    container_name: projeto_api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"        
+    env_file: ./.env       
+    environment:
+      - DB_HOST=db         
+      - PORT=4000
+    depends_on:
+      - db                 
+    networks:
+      - projeto-network    
+
 volumes:
   postgres_data:
   pgadmin_data:
