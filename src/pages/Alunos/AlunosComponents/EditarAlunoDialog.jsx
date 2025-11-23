@@ -166,7 +166,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
         >
             <DialogTitle
                 sx={{
-                    textAlign: 'left',
+                    textAlign: 'center',
                     fontSize: '1.5rem',
                     fontWeight: 'bold',
                     pt: 2,
