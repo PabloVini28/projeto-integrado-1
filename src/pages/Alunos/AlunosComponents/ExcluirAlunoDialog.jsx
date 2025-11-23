@@ -30,19 +30,20 @@ export default function ExcluirAlunoDialog({ open, onClose, onConfirm, alunoPara
                 px: 3,
                 pt: 3,
                 pb: 2,
-                fontWeight: 'normal',
+                fontWeight: 'bold',
                 fontSize: '1.5rem',
-                textAlign: 'left'
+                textAlign: 'center'
             }}>
                 Tem certeza que deseja excluir esse aluno?
             </DialogTitle>
 
-            <DialogContent sx={{ px: 3, pt: 1, pb: 1 }}>
+            <DialogContent sx={{ px: 3, pt: 1, pb: 1}}>
                 <Box sx={{
                     display: 'flex',
                     flexDirection: 'row',
                     gap: 2.0,
-                    flexWrap: 'wrap'
+                    flexWrap: 'wrap',
+                    justifyContent: 'center'
                 }}>
                     <Typography variant="body1">
                         <Box component="span" sx={{ fontWeight: 'bold' }}>Aluno(A): </Box>

@@ -44,6 +44,18 @@ const createStudentData = (id, nome, matricula, plano, data_matricula, data_expi
     };
 };
 
+const blackFocusedStyle = {
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'black',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+        color: 'black',
+    },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: '#343a40',
+    },
+};
+
 const studentRows = [
     createStudentData(1, 'Gabriel Pereira de Souza', '25010', 'Plano Fit', '15/07/2025', '15/08/2025', 'Ativo', { email: 'gabriel@email.com', cpf: '111.222.333-44', telefone: '85912345678', dataNascimento: '01/01/2000', genero: 'Masculino', endereco: { logradouro: 'Rua das Flores', numero: '123' } }),
     createStudentData(2, 'Ana Clara Souza', '25102', 'Plano Premium', '20/09/2025', '20/10/2025', 'Ativo', { email: 'ana@email.com', cpf: '222.333.444-55', telefone: '85987654321', dataNascimento: '05/03/1999', genero: 'Feminino', endereco: { logradouro: 'Av. Beira Mar', numero: '1000' } }),
@@ -83,7 +95,7 @@ function RowDetails({ row }) {
 
     return (
         <Box sx={{ p: 3, bgcolor: '#fff', borderRadius: 2, m: 1, border: '1px solid #eee' }}>
-            <Typography variant="h6" gutterBottom component="div" sx={{ mb: 2 }}>
+            <Typography variant="h6" gutterBottom component="div" sx={{fontWeight: 'bold', mb: 2 }}>
                 Detalhes do Aluno
             </Typography>
             <Grid container spacing={2}>
@@ -93,8 +105,9 @@ function RowDetails({ row }) {
                 
                 <DetailItem title="Email" value={row.email} />
                 <DetailItem title="Telefone" value={row.telefone} />
+
                 <Grid item xs={12} sm={6} md={4}> 
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textTransform: 'uppercase' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textTransform: 'uppercase',}}>
                         Endereço
                     </Typography>
                     <Typography variant="body1" fontWeight="medium">
@@ -250,18 +263,21 @@ export default function AlunosPage() {
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2 }}>
                 
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center'}}>
                     <TextField
                         size="small"
-                        placeholder="Pesquisar por nome ou matrícula"
+                        placeholder="Pesquisar por Nome ou Matrícula"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         InputProps={{
                             startAdornment: ( <InputAdornment position="start"><SearchIcon /></InputAdornment> ),
                         }}
-                        sx={{ width: '400px' }}
+                        sx={{ 
+                            width: '400px',
+                            ...blackFocusedStyle
+                        }}
                     />
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <FormControl size="small" sx={{ minWidth: 180, ...blackFocusedStyle}}>
                         <InputLabel>Filtrar por Status</InputLabel>
                         <Select
                             value={statusFilter}
@@ -285,6 +301,10 @@ export default function AlunosPage() {
                             borderColor: 'grey.400',
                             fontWeight: 'normal',
                             borderRadius: '25px',
+                            '&:hover': {
+                                backgroundColor: '#f5f5f5',
+                                borderColor: 'black',
+                            }
                         }}
                     >
                         Relatórios
