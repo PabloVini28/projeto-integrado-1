@@ -8,26 +8,24 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos = [] }) {
     
     const [matricula, setMatricula] = useState('');
+    const [nome, setNome] = useState('');
+    const [dataNascimento, setDataNascimento] = useState(null);
+    const [email, setEmail] = useState('');
+    const [endereco, setEndereco] = useState('');
+    const [telefone, setTelefone] = useState('');
+    const [cpf, setCpf] = useState('');
+    const [dataInicio, setDataInicio] = useState(null);
+    const [plano, setPlano] = useState('');
+    const [genero, setGenero] = useState('prefiro');
 
-    const handleSave = () => {
-        const novoAluno = {
-            matricula,
-            nome, dataNascimento, email, endereco, telefone, cpf,
-            dataInicio, 
-            cod_plano: plano,
-            genero
-        };
-        console.log("Salvando novo aluno:", novoAluno);
-        onSave(novoAluno);
-        onClose();
-    };
+    const [error, setError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
-    const handleCancel = () => {
+    const resetStates = () => {
         setMatricula('');
         setNome('');
         setDataNascimento(null);
@@ -40,55 +38,6 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
         setGenero('prefiro');
         setError(false);
         setErrorMessage('');
-    }
-
-    const handleSave = () => {
-        setError(false);
-        setErrorMessage('');
-
-        const requiredFields = {
-            nome: nome.trim(),
-            dataNascimento: dataNascimento,
-            email: email.trim(),
-            endereco: endereco.trim(),
-            telefone: telefone.trim(),
-            cpf: cpf.trim(),
-            dataInicio: dataInicio,
-            plano: plano.trim(),
-        };
-
-        const missingFields = Object.keys(requiredFields).filter(key => {
-            const value = requiredFields[key];
-            if (key === 'dataNascimento' || key === 'dataInicio') {
-                return !(value instanceof Date && !isNaN(value));
-            }
-            return value === '';
-        });
-
-        if (missingFields.length > 0) {
-            setErrorMessage("Preencha todos os campos obrigatórios.");
-            setError(true);
-            return;
-        }
-        
-        const formattedDataNascimento = dataNascimento.toLocaleDateString('pt-BR');
-        const formattedDataInicio = dataInicio.toLocaleDateString('pt-BR');
-
-        const novoAluno = {
-            nome, 
-            dataNascimento: formattedDataNascimento, 
-            email, 
-            endereco, 
-            telefone, 
-            cpf,
-            dataInicio: formattedDataInicio, 
-            plano, 
-            genero
-        };
-        console.log("Salvando novo aluno:", novoAluno);
-        onSave(novoAluno);
-        resetStates(); 
-        onClose();
     };
 
     const handleCancel = () => {
@@ -96,65 +45,34 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
         onClose();
     };
 
-    const blackTheme = createTheme({
-        palette: {
-            primary: {
-                main: '#000000',
-            },
-        },
-        components: {
-            MuiPickersDay: {
-                styleOverrides: {
-                    root: {
-                        '&:hover': {
-                            backgroundColor: '#000000',
-                            color: '#FFFFFF',
-                        },
-                        '&.Mui-selected': {
-                            backgroundColor: '#000000',
-                            color: '#FFFFFF',
-                            '&:hover': {
-                                backgroundColor: '#333333',
-                            },
-                        },
-                    },
-                },
-            },
-            MuiOutlinedInput: {
-                styleOverrides: {
-                    root: {
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#000000',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#343a40',
-                        },
-                        '&.Mui-error .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'red !important',
-                        },
-                        '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'rgba(0, 0, 0, 0.23) !important',
-                        },
-                    }
-                }
-            },
-            MuiInputLabel: {
-                styleOverrides: {
-                    root: {
-                        '&.Mui-focused': {
-                            color: '#000000',
-                        },
-                        '&.Mui-error': {
-                            color: 'red !important',
-                        },
-                        '&.Mui-disabled': {
-                            color: 'rgba(0, 0, 0, 0.6)',
-                        }
-                    }
-                }
-            }
-        },
-    });
+    const handleSave = () => {
+        setError(false);
+        setErrorMessage('');
+
+        if (!matricula || !nome || !email || !cpf || !plano || !dataNascimento || !dataInicio) {
+            setErrorMessage("Preencha todos os campos obrigatórios.");
+            setError(true);
+            return;
+        }
+        
+        const novoAluno = {
+            matricula,
+            nome, 
+            dataNascimento, 
+            email, 
+            endereco, 
+            telefone, 
+            cpf,
+            dataInicio,
+            cod_plano: plano,
+            genero
+        };
+
+        console.log("Salvando novo aluno:", novoAluno);
+        onSave(novoAluno);
+        resetStates(); 
+        onClose();
+    };
 
     const blackFocusedStyle = {
         '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
@@ -205,6 +123,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                         {errorMessage}
                     </Typography>
                 )}
+                
                 <Box
                     component="form"
                     sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1, ...blackFocusedStyle }}
@@ -214,8 +133,8 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                         Informações Pessoais:
                     </Typography>
                     
-                    <TextField label="Matrícula*" size="small" value={matricula} onChange={(e) => setMatricula(e.target.value)} />
-                    <TextField label="Nome Completo*" size="small" value={nome} onChange={(e) => setNome(e.target.value)} />
+                    <TextField required label="Matrícula" size="small" value={matricula} onChange={(e) => setMatricula(e.target.value)} />
+                    <TextField required label="Nome Completo" size="small" value={nome} onChange={(e) => setNome(e.target.value)} />
                     
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
                         <DatePicker
@@ -228,10 +147,10 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                         />
                     </LocalizationProvider>
 
-                    <TextField label="E-mail" size="small" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <TextField required label="E-mail" size="small" value={email} onChange={(e) => setEmail(e.target.value)} />
                     <TextField label="Endereço" size="small" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
-                    <TextField label="Telefone*" size="small" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-                    <TextField label="CPF" size="small" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                    <TextField label="Telefone" size="small" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+                    <TextField required label="CPF" size="small" value={cpf} onChange={(e) => setCpf(e.target.value)} />
 
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', pt: 1 }}>
                         Informações Administrativas e Financeiras:
@@ -239,7 +158,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                     
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
                         <DatePicker
-                            label="Data de início"
+                            label="Data de início*"
                             value={dataInicio}
                             onChange={(newValue) => setDataInicio(newValue)}
                             format="dd/MM/yyyy"
@@ -248,7 +167,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                         />
                     </LocalizationProvider>
                     
-                    <FormControl fullWidth size="small">
+                    <FormControl fullWidth size="small" required>
                         <InputLabel id="plano-select-label">Plano</InputLabel>
                         <Select
                             labelId="plano-select-label"
