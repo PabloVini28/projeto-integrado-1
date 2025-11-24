@@ -9,8 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
 
-
-export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEditar }) {
+export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEditar, listaPlanos = [] }) {
 
     const [nome, setNome] = useState('');
     const [dataNascimento, setDataNascimento] = useState(null);
@@ -25,23 +24,37 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
     useEffect(() => {
         if (alunoParaEditar) {
             setNome(alunoParaEditar.nome || '');
-            setPlano(alunoParaEditar.plano || '');
+            setPlano(alunoParaEditar.cod_plano || ''); 
             setGenero(alunoParaEditar.genero || 'prefiro'); 
             setEmail(alunoParaEditar.email || '');
-            setEndereco(alunoParaEditar.endereco || '');
+            
+            const end = alunoParaEditar.endereco?.logradouro 
+                ? `${alunoParaEditar.endereco.logradouro}, ${alunoParaEditar.endereco.numero || ''}`
+                : (alunoParaEditar.endereco || '');
+            setEndereco(end);
             setTelefone(alunoParaEditar.telefone || '');
             setCpf(alunoParaEditar.cpf || '');
 
             if (alunoParaEditar.dataNascimento) {
-                const [day, month, year] = alunoParaEditar.dataNascimento.split('/');
-
-                setDataNascimento(new Date(`${year}-${month}-${day}`));
+                const d = new Date(alunoParaEditar.dataNascimento);
+                if (!isNaN(d.getTime())) {
+                    setDataNascimento(d);
+                } else if (typeof alunoParaEditar.dataNascimento === 'string') {
+                    const parts = alunoParaEditar.dataNascimento.split('/');
+                    if(parts.length === 3) setDataNascimento(new Date(`${parts[2]}-${parts[1]}-${parts[0]}`));
+                }
             } else {
                 setDataNascimento(null);
             }
+
             if (alunoParaEditar.data_matricula) { 
-                const [day, month, year] = alunoParaEditar.data_matricula.split('/');
-                setDataInicio(new Date(`${year}-${month}-${day}`));
+                const d = new Date(alunoParaEditar.data_matricula);
+                if (!isNaN(d.getTime())) {
+                    setDataInicio(d);
+                } else if (typeof alunoParaEditar.data_matricula === 'string') {
+                    const parts = alunoParaEditar.data_matricula.split('/');
+                    if(parts.length === 3) setDataInicio(new Date(`${parts[2]}-${parts[1]}-${parts[0]}`));
+                }
             } else {
                 setDataInicio(null);
             }
@@ -64,7 +77,10 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             id: alunoParaEditar.id, 
             nome, dataNascimento, email, endereco, telefone, cpf,
             dataInicio, 
-            plano, genero
+            
+            cod_plano: plano, 
+            
+            genero
         };
         console.log("Salvando aluno editado:", alunoEditado);
         onSave(alunoEditado);
@@ -102,19 +118,10 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                     px: 3, 
                     pt: 1, 
                     pb: 0,
-                    '&::-webkit-scrollbar': {
-                        width: '0.4em', 
-                    },
-                    '&::-webkit-scrollbar-track': {
-                        background: 'transparent', 
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                        backgroundColor: 'rgba(0,0,0,.15)', 
-                        borderRadius: '20px',
-                    },
-                    '&::-webkit-scrollbar-thumb:hover': {
-                        backgroundColor: 'rgba(0,0,0,.3)', 
-                    }
+                    '&::-webkit-scrollbar': { width: '0.4em' },
+                    '&::-webkit-scrollbar-track': { background: 'transparent' },
+                    '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,.15)', borderRadius: '20px' },
+                    '&::-webkit-scrollbar-thumb:hover': { backgroundColor: 'rgba(0,0,0,.3)' }
                 }}
             >
                 <Box 
@@ -122,10 +129,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                     sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}
                 >
                     
-                    <Typography 
-                        variant="subtitle1"
-                        sx={{ fontWeight: 'bold', mt: 1 }}
-                    >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 1 }}>
                         Informações Pessoais:
                     </Typography>
                     <TextField label="Nome Completo*" size="small" value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -146,10 +150,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                     <TextField label="Telefone*" size="small" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
                     <TextField label="CPF" size="small" value={cpf} onChange={(e) => setCpf(e.target.value)} />
 
-                    <Typography 
-                        variant="subtitle1"
-                        sx={{ fontWeight: 'bold', pt: 1 }}
-                    >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', pt: 1 }}>
                         Informações Administrativas e Financeiras:
                     </Typography>
                     
@@ -160,59 +161,45 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                             onChange={(newValue) => setDataInicio(newValue)}
                             format="dd/MM/yyyy"
                             slotProps={{ textField: { size: 'small' } }} 
-                            disabled={true}
+                            disabled={true} 
                             disableFuture
                         />
                     </LocalizationProvider>
                     
-                    <TextField label="Plano" size="small" value={plano} onChange={(e) => setPlano(e.target.value)} />
+                    <FormControl fullWidth size="small">
+                        <InputLabel id="edit-plano-select-label">Plano</InputLabel>
+                        <Select
+                            labelId="edit-plano-select-label"
+                            value={plano}
+                            label="Plano"
+                            onChange={(e) => setPlano(e.target.value)}
+                        >
+                            {listaPlanos.map((p) => (
+                                <MenuItem key={p.cod_plano} value={p.cod_plano}>
+                                    {p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     
                     <FormControl sx={{ pt: 1, pb: 1 }}>
-                        <FormLabel 
-                            sx={{ 
-                                color: 'rgba(0, 0, 0, 0.6)', 
-                                '&.Mui-focused': {
-                                    color: 'rgba(0, 0, 0, 0.6)' 
-                                }
-                            }}
-                        >
+                        <FormLabel sx={{ color: 'rgba(0, 0, 0, 0.6)', '&.Mui-focused': { color: 'rgba(0, 0, 0, 0.6)' } }}>
                             Gênero:
                         </FormLabel>
                          <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
-                                     <FormControlLabel value="masculino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Masculino</Typography>} />
-                                     <FormControlLabel value="feminino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Feminino</Typography>} />
-                                     <FormControlLabel value="prefiro" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
-                                 </RadioGroup>
+                             <FormControlLabel value="masculino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Masculino</Typography>} />
+                             <FormControlLabel value="feminino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Feminino</Typography>} />
+                             <FormControlLabel value="prefiro" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
+                         </RadioGroup>
                     </FormControl>
                 </Box>
             </DialogContent>
             
-            <DialogActions 
-                
-                sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
-            >
-                <Button 
-                    onClick={onClose} 
-                    variant="contained" 
-                    sx={{ 
-                        backgroundColor: '#343a40', 
-                        color: 'white', 
-                        '&:hover': { backgroundColor: '#23272b' }, 
-                        fontWeight: 'normal', 
-                    }}
-                >
+            <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
+                <Button onClick={onClose} variant="contained" sx={{ backgroundColor: '#343a40', color: 'white', '&:hover': { backgroundColor: '#23272b' }, fontWeight: 'normal' }}>
                     Cancelar
                 </Button>
-                <Button 
-                    onClick={handleSave} 
-                    variant="contained" 
-                    sx={{ 
-                        backgroundColor: '#F2D95C', 
-                        color: 'black', 
-                        '&:hover': { backgroundColor: '#e0c850' }, 
-                        fontWeight: 'normal', 
-                    }}
-                >
+                <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: '#F2D95C', color: 'black', '&:hover': { backgroundColor: '#e0c850' }, fontWeight: 'normal' }}>
                     Salvar
                 </Button>
             </DialogActions>

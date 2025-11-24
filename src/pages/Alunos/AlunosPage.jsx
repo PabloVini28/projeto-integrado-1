@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
     Box, 
     Typography, 
@@ -32,30 +32,18 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-
+import * as alunosApi from '../../services/alunosApiService';
+import * as planosApi from '../../services/planosApiService';
 import CadastroAlunoDialog from './AlunosComponents/CadastroAlunoDialog.jsx'; 
 import EditarAlunoDialog from './AlunosComponents/EditarAlunoDialog.jsx';
 import ExcluirAlunoDialog from './AlunosComponents/ExcluirAlunoDialog.jsx';
 
-const createStudentData = (id, nome, matricula, plano, data_matricula, data_expiracao, status, outrosDados = {}) => {
+const createStudentData = (id, nome, matricula, plano, cod_plano, data_matricula, data_expiracao, status, outrosDados = {}) => {
     return { 
-        id, nome, matricula, plano, data_matricula, data_expiracao, status,
+        id, nome, matricula, plano, cod_plano, data_matricula, data_expiracao, status,
         ...outrosDados 
     };
 };
-
-const studentRows = [
-    createStudentData(1, 'Gabriel Pereira de Souza', '25010', 'Plano Fit', '15/07/2025', '15/08/2025', 'Ativo', { email: 'gabriel@email.com', cpf: '111.222.333-44', telefone: '85912345678', dataNascimento: '01/01/2000', genero: 'Masculino', endereco: { logradouro: 'Rua das Flores', numero: '123' } }),
-    createStudentData(2, 'Ana Clara Souza', '25102', 'Plano Premium', '20/09/2025', '20/10/2025', 'Ativo', { email: 'ana@email.com', cpf: '222.333.444-55', telefone: '85987654321', dataNascimento: '05/03/1999', genero: 'Feminino', endereco: { logradouro: 'Av. Beira Mar', numero: '1000' } }),
-    createStudentData(3, 'Rafael Oliveira Almeida', '23874', 'Plano Total', '11/01/2025', '11/05/2025', 'Inativo'),
-    createStudentData(4, 'Beatriz Pereira Gomes', '25820', 'Plano Fit', '05/06/2025', '05/10/2025', 'Ativo'),
-    createStudentData(5, 'Júlia Alves Ribeiro', '25649', 'Plano Fit', '01/02/2025', '01/10/2025', 'Inativo'),
-    createStudentData(6, 'Guilherme Santos Rodrigues', '24891', 'Plano Premium', '03/02/2024', '03/10/2025', 'Ativo'),
-    createStudentData(7, 'Mariana Costa Lima', '24673', 'Plano Premium', '08/01/2024', '08/10/2025', 'Ativo'),
-    createStudentData(8, 'Bruno Carvalho Azevedo', '25810', 'Plano Total', '03/10/2025', '03/11/2025', 'Ativo'),
-    createStudentData(9, 'Letícia Dias Moreira', '25730', 'Plano Start', '06/10/2025', '06/11/2025', 'Inativo'),
-    createStudentData(10, 'Matheus Cunha Barros', '25543', 'Plano Premium', '14/06/2025', '14/10/2025', 'Ativo'),
-];
 
 const studentColumns = [
     { id: 'expand', label: '', width: '10px' }, 
@@ -79,7 +67,7 @@ const DetailItem = ({ title, value }) => (
 );
 
 function RowDetails({ row }) {
-    const address = row.endereco ? `${row.endereco.logradouro}, ${row.endereco.numero}` : 'Não informado';
+    const address = row.endereco ? `${row.endereco.logradouro || ''}, ${row.endereco.numero || ''}` : 'Não informado';
 
     return (
         <Box sx={{ p: 3, bgcolor: '#fff', borderRadius: 2, m: 1, border: '1px solid #eee' }}>
@@ -110,6 +98,9 @@ function RowDetails({ row }) {
 
 
 export default function AlunosPage() {
+    const [rows, setRows] = useState([]); 
+    const [listaPlanos, setListaPlanos] = useState([]); 
+
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState(''); 
@@ -123,35 +114,60 @@ export default function AlunosPage() {
     const [statusFilter, setStatusFilter] = useState('Todos');
     const [anchorElReport, setAnchorElReport] = useState(null);
 
+    const loadData = async () => {
+        try {
+            const [resPlanos, resAlunos] = await Promise.all([
+                planosApi.getPlanos(),
+                alunosApi.getAlunos()
+            ]);
+
+            setListaPlanos(resPlanos.data);
+
+            const alunosFormatados = resAlunos.data.map(a => {
+                const dataNasc = a.data_nascimento ? new Date(a.data_nascimento).toLocaleDateString('pt-BR') : '-';
+                const dataMatr = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR') : '-';
+                
+                return createStudentData(
+                    a.matricula, 
+                    a.nome_aluno,
+                    a.matricula,
+                    a.nome_plano || 'Plano não encontrado',
+                    a.cod_plano, 
+                    dataMatr,
+                    '-', 
+                    a.status_aluno,
+                    {
+                        email: a.email_aluno,
+                        cpf: a.cpf_aluno,
+                        telefone: a.telefone,
+                        dataNascimento: dataNasc,
+                        genero: a.genero || 'Não informado',                        
+                        endereco: { 
+                            logradouro: a.logradouro, 
+                            numero: a.numero 
+                        }
+                    }
+                );
+            });
+            setRows(alunosFormatados);
+
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
-    const handleAddAlunoClick = () => setCadastroOpen(true);
-    const handleSaveNovoAluno = (novoAluno) => { console.log("Salvando...", novoAluno); setCadastroOpen(false); };
-    const handleEdit = (id) => {
-        const aluno = studentRows.find(row => row.id === id);
-        setAlunoSelecionado(aluno);
-        setEditOpen(true);
-    };
-    const handleDelete = (id) => {
-        const aluno = studentRows.find(row => row.id === id);
-        setAlunoSelecionado(aluno);
-        setDeleteOpen(true);
-    };
-    const handleSaveEdicao = (alunoEditado) => { console.log("Editando...", alunoEditado); setEditOpen(false); setAlunoSelecionado(null); };
-    const handleConfirmDelete = () => { console.log("Excluindo...", alunoSelecionado.id); setDeleteOpen(false); setAlunoSelecionado(null); };
-    const handleCloseDialogs = () => {
-        setCadastroOpen(false);
-        setEditOpen(false);
-        setDeleteOpen(false);
-        setTimeout(() => setAlunoSelecionado(null), 300); 
-    };
 
-    
     const filteredRows = useMemo(() => {
-        let tempRows = studentRows;
+        let tempRows = rows;
         if (statusFilter !== 'Todos') {
             tempRows = tempRows.filter(row => row.status === statusFilter);
         }
@@ -163,16 +179,103 @@ export default function AlunosPage() {
             );
         }
         return tempRows;
-    }, [searchTerm, statusFilter, studentRows]);
+    }, [searchTerm, statusFilter, rows]);
 
+    const handleAddAlunoClick = () => setCadastroOpen(true);
     
+    const handleEdit = (id) => {
+        const aluno = rows.find(row => row.id === id);
+        setAlunoSelecionado(aluno);
+        setEditOpen(true);
+    };
+    
+    const handleDelete = (id) => {
+        const aluno = rows.find(row => row.id === id);
+        setAlunoSelecionado(aluno);
+        setDeleteOpen(true);
+    };
+
+    const handleCloseDialogs = () => {
+        setCadastroOpen(false);
+        setEditOpen(false);
+        setDeleteOpen(false);
+        setTimeout(() => setAlunoSelecionado(null), 300); 
+    };
+
+    const handleSaveNovoAluno = async (novoAluno) => {
+        try {
+            const payload = {
+                matricula: novoAluno.matricula, 
+                nome_aluno: novoAluno.nome,
+                email_aluno: novoAluno.email,
+                cpf_aluno: novoAluno.cpf,
+                cod_plano: novoAluno.cod_plano,
+                data_nascimento: novoAluno.dataNascimento, 
+                telefone: novoAluno.telefone,
+                logradouro: novoAluno.endereco,
+                numero: "S/N", 
+                status_aluno: "Ativo",
+                genero: novoAluno.genero 
+            };
+
+            await alunosApi.createAluno(payload);
+            alert("Aluno cadastrado com sucesso!");
+            loadData(); 
+            setCadastroOpen(false);
+        } catch (err) {
+            console.error(err);
+            const msg = err.response?.data?.details?.join('\n') || err.response?.data?.message || "Erro ao cadastrar.";
+            alert(`Erro: ${msg}`);
+        }
+    };
+
+    const handleSaveEdicao = async (alunoEditado) => {
+        try {
+            const payload = {
+                matricula: alunoEditado.id,
+                nome_aluno: alunoEditado.nome,
+                email_aluno: alunoEditado.email,
+                cpf_aluno: alunoEditado.cpf,
+                cod_plano: alunoEditado.cod_plano, 
+                data_nascimento: alunoEditado.dataNascimento,
+                telefone: alunoEditado.telefone,
+                logradouro: alunoEditado.endereco,
+                genero: alunoEditado.genero,
+                status_aluno: alunoEditado.status || "Ativo" 
+            };
+
+            await alunosApi.updateAluno(alunoEditado.id, payload);
+            
+            alert("Aluno atualizado com sucesso!");
+            loadData();
+            setEditOpen(false);
+            setAlunoSelecionado(null);
+        } catch (err) {
+            console.error(err);
+            const msg = err.response?.data?.details?.join('\n') || err.response?.data?.message || "Erro ao editar.";
+            alert(msg);
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        if (alunoSelecionado) {
+            try {
+                await alunosApi.deleteAluno(alunoSelecionado.id);
+                alert("Aluno excluído com sucesso!");
+                loadData();
+            } catch (err) {
+                console.error(err);
+                const msg = err.response?.data?.message || err.response?.data?.error || "Erro ao excluir.";
+                alert(msg);
+            }
+        }
+        setDeleteOpen(false);
+        setAlunoSelecionado(null);
+    };
+
     const handleReportMenuClick = (event) => setAnchorElReport(event.currentTarget);
     const handleReportMenuClose = () => setAnchorElReport(null);
 
-    /**
-     * Lógica do download 
-     * @param {'todos' | 'ativos' | 'inativos' | 'todos-detalhado' | 'ativos-detalhado' | 'inativos-detalhado'} reportType
-     */
     const handleDownloadReport = async (reportType) => {
         handleReportMenuClose(); 
         
@@ -184,19 +287,19 @@ export default function AlunosPage() {
 
         switch (filterType) {
             case 'ativos':
-                dataToExport = studentRows.filter(row => row.status === 'Ativo');
-                reportTitle = isDetailed ? "Relatório Detalhado (Ativos)" : "Relatório de Alunos Ativos";
+                dataToExport = rows.filter(row => row.status === 'Ativo');
                 break;
             case 'inativos':
-                dataToExport = studentRows.filter(row => row.status === 'Inativo');
-                reportTitle = isDetailed ? "Relatório Detalhado (Inativos)" : "Relatório de Alunos Inativos";
+                dataToExport = rows.filter(row => row.status === 'Inativo');
                 break;
             case 'todos':
             default:
-                dataToExport = studentRows;
-                reportTitle = isDetailed ? "Relatório Detalhado (Todos)" : "Relatório de Todos os Alunos";
+                dataToExport = rows;
                 break;
         }
+        
+        reportTitle = `Relatório de Alunos (${filterType.charAt(0).toUpperCase() + filterType.slice(1)})`;
+        if (isDetailed) reportTitle += " - Detalhado";
 
         console.log(`Iniciando geração de: ${reportTitle}`);
 
@@ -413,6 +516,7 @@ export default function AlunosPage() {
                 open={cadastroOpen} 
                 onClose={handleCloseDialogs} 
                 onSave={handleSaveNovoAluno} 
+                listaPlanos={listaPlanos} 
             />
 
             <EditarAlunoDialog
@@ -420,6 +524,7 @@ export default function AlunosPage() {
                 onClose={handleCloseDialogs}
                 onSave={handleSaveEdicao}
                 alunoParaEditar={alunoSelecionado} 
+                listaPlanos={listaPlanos} 
             />
 
             <ExcluirAlunoDialog
