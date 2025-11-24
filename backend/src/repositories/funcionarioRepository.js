@@ -1,6 +1,18 @@
 const { pool } = require('../db');
 
-const FIELDS = ['id_funcionario', 'nome_funcionario', 'email_funcionario', 'cpf_funcionario', 'senha', 'nivel_acesso'];
+const FIELDS = [
+  'id_funcionario',
+  'nome_funcionario',
+  'email_funcionario',
+  'cpf_funcionario',
+  'senha',
+  'nivel_acesso',
+  'verificationCode',
+  'verificationCodeExpiry',
+  'passwordResetCode',
+  'passwordResetExpiry',
+  'isEnabled'
+];
 const FIELDS_SQL = FIELDS.join(', ');
 
 async function findAll() {
@@ -28,8 +40,10 @@ async function findById(id_funcionario) {
 }
 
 async function create(funcionarios) {
-  const q = `INSERT INTO funcionarios (id_funcionario, nome_funcionario, email_funcionario, cpf_funcionario, senha, nivel_acesso)
-    VALUES ($1, $2, $3, $4, $5, $6)
+  const q = `INSERT INTO funcionarios (
+    id_funcionario, nome_funcionario, email_funcionario, cpf_funcionario, senha, nivel_acesso,
+    verificationCode, verificationCodeExpiry, passwordResetCode, passwordResetExpiry, isEnabled
+  ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
     RETURNING ${FIELDS_SQL}`;
   const vals = [
     funcionarios.id_funcionario,
@@ -38,6 +52,11 @@ async function create(funcionarios) {
     funcionarios.cpf_funcionario,
     funcionarios.senha,
     funcionarios.nivel_acesso,
+    funcionarios.verificationCode || null,
+    funcionarios.verificationCodeExpiry || null,
+    funcionarios.passwordResetCode || null,
+    funcionarios.passwordResetExpiry || null,
+    funcionarios.isEnabled === undefined ? false : funcionarios.isEnabled,
   ];
   try {
     const r = await pool.query(q, vals);
