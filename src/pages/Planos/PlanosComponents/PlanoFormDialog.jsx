@@ -6,7 +6,7 @@ import {
 
 const cleanCurrency = (formattedValue) => {
     if (!formattedValue) return '';
-    return formattedValue.replace(/[R$\s]/g, '').replace('.', ',');
+    return formattedValue.toString().replace(/[R$\s]/g, '').replace('.', ',');
 };
 
 const errorTextFieldStyle = {
@@ -23,9 +23,8 @@ const errorTextFieldStyle = {
 
 export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
     const [nome, setNome] = useState('');
-    const [codigo, setCodigo] = useState('');
     const [valor, setValor] = useState('');
-    const [status, setStatus] = useState('ativo');
+    const [status, setStatus] = useState('Ativo');
     
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -36,14 +35,12 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
     useEffect(() => {
         if (planToEdit) {
             setNome(planToEdit.nome || '');
-            setCodigo(planToEdit.codigo || '');
             setValor(cleanCurrency(planToEdit.valor)); 
-            setStatus(planToEdit.status.toLowerCase() || 'ativo');
+            setStatus(planToEdit.status || 'Ativo');
         } else {
             setNome('');
-            setCodigo('');
             setValor('');
-            setStatus('ativo');
+            setStatus('Ativo');
         }
         setError(false);
         setErrorMessage('');
@@ -52,19 +49,13 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
 
     const handleValueChange = (e) => {
         const rawValue = e.target.value.replace(/[^0-9,.]/g, '');
-        const formattedValue = formatCurrencyInput(rawValue);
-        setValor(formattedValue);
+        setValor(rawValue);
         resetFieldError('valor');
     };
 
     const handleNomeChange = (e) => {
         setNome(e.target.value);
         resetFieldError('nome');
-    };
-    
-    const handleCodigoChange = (e) => {
-        setCodigo(e.target.value);
-        resetFieldError('codigo');
     };
 
     const resetFieldError = (name) => {
@@ -73,23 +64,11 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
         setErrorMessage('');
     };
 
-    const formatCurrencyInput = (value) => {
-        const digits = value.replace(/\D/g, '');
-        if (digits.length === 0) return '';
-        const amount = parseInt(digits, 10);
-        const reais = amount / 100;
-        return new Intl.NumberFormat('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-            useGrouping: true,
-        }).format(reais);
-    };
-
     const handleSave = () => {
         let errors = {};
         
         const isNomeEmpty = nome.trim() === '';
-        const isValorEmpty = valor.trim() === '';
+        const isValorEmpty = valor.toString().trim() === '';
 
         if (isNomeEmpty || isValorEmpty) {
             if (isNomeEmpty) errors.nome = true;
@@ -101,26 +80,20 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
             return;
         }
 
-        const valorLimpoParaCalculo = valor.replace(/\./g, '').replace(',', '.');
-        const valorNumerico = parseFloat(valorLimpoParaCalculo) || 0;
+        const valorLimpo = valor.toString().replace('R$', '').trim().replace(/\./g, '').replace(',', '.');
+        const valorNumerico = parseFloat(valorLimpo) || 0;
         
-        if (isNaN(valorNumerico) || valorNumerico <= 0) {
-            errors.valor = "O valor deve ser numérico e maior que zero.";
-        }
-
-        const hasSpecificErrors = Object.keys(errors).length > 0;
-
-        if (hasSpecificErrors) {
+        if (valorNumerico <= 0) {
+            errors.valor = "O valor deve ser maior que zero.";
             setFieldErrors(errors);
-            setErrorMessage("Corrija os campos em erro.");
             setError(true);
             return;
         }
 
         const planoData = {
             id: planToEdit ? planToEdit.id : undefined,
+            codigo: planToEdit ? planToEdit.codigo : undefined, 
             nome,
-            codigo: isEditMode ? codigo : undefined, 
             valor: valorNumerico,
             status
         };
@@ -175,6 +148,7 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
                     </Typography>
                 )}
                 <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1}}>
+                    
                     <TextField
                         required
                         id="nome"
@@ -188,27 +162,6 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
                         sx={getSx(isNomeError)}
                     />
                     
-                    {isEditMode && (
-                         <TextField
-                            id="codigo"
-                            label="Código (Não Editável)" 
-                            fullWidth
-                            size="small"
-                            value={codigo}
-                            disabled={true} 
-                            sx={isEditMode ? { 
-                                '& .MuiInputBase-input.Mui-disabled': { 
-                                    WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)', 
-                                    color: 'rgba(0, 0, 0, 0.6)'
-                                },
-                                ...getSx(false),
-                                '& .MuiOutlinedInput-root.Mui-disabled:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'rgba(0, 0, 0, 0.23)', 
-                                }
-                            } : {}}
-                        />
-                    )}
-                    
                     <TextField
                         required
                         id="valor"
@@ -221,7 +174,6 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
                         helperText={error && isValorError ? fieldErrors.valor : ''}
                         InputProps={{
                             startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                            inputMode: 'numeric',
                         }}
                         sx={getSx(isValorError)}
                     />
@@ -242,12 +194,12 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
                             onChange={(e) => setStatus(e.target.value)}
                         >
                             <FormControlLabel 
-                                value="ativo" 
+                                value="Ativo" 
                                 control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} 
                                 label={<Typography variant="body2">Ativo</Typography>} 
                             />
                             <FormControlLabel 
-                                value="inativo" 
+                                value="Inativo" 
                                 control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} 
                                 label={<Typography variant="body2">Inativo</Typography>}
                             />

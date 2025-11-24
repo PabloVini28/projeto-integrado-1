@@ -10,22 +10,25 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-export default function CadastroAlunoDialog({ open, onClose, onSave }) {
+export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos = [] }) {
+    
+    const [matricula, setMatricula] = useState('');
 
-    const [nome, setNome] = useState('');
-    const [dataNascimento, setDataNascimento] = useState(null);
-    const [email, setEmail] = useState('');
-    const [endereco, setEndereco] = useState('');
-    const [telefone, setTelefone] = useState('');
-    const [cpf, setCpf] = useState('');
-    const [dataInicio, setDataInicio] = useState(null);
-    const [plano, setPlano] = useState('');
-    const [genero, setGenero] = useState('prefiro');
+    const handleSave = () => {
+        const novoAluno = {
+            matricula,
+            nome, dataNascimento, email, endereco, telefone, cpf,
+            dataInicio, 
+            cod_plano: plano,
+            genero
+        };
+        console.log("Salvando novo aluno:", novoAluno);
+        onSave(novoAluno);
+        onClose();
+    };
 
-    const [error, setError] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-
-    const resetStates = () => {
+    const handleCancel = () => {
+        setMatricula('');
         setNome('');
         setDataNascimento(null);
         setEmail('');
@@ -186,24 +189,15 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
                 Cadastre um novo Aluno
             </DialogTitle>
 
-            <DialogContent
-                sx={{
-                    px: 3,
-                    pt: 1,
+            <DialogContent 
+                sx={{ 
+                    px: 3, 
+                    pt: 1, 
                     pb: 0,
-                    '&::-webkit-scrollbar': {
-                        width: '0.4em',
-                    },
-                    '&::-webkit-scrollbar-track': {
-                        background: 'transparent',
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                        backgroundColor: 'rgba(0,0,0,.15)',
-                        borderRadius: '20px',
-                    },
-                    '&::-webkit-scrollbar-thumb:hover': {
-                        backgroundColor: 'rgba(0,0,0,.3)',
-                    }
+                    '&::-webkit-scrollbar': { width: '0.4em' },
+                    '&::-webkit-scrollbar-track': { background: 'transparent' },
+                    '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,.15)', borderRadius: '20px' },
+                    '&::-webkit-scrollbar-thumb:hover': { backgroundColor: 'rgba(0,0,0,.3)' }
                 }}
             >
                 {error && (
@@ -215,108 +209,63 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
                     component="form"
                     sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1, ...blackFocusedStyle }}
                 >
-
-                    <Typography
-                        variant="subtitle1"
-                        sx={{ fontWeight: 'bold', mt: 1 }}
-                    >
+                    
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 1 }}>
                         Informações Pessoais:
                     </Typography>
-                    <TextField 
-                        label="Nome Completo*" 
-                        size="small" 
-                        value={nome} 
-                        onChange={(e) => setNome(e.target.value)} 
-                        error={error && nome.trim() === ''} 
-                    />
+                    
+                    <TextField label="Matrícula*" size="small" value={matricula} onChange={(e) => setMatricula(e.target.value)} />
+                    <TextField label="Nome Completo*" size="small" value={nome} onChange={(e) => setNome(e.target.value)} />
+                    
+                    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                        <DatePicker
+                            label="Data de Nascimento*"
+                            value={dataNascimento}
+                            onChange={(newValue) => setDataNascimento(newValue)}
+                            format="dd/MM/yyyy"
+                            slotProps={{ textField: { size: 'small' } }}
+                            disableFuture
+                        />
+                    </LocalizationProvider>
 
-                    <ThemeProvider theme={blackTheme}>
-                        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-                            <DatePicker
-                                label="Data de Nascimento*"
-                                value={dataNascimento}
-                                onChange={(newValue) => setDataNascimento(newValue)}
-                                format="dd/MM/yyyy"
-                                slotProps={{ 
-                                    textField: { 
-                                        size: 'small',
-                                        error: error && (dataNascimento === null || isNaN(dataNascimento)), 
-                                    } 
-                                }}
-                                disableFuture
-                            />
-                        </LocalizationProvider>
-                    </ThemeProvider>
+                    <TextField label="E-mail" size="small" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <TextField label="Endereço" size="small" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+                    <TextField label="Telefone*" size="small" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+                    <TextField label="CPF" size="small" value={cpf} onChange={(e) => setCpf(e.target.value)} />
 
-                    <TextField 
-                        label="E-mail*" 
-                        size="small" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                        error={error && email.trim() === ''}
-                    />
-                    <TextField 
-                        label="Endereço*" 
-                        size="small" 
-                        value={endereco} 
-                        onChange={(e) => setEndereco(e.target.value)} 
-                        error={error && endereco.trim() === ''}
-                    />
-                    <TextField 
-                        label="Telefone*" 
-                        size="small" 
-                        value={telefone} 
-                        onChange={(e) => setTelefone(e.target.value)} 
-                        error={error && telefone.trim() === ''} 
-                    />
-                    <TextField 
-                        label="CPF*" 
-                        size="small" 
-                        value={cpf} 
-                        onChange={(e) => setCpf(e.target.value)} 
-                        error={error && cpf.trim() === ''}
-                    />
-
-                    <Typography
-                        variant="subtitle1"
-                        sx={{ fontWeight: 'bold', pt: 1 }}
-                    >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', pt: 1 }}>
                         Informações Administrativas e Financeiras:
                     </Typography>
-
-                    <ThemeProvider theme={blackTheme}>
-                        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-                            <DatePicker
-                                label="Data de início*"
-                                value={dataInicio}
-                                onChange={(newValue) => setDataInicio(newValue)}
-                                format="dd/MM/yyyy"
-                                slotProps={{ 
-                                    textField: { 
-                                        size: 'small',
-                                        error: error && (dataInicio === null || isNaN(dataInicio)),
-                                    } 
-                                }}
-                                disableFuture
-                            />
-                        </LocalizationProvider>
-                    </ThemeProvider>
-
-                    <TextField 
-                        label="Plano*" 
-                        size="small" 
-                        value={plano} 
-                        onChange={(e) => setPlano(e.target.value)} 
-                        error={error && plano.trim() === ''}
-                    />
-
-                    <FormControl sx={{ pt: 1, pb: 1 }}>
-                        <FormLabel
-                            sx={{
-                                color: 'rgba(0, 0, 0, 0.6)',
-                                '&.Mui-focused': { color: 'rgba(0, 0, 0, 0.6)' }
-                            }}
+                    
+                    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                        <DatePicker
+                            label="Data de início"
+                            value={dataInicio}
+                            onChange={(newValue) => setDataInicio(newValue)}
+                            format="dd/MM/yyyy"
+                            slotProps={{ textField: { size: 'small' } }}
+                            disableFuture
+                        />
+                    </LocalizationProvider>
+                    
+                    <FormControl fullWidth size="small">
+                        <InputLabel id="plano-select-label">Plano</InputLabel>
+                        <Select
+                            labelId="plano-select-label"
+                            value={plano}
+                            label="Plano"
+                            onChange={(e) => setPlano(e.target.value)}
                         >
+                            {listaPlanos.map((p) => (
+                                <MenuItem key={p.cod_plano} value={p.cod_plano}>
+                                    {p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    
+                    <FormControl sx={{ pt: 1, pb: 1 }}>
+                        <FormLabel sx={{ color: 'rgba(0, 0, 0, 0.6)', '&.Mui-focused': { color: 'rgba(0, 0, 0, 0.6)' } }}>
                             Gênero:
                         </FormLabel>
                         <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
@@ -327,18 +276,16 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
                     </FormControl>
                 </Box>
             </DialogContent>
-
-            <DialogActions
-                sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
-            >
-                <Button
-                    onClick={handleCancel}
-                    variant="contained"
-                    sx={{
-                        backgroundColor: '#343a40',
-                        color: 'white',
-                        '&:hover': { backgroundColor: '#23272b' },
-                        fontWeight: 'normal',
+            
+            <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
+                <Button 
+                    onClick={handleCancel} 
+                    variant="contained" 
+                    sx={{ 
+                        backgroundColor: '#343a40', 
+                        color: 'white', 
+                        '&:hover': { backgroundColor: '#23272b' }, 
+                        fontWeight: 'normal', 
                     }}
                 >
                     Cancelar
