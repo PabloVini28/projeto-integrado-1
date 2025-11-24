@@ -71,7 +71,7 @@ function RowDetails({ row }) {
 
     return (
         <Box sx={{ p: 3, bgcolor: '#fff', borderRadius: 2, m: 1, border: '1px solid #eee' }}>
-            <Typography variant="h6" gutterBottom component="div" sx={{ mb: 2 }}>
+            <Typography variant="h6" gutterBottom component="div" sx={{fontWeight: 'bold', mb: 2 }}>
                 Detalhes do Aluno
             </Typography>
             <Grid container spacing={2}>
@@ -81,8 +81,9 @@ function RowDetails({ row }) {
                 
                 <DetailItem title="Email" value={row.email} />
                 <DetailItem title="Telefone" value={row.telefone} />
+
                 <Grid item xs={12} sm={6} md={4}> 
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textTransform: 'uppercase' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textTransform: 'uppercase',}}>
                         Endereço
                     </Typography>
                     <Typography variant="body1" fontWeight="medium">
@@ -353,18 +354,21 @@ export default function AlunosPage() {
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2 }}>
                 
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center'}}>
                     <TextField
                         size="small"
-                        placeholder="Pesquisar por nome ou matrícula"
+                        placeholder="Pesquisar por Nome ou Matrícula"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         InputProps={{
                             startAdornment: ( <InputAdornment position="start"><SearchIcon /></InputAdornment> ),
                         }}
-                        sx={{ width: '400px' }}
+                        sx={{ 
+                            width: '400px',
+                            ...blackFocusedStyle
+                        }}
                     />
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <FormControl size="small" sx={{ minWidth: 180, ...blackFocusedStyle}}>
                         <InputLabel>Filtrar por Status</InputLabel>
                         <Select
                             value={statusFilter}
@@ -388,6 +392,10 @@ export default function AlunosPage() {
                             borderColor: 'grey.400',
                             fontWeight: 'normal',
                             borderRadius: '25px',
+                            '&:hover': {
+                                backgroundColor: '#f5f5f5',
+                                borderColor: 'black',
+                            }
                         }}
                     >
                         Relatórios

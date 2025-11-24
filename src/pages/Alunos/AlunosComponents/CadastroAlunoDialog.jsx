@@ -1,26 +1,18 @@
 import React, { useState } from 'react';
-import { 
-    Dialog, DialogTitle, DialogContent, DialogActions, Button, 
-    Box, TextField, Typography, FormControl, FormLabel, RadioGroup, 
-    FormControlLabel, Radio, InputLabel, Select, MenuItem 
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions, Button,
+    Box, TextField, Typography, FormControl, FormLabel, RadioGroup,
+    FormControlLabel, Radio, InputLabel, Select, MenuItem
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos = [] }) {
     
     const [matricula, setMatricula] = useState('');
-    const [nome, setNome] = useState('');
-    const [dataNascimento, setDataNascimento] = useState(null);
-    const [email, setEmail] = useState('');
-    const [endereco, setEndereco] = useState('');
-    const [telefone, setTelefone] = useState('');
-    const [cpf, setCpf] = useState('');
-    const [dataInicio, setDataInicio] = useState(null);
-    const [plano, setPlano] = useState('');
-    const [genero, setGenero] = useState('prefiro');
 
     const handleSave = () => {
         const novoAluno = {
@@ -46,7 +38,134 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
         setDataInicio(null);
         setPlano('');
         setGenero('prefiro');
+        setError(false);
+        setErrorMessage('');
+    }
+
+    const handleSave = () => {
+        setError(false);
+        setErrorMessage('');
+
+        const requiredFields = {
+            nome: nome.trim(),
+            dataNascimento: dataNascimento,
+            email: email.trim(),
+            endereco: endereco.trim(),
+            telefone: telefone.trim(),
+            cpf: cpf.trim(),
+            dataInicio: dataInicio,
+            plano: plano.trim(),
+        };
+
+        const missingFields = Object.keys(requiredFields).filter(key => {
+            const value = requiredFields[key];
+            if (key === 'dataNascimento' || key === 'dataInicio') {
+                return !(value instanceof Date && !isNaN(value));
+            }
+            return value === '';
+        });
+
+        if (missingFields.length > 0) {
+            setErrorMessage("Preencha todos os campos obrigatórios.");
+            setError(true);
+            return;
+        }
+        
+        const formattedDataNascimento = dataNascimento.toLocaleDateString('pt-BR');
+        const formattedDataInicio = dataInicio.toLocaleDateString('pt-BR');
+
+        const novoAluno = {
+            nome, 
+            dataNascimento: formattedDataNascimento, 
+            email, 
+            endereco, 
+            telefone, 
+            cpf,
+            dataInicio: formattedDataInicio, 
+            plano, 
+            genero
+        };
+        console.log("Salvando novo aluno:", novoAluno);
+        onSave(novoAluno);
+        resetStates(); 
         onClose();
+    };
+
+    const handleCancel = () => {
+        resetStates();
+        onClose();
+    };
+
+    const blackTheme = createTheme({
+        palette: {
+            primary: {
+                main: '#000000',
+            },
+        },
+        components: {
+            MuiPickersDay: {
+                styleOverrides: {
+                    root: {
+                        '&:hover': {
+                            backgroundColor: '#000000',
+                            color: '#FFFFFF',
+                        },
+                        '&.Mui-selected': {
+                            backgroundColor: '#000000',
+                            color: '#FFFFFF',
+                            '&:hover': {
+                                backgroundColor: '#333333',
+                            },
+                        },
+                    },
+                },
+            },
+            MuiOutlinedInput: {
+                styleOverrides: {
+                    root: {
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#000000',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#343a40',
+                        },
+                        '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'red !important',
+                        },
+                        '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                        },
+                    }
+                }
+            },
+            MuiInputLabel: {
+                styleOverrides: {
+                    root: {
+                        '&.Mui-focused': {
+                            color: '#000000',
+                        },
+                        '&.Mui-error': {
+                            color: 'red !important',
+                        },
+                        '&.Mui-disabled': {
+                            color: 'rgba(0, 0, 0, 0.6)',
+                        }
+                    }
+                }
+            }
+        },
+    });
+
+    const blackFocusedStyle = {
+        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'black',
+        },
+        '& .MuiInputLabel-root.Mui-focused': {
+            color: 'black',
+        },
+        '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#343a40',
+        },
     };
 
     return (
@@ -55,16 +174,16 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
             onClose={handleCancel}
             maxWidth="xs"
             fullWidth
-            PaperProps={{ sx: { borderRadius: 2, maxHeight: '450px'} }}
+            PaperProps={{ sx: { borderRadius: 2, maxHeight: '450px' } }}
         >
-            <DialogTitle 
-                sx={{ 
-                    textAlign: 'left', 
-                    fontSize: '1.5rem', 
-                    fontWeight: 'bold', 
+            <DialogTitle
+                sx={{
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
                     pt: 3,
-                    pb: 1, 
-                    px: 3 
+                    pb: 1,
+                    px: 3
                 }}
             >
                 Cadastre um novo Aluno
@@ -81,9 +200,14 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                     '&::-webkit-scrollbar-thumb:hover': { backgroundColor: 'rgba(0,0,0,.3)' }
                 }}
             >
-                <Box 
-                    component="form" 
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}
+                {error && (
+                    <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
+                        {errorMessage}
+                    </Typography>
+                )}
+                <Box
+                    component="form"
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1, ...blackFocusedStyle }}
                 >
                     
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 1 }}>
@@ -145,9 +269,9 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                             Gênero:
                         </FormLabel>
                         <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
-                            <FormControlLabel value="masculino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Masculino</Typography>} />
-                            <FormControlLabel value="feminino" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Feminino</Typography>} />
-                            <FormControlLabel value="prefiro" control={<Radio size="small" sx={{'&.Mui-checked': { color: '#F2D95C' }}} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
+                            <FormControlLabel value="masculino" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label={<Typography variant="body2">Masculino</Typography>} />
+                            <FormControlLabel value="feminino" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label={<Typography variant="body2">Feminino</Typography>} />
+                            <FormControlLabel value="prefiro" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
                         </RadioGroup>
                     </FormControl>
                 </Box>
@@ -166,17 +290,17 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                 >
                     Cancelar
                 </Button>
-                <Button 
-                    onClick={handleSave} 
-                    variant="contained" 
-                    sx={{ 
-                        backgroundColor: '#F2D95C', 
-                        color: 'black', 
-                        '&:hover': { backgroundColor: '#e0c850' }, 
-                        fontWeight: 'normal', 
+                <Button
+                    onClick={handleSave}
+                    variant="contained"
+                    sx={{
+                        backgroundColor: '#F2D95C',
+                        color: 'black',
+                        '&:hover': { backgroundColor: '#e0c850' },
+                        fontWeight: 'normal',
                     }}
                 >
-                    Cadastrar
+                    Cadastrar aluno
                 </Button>
             </DialogActions>
         </Dialog>

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Dialog, DialogTitle, DialogContent, DialogActions, Button, 
-    Box, TextField, Typography, FormControl, FormLabel, RadioGroup, 
-    FormControlLabel, Radio, InputLabel, Select, MenuItem 
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions, Button,
+    Box, TextField, Typography, FormControl, FormLabel, RadioGroup,
+    FormControlLabel, Radio
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEditar, listaPlanos = [] }) {
 
@@ -17,9 +18,11 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
     const [endereco, setEndereco] = useState('');
     const [telefone, setTelefone] = useState('');
     const [cpf, setCpf] = useState('');
-    const [dataInicio, setDataInicio] = useState(null); 
+    const [dataInicio, setDataInicio] = useState(null);
     const [plano, setPlano] = useState('');
     const [genero, setGenero] = useState('prefiro');
+
+    const [error, setError] = useState(false);
 
     useEffect(() => {
         if (alunoParaEditar) {
@@ -58,7 +61,7 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             } else {
                 setDataInicio(null);
             }
-            
+
         } else {
             setNome('');
             setDataNascimento(null);
@@ -70,11 +73,17 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
             setPlano('');
             setGenero('prefiro');
         }
-    }, [alunoParaEditar, open]); 
+        setError(false);
+    }, [alunoParaEditar, open]);
 
     const handleSave = () => {
+        if (!nome || !dataNascimento || !email || !endereco || !telefone || !cpf || !dataInicio || !plano) {
+            setError(true);
+            return;
+        }
+
         const alunoEditado = {
-            id: alunoParaEditar.id, 
+            id: alunoParaEditar.id,
             nome, dataNascimento, email, endereco, telefone, cpf,
             dataInicio, 
             
@@ -87,36 +96,108 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
         onClose();
     };
 
+    const blackTheme = createTheme({
+        palette: {
+            primary: {
+                main: '#000000',
+            },
+        },
+        components: {
+            MuiPickersDay: {
+                styleOverrides: {
+                    root: {
+                        '&:hover': {
+                            backgroundColor: '#000000',
+                            color: '#FFFFFF',
+                        },
+                        '&.Mui-selected': {
+                            backgroundColor: '#000000',
+                            color: '#FFFFFF',
+                            '&:hover': {
+                                backgroundColor: '#333333',
+                            },
+                        },
+                    },
+                },
+            },
+            MuiOutlinedInput: {
+                styleOverrides: {
+                    root: {
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#000000',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#343a40',
+                        },
+                        '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'red !important',
+                        },
+                        '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                        },
+                    }
+                }
+            },
+            MuiInputLabel: {
+                styleOverrides: {
+                    root: {
+                        '&.Mui-focused': {
+                            color: '#000000',
+                        },
+                        '&.Mui-error': {
+                            color: 'red !important',
+                        },
+                        '&.Mui-disabled': {
+                            color: 'rgba(0, 0, 0, 0.6)',
+                        }
+                    }
+                }
+            }
+        },
+    });
+
+    const blackFocusedStyle = {
+        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'black',
+        },
+        '& .MuiInputLabel-root.Mui-focused': {
+            color: 'black',
+        },
+        '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#343a40',
+        },
+    };
+
     return (
         <Dialog
             open={open}
             onClose={onClose}
             maxWidth="xs"
             fullWidth
-            PaperProps={{ 
-                sx: { 
+            PaperProps={{
+                sx: {
                     borderRadius: 2,
-                    maxHeight: '450px', 
-                } 
+                    maxHeight: '450px',
+                }
             }}
         >
-            <DialogTitle 
-                sx={{ 
-                    textAlign: 'left', 
-                    fontSize: '1.5rem', 
-                    fontWeight: 'bold', 
-                    pt: 2, 
-                    pb: 0.5, 
-                    px: 3 
+            <DialogTitle
+                sx={{
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    pt: 2,
+                    pb: 0.5,
+                    px: 3
                 }}
             >
                 Editar Aluno
             </DialogTitle>
-            
-            <DialogContent 
-                sx={{ 
-                    px: 3, 
-                    pt: 1, 
+
+            <DialogContent
+                sx={{
+                    px: 3,
+                    pt: 1,
                     pb: 0,
                     '&::-webkit-scrollbar': { width: '0.4em' },
                     '&::-webkit-scrollbar-track': { background: 'transparent' },
@@ -124,15 +205,20 @@ export default function EditarAlunoDialog({ open, onClose, onSave, alunoParaEdit
                     '&::-webkit-scrollbar-thumb:hover': { backgroundColor: 'rgba(0,0,0,.3)' }
                 }}
             >
-                <Box 
-                    component="form" 
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}
+                {error && (
+                    <Typography color="error" variant="body2" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
+                        Preencha todos os campos obrigatórios.
+                    </Typography>
+                )}
+
+                <Box
+                    component="form"
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1, ...blackFocusedStyle }}
                 >
                     
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 1 }}>
                         Informações Pessoais:
                     </Typography>
-                    <TextField label="Nome Completo*" size="small" value={nome} onChange={(e) => setNome(e.target.value)} />
                     
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
                         <DatePicker

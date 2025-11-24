@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Dialog,
@@ -15,21 +15,96 @@ import {
   Grid,
   Autocomplete,
   CircularProgress,
-  Typography 
+  Typography
 } from "@mui/material";
 
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
-import { parse } from 'date-fns/parse'; 
-import { format } from 'date-fns/format'; 
+import { parse } from 'date-fns/parse';
+import { format } from 'date-fns/format';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+const blackFocusedTextFieldStyle = {
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'black',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'black',
+  },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#343a40',
+  },
+  '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'red !important',
+  },
+};
+
+const blackTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#000000',
+    },
+  },
+  components: {
+    MuiPickersDay: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: '#000000',
+            color: '#FFFFFF',
+          },
+          '&.Mui-selected': {
+            backgroundColor: '#000000',
+            color: '#FFFFFF',
+            '&:hover': {
+              backgroundColor: '#333333',
+            },
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#000000',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#343a40',
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'red !important',
+          },
+          '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'rgba(0, 0, 0, 0.23) !important',
+          },
+        }
+      }
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focused': {
+            color: '#000000',
+          },
+          '&.Mui-error': {
+            color: 'red !important',
+          },
+          '&.Mui-disabled': {
+            color: 'rgba(0, 0, 0, 0.6)',
+          }
+        }
+      }
+    }
+  },
+});
 
 const mockAlunos = [
-    { id: 1, nome: 'Gabriel Pereira de Souza' },
-    { id: 2, nome: 'Ana Clara Souza' },
-    { id: 3, nome: 'Rafael Oliveira Almeida' },
+  { id: 1, nome: 'Gabriel Pereira de Souza' },
+  { id: 2, nome: 'Ana Clara Souza' },
+  { id: 3, nome: 'Rafael Oliveira Almeida' },
 ];
 
 export default function ItemDialog({
@@ -43,13 +118,13 @@ export default function ItemDialog({
   const [categoria, setCategoria] = useState("");
   const [nome, setNome] = useState("");
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
-  
-  const [data, setData] = useState(new Date()); 
+
+  const [data, setData] = useState(new Date());
 
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
   const [errors, setErrors] = useState({});
-  
+
   const [showErrorText, setShowErrorText] = useState(false);
 
   const [buscaAluno, setBuscaAluno] = useState("");
@@ -57,25 +132,25 @@ export default function ItemDialog({
   const [loadingAlunos, setLoadingAlunos] = useState(false);
 
   const type = isRecipe ? "receita" : "despesa";
-  const categoriasReceita = ["Alunos", "Outras"]; 
+  const categoriasReceita = ["Alunos", "Outras"];
   const categoriasDespesa = [
     "Instalações e infraestrutura",
     "Pessoal",
-    "Investimentos", 
+    "Investimentos",
     "Operacional e Administrativo",
     "Outras"
   ];
 
-  useEffect(() => {
+  useMemo(() => {
     if (!isRecipe || categoria !== 'Alunos') {
-        setOpcoesAlunos([]);
-        return;
+      setOpcoesAlunos([]);
+      return;
     }
     setLoadingAlunos(true);
-    setOpcoesAlunos([]); 
+    setOpcoesAlunos([]);
     const timer = setTimeout(() => {
       if (buscaAluno === "") {
-         setOpcoesAlunos(mockAlunos.slice(0, 5));
+        setOpcoesAlunos(mockAlunos.slice(0, 5));
       } else {
         const alunosFiltrados = mockAlunos.filter((aluno) =>
           aluno.nome.toLowerCase().includes(buscaAluno.toLowerCase())
@@ -88,40 +163,40 @@ export default function ItemDialog({
   }, [buscaAluno, isRecipe, categoria]);
 
   useEffect(() => {
-    if (open) { 
-        if (itemToEdit) {
-            setCategoria(itemToEdit.categoria || "");
-            setNome(itemToEdit.nome || "");
-            setValor(String(itemToEdit.valor) || "");
-            setDescricao(itemToEdit.descricao || "");
-            
-            let dataObjeto = new Date();
-            if (itemToEdit.data) {
-                const parsedDate = parse(itemToEdit.data, 'dd/MM/yyyy', new Date());
-                if (parsedDate.toString() !== 'Invalid Date') {
-                    dataObjeto = parsedDate;
-                }
-            }
-            setData(dataObjeto);
-            
-            if (isRecipe && itemToEdit.categoria === 'Alunos' && itemToEdit.nome_aluno) {
-                const aluno = mockAlunos.find(a => a.nome === itemToEdit.nome_aluno);
-                setAlunoSelecionado(aluno || null);
-                if (aluno) { setOpcoesAlunos([aluno]); }
-            } else {
-                setAlunoSelecionado(null);
-            }
-        } else {
-            setCategoria("");
-            setNome("");
-            setData(new Date()); 
-            setValor("");
-            setDescricao("");
-            setAlunoSelecionado(null);
-            setBuscaAluno("");
+    if (open) {
+      if (itemToEdit) {
+        setCategoria(itemToEdit.categoria || "");
+        setNome(itemToEdit.nome || "");
+        setValor(String(itemToEdit.valor) || "");
+        setDescricao(itemToEdit.descricao || "");
+
+        let dataObjeto = new Date();
+        if (itemToEdit.data) {
+          const parsedDate = parse(itemToEdit.data, 'dd/MM/yyyy', new Date());
+          if (parsedDate.toString() !== 'Invalid Date') {
+            dataObjeto = parsedDate;
+          }
         }
-        setErrors({}); 
-        setShowErrorText(false); 
+        setData(dataObjeto);
+
+        if (isRecipe && itemToEdit.categoria === 'Alunos' && itemToEdit.nome_aluno) {
+          const aluno = mockAlunos.find(a => a.nome === itemToEdit.nome_aluno);
+          setAlunoSelecionado(aluno || null);
+          if (aluno) { setOpcoesAlunos([aluno]); }
+        } else {
+          setAlunoSelecionado(null);
+        }
+      } else {
+        setCategoria("");
+        setNome("");
+        setData(new Date());
+        setValor("");
+        setDescricao("");
+        setAlunoSelecionado(null);
+        setBuscaAluno("");
+      }
+      setErrors({});
+      setShowErrorText(false);
     }
   }, [itemToEdit, isRecipe, open]);
 
@@ -130,53 +205,53 @@ export default function ItemDialog({
     const newErrors = {};
 
     if (!categoria) newErrors.categoria = true;
-    if (!data || data.toString() === 'Invalid Date') newErrors.data = true; 
+    if (!data || data.toString() === 'Invalid Date') newErrors.data = true;
     if (!valor || parseFloat(valor) <= 0) newErrors.valor = true;
 
     if (isRecipe) {
-        if (categoria === 'Alunos' && !alunoSelecionado) {
-            newErrors.aluno = true;
-        }
-        if (categoria === 'Outras' && !nome.trim()) {
-            newErrors.nome = true;
-        }
-    } else { 
-        if (!nome.trim()) {
-            newErrors.nome = true;
-        }
+      if (categoria === 'Alunos' && !alunoSelecionado) {
+        newErrors.aluno = true;
+      }
+      if (categoria === 'Outras' && !nome.trim()) {
+        newErrors.nome = true;
+      }
+    } else {
+      if (!nome.trim()) {
+        newErrors.nome = true;
+      }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = () => {
     if (!validateForm()) {
-        setShowErrorText(true); 
-        return;
+      setShowErrorText(true);
+      return;
     }
-    setShowErrorText(false); 
+    setShowErrorText(false);
 
     const dataFormatadaSalvar = format(data, 'dd/MM/yyyy');
 
     let itemData = {
       categoria,
-      data: dataFormatadaSalvar, 
+      data: dataFormatadaSalvar,
       valor: parseFloat(valor) || 0,
       descricao,
       type: type,
     };
 
     if (isRecipe) {
-        if (categoria === 'Alunos') {
-            itemData.nome = 'Mensalidade';
-            itemData.aluno_id = alunoSelecionado?.id || null;
-            itemData.nome_aluno = alunoSelecionado?.nome || null;
-        } else {
-            itemData.nome = nome;
-        }
-    } else {
+      if (categoria === 'Alunos') {
+        itemData.nome = 'Mensalidade';
+        itemData.aluno_id = alunoSelecionado?.id || null;
+        itemData.nome_aluno = alunoSelecionado?.nome || null;
+      } else {
         itemData.nome = nome;
+      }
+    } else {
+      itemData.nome = nome;
     }
 
     onSave(itemData);
@@ -185,7 +260,7 @@ export default function ItemDialog({
   const renderReceitaForm = () => (
     <Grid container spacing={2} sx={{ pt: 2 }}>
       <Grid item xs={12}>
-        <FormControl fullWidth size="small" required error={!!errors.categoria}>
+        <FormControl fullWidth size="small" required error={!!errors.categoria} sx={blackFocusedTextFieldStyle}>
           <InputLabel id="categoria-label">Categoria</InputLabel>
           <Select
             labelId="categoria-label"
@@ -204,7 +279,7 @@ export default function ItemDialog({
           </Select>
         </FormControl>
       </Grid>
-      
+
       {categoria === 'Alunos' && (
         <Grid item xs={12}>
           <Autocomplete
@@ -224,12 +299,14 @@ export default function ItemDialog({
             loading={loadingAlunos}
             loadingText="Buscando alunos..."
             noOptionsText="Nenhum aluno encontrado"
+            sx={blackFocusedTextFieldStyle}
             renderInput={(params) => (
               <TextField
                 {...params}
                 label="Selecionar Aluno"
                 required
                 error={!!errors.aluno}
+                sx={blackFocusedTextFieldStyle}
                 InputProps={{
                   ...params.InputProps,
                   endAdornment: (
@@ -257,28 +334,31 @@ export default function ItemDialog({
             size="small"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
+            sx={blackFocusedTextFieldStyle}
           />
         </Grid>
       )}
 
       <Grid item xs={12} sm={6}>
-        <DatePicker
+        <ThemeProvider theme={blackTheme}>
+          <DatePicker
             label="Data"
             value={data}
             onChange={(newDate) => setData(newDate || new Date())}
             format="dd/MM/yyyy"
-            disableFuture 
+            disableFuture
             slotProps={{
-                textField: {
-                    size: 'small',
-                    fullWidth: true,
-                    required: true,
-                    error: !!errors.data
-                }
+              textField: {
+                size: 'small',
+                fullWidth: true,
+                required: true,
+                error: !!errors.data
+              }
             }}
-        />
+          />
+        </ThemeProvider>
       </Grid>
-      
+
       <Grid item xs={12} sm={6}>
         <TextField
           required
@@ -289,6 +369,7 @@ export default function ItemDialog({
           size="small"
           value={valor}
           onChange={(e) => setValor(e.target.value)}
+          sx={blackFocusedTextFieldStyle}
           InputProps={{
             startAdornment: <InputAdornment position="start">R$</InputAdornment>,
             type: "number",
@@ -306,6 +387,7 @@ export default function ItemDialog({
           onChange={(e) => setDescricao(e.target.value)}
           multiline
           rows={2}
+          sx={blackFocusedTextFieldStyle}
         />
       </Grid>
     </Grid>
@@ -324,11 +406,12 @@ export default function ItemDialog({
           size="small"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
+          sx={blackFocusedTextFieldStyle}
         />
       </Grid>
-      
+
       <Grid item xs={12}>
-        <FormControl fullWidth size="small" required error={!!errors.categoria}>
+        <FormControl fullWidth size="small" required error={!!errors.categoria} sx={blackFocusedTextFieldStyle}>
           <InputLabel id="categoria-label">Categoria</InputLabel>
           <Select
             labelId="categoria-label"
@@ -349,23 +432,26 @@ export default function ItemDialog({
       </Grid>
 
       <Grid item xs={12} sm={6}>
-       <DatePicker
+        <ThemeProvider theme={blackTheme}>
+
+          <DatePicker
             label="Data"
             value={data}
             onChange={(newDate) => setData(newDate || new Date())}
             format="dd/MM/yyyy"
-            disableFuture 
+            disableFuture
             slotProps={{
-                textField: {
-                    size: 'small',
-                    fullWidth: true,
-                    required: true,
-                    error: !!errors.data
-                }
+              textField: {
+                size: 'small',
+                fullWidth: true,
+                required: true,
+                error: !!errors.data
+              }
             }}
-        />
+          />
+        </ThemeProvider>
       </Grid>
-      
+
       <Grid item xs={12} sm={6}>
         <TextField
           required
@@ -375,7 +461,8 @@ export default function ItemDialog({
           fullWidth
           size="small"
           value={valor}
-          onChange={(e) => setValor(e.target.value)} 
+          onChange={(e) => setValor(e.target.value)}
+          sx={blackFocusedTextFieldStyle}
           InputProps={{
             startAdornment: <InputAdornment position="start">R$</InputAdornment>,
             type: "number",
@@ -384,7 +471,7 @@ export default function ItemDialog({
       </Grid>
 
       <Grid item xs={12}>
-       <TextField
+        <TextField
           id="descricao"
           label="Descrição (Opcional)"
           fullWidth
@@ -393,6 +480,7 @@ export default function ItemDialog({
           onChange={(e) => setDescricao(e.target.value)}
           multiline
           rows={2}
+          sx={blackFocusedTextFieldStyle}
         />
       </Grid>
     </Grid>
@@ -410,40 +498,40 @@ export default function ItemDialog({
         <DialogTitle
           sx={{
             textAlign: "center",
-            fontWeight: "normal",
+            fontWeight: "bold",
             fontSize: "1.5rem",
             pb: 0,
           }}
         >
           {title}
         </DialogTitle>
-        
+
         <DialogContent>
           {isRecipe ? renderReceitaForm() : renderDespesaForm()}
-          
+
           {showErrorText && (
-              <Typography 
-                variant="body2" 
-                color="error" 
-                sx={{ textAlign: 'center', mt: 2 }}
-              >
-                Por favor, preencha os campos obrigatórios.
-              </Typography>
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ textAlign: 'center', mt: 2 }}
+            >
+              Por favor, preencha os campos obrigatórios.
+            </Typography>
           )}
         </DialogContent>
-        
+
         <DialogActions
           sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
         >
           <Button
             onClick={onClose}
-            variant="contained" 
+            variant="contained"
             sx={{
               backgroundColor: "#343a40",
               color: "white",
               "&:hover": { backgroundColor: "#23272b" },
               fontWeight: "normal",
-              borderRadius: '8px',
+              textTransform: 'uppercase',
             }}
           >
             CANCELAR
@@ -455,11 +543,11 @@ export default function ItemDialog({
               backgroundColor: "#F2D95C",
               color: "black",
               "&:hover": { backgroundColor: "#e0c850" },
-              fontWeight: "normal", 
-              borderRadius: '8px', 
+              fontWeight: "normal",
+              textTransform: 'uppercase',
             }}
           >
-            SALVAR {type.toUpperCase()}
+            SALVAR
           </Button>
         </DialogActions>
       </Dialog>
