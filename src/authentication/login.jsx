@@ -54,35 +54,69 @@ const Logo = () => (
 
 function LoginPage() {
   const navigate = useNavigate();
+  
+  // Estados unificados
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Estados de erro visual (vindos da develop)
   const [error, setError] = useState(false); 
   const [errorMessage, setErrorMessage] = useState(''); 
   const [fieldErrors, setFieldErrors] = useState({}); 
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
+    
     setError(false);
     setErrorMessage('');
     setFieldErrors({});
 
-    const isEmailValid = validateEmail(email);
-
-    if (!isEmailValid) {
-      setFieldErrors({email: true});
+    if (!validateEmail(email)) {
+      setFieldErrors({ email: true });
       setErrorMessage("Formato de e-mail inválido.");
       setError(true);
       return;
     }
-    
-    if (email === 'admin@cf.com' && password === '123') {
-        console.log("Navegando para a página inicial...");
+
+    if (!password) {
+      setFieldErrors({ password: true });
+      setErrorMessage("A senha é obrigatória.");
+      setError(true);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:4000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Login realizado com sucesso:", data);
+        
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userData', JSON.stringify(data.user)); 
+        
         navigate('/');
-    } else {
-        setFieldErrors({email: true, password: true});
-        setErrorMessage("E-mail ou senha incorretos.");
+      } else {
         setError(true);
+        setErrorMessage(data.error || 'Credenciais inválidas.');
+        setFieldErrors({ email: true, password: true });
+      }
+    } catch (error) {
+      console.error('Erro de conexão:', error);
+      setError(true);
+      setErrorMessage('Não foi possível conectar ao servidor.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,7 +124,6 @@ function LoginPage() {
     event.preventDefault();
     navigate('/esqueci-senha');
   };
-
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -112,7 +145,7 @@ function LoginPage() {
 
   const isEmailError = !!fieldErrors.email;
   const isPasswordError = !!fieldErrors.password;
-  const showHelperText = Object.keys(fieldErrors).length > 1;
+  const showHelperText = Object.keys(fieldErrors).length > 0;
 
   return (
     <Container
@@ -148,12 +181,20 @@ function LoginPage() {
         </Typography>
 
         {error && (
-            <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
+            <Typography 
+                color="error" 
+                variant="body2" 
+                mb={2} 
+                textAlign="center" 
+                fontWeight="bold"
+                sx={{ backgroundColor: '#ffebee', p: 1, borderRadius: 1, width: '100%' }}
+            >
                 {errorMessage}
             </Typography>
         )}
 
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1, width: '100%' }}>
+          
           <TextField
             margin="dense"
             size="small"
@@ -169,7 +210,6 @@ function LoginPage() {
             onChange={handleEmailChange}
             disabled={loading}
             error={isEmailError}
-            helperText={showHelperText && isEmailError ? fieldErrors.email : ''}
             sx={{...blackFocusedTextFieldStyle, ...(isEmailError && errorTextFieldStyle)}}
           />
           <TextField
@@ -186,7 +226,6 @@ function LoginPage() {
             onChange={handlePasswordChange}
             disabled={loading}
             error={isPasswordError}
-            helperText={showHelperText && isPasswordError ? fieldErrors.password : ''}
             sx={{...blackFocusedTextFieldStyle, ...(isPasswordError && errorTextFieldStyle)}}
           />
           <Box
@@ -226,7 +265,7 @@ function LoginPage() {
               },
             }}
           >
-            Entrar
+            {loading ? 'Entrando...' : 'Entrar'}
           </Button>
           
         </Box>

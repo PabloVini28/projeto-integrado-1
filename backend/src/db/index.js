@@ -7,7 +7,6 @@ const connectionString = process.env.DATABASE_URL || (
 const pool = new Pool({ connectionString });
 
 async function init() {
-  // Test the database connection
   await pool.query('SELECT NOW()');
   console.log('Banco de dados conectado com sucesso');
 }
