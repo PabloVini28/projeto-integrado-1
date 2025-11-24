@@ -32,7 +32,6 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import * as alunosApi from '../../services/alunosApiService';
 import * as planosApi from '../../services/planosApiService';
 import CadastroAlunoDialog from './AlunosComponents/CadastroAlunoDialog.jsx'; 
 import EditarAlunoDialog from './AlunosComponents/EditarAlunoDialog.jsx';
