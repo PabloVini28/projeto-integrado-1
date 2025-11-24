@@ -181,7 +181,6 @@ function EditarUsuarioModal({ open, onClose, onSave, user }) {
   }, [user, open]);
 
   const handleSalvar = () => {
-    // Retorna os dados editados
     onSave({ nome, email });
   };
 

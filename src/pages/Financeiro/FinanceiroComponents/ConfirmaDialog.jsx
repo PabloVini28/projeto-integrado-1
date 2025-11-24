@@ -19,9 +19,9 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
           px: 3,
           pt: 3,
           pb: 2,
-          fontWeight: "normal",
+          fontWeight: "bold",
           fontSize: "1.5rem",
-          textAlign: "left",
+          textAlign: "center",
         }}
       >
         {title || "Tem certeza que deseja excluir?"}
@@ -33,13 +33,11 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
         <Button
           onClick={onClose}
           variant="contained"
-          size="small" 
           sx={{
             backgroundColor: "#343a40",
             color: "#ffffffff",
             "&:hover": { backgroundColor: "#23272b" },
             fontWeight: "normal",
-			borderRadius: '8px',
           }}
         >
           Voltar
@@ -47,13 +45,11 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
         <Button
           onClick={onConfirm}
           variant="contained"
-          size="small" 
           sx={{
             backgroundColor: "#F2D95C",
             color: "black",
             "&:hover": { backgroundColor: "#e0c850" },
-            fontWeight: "normal", 
-			borderRadius: '8px',
+            fontWeight: "normal",
           }}
         >
           Excluir

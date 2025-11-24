@@ -32,6 +32,17 @@ import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
 import * as patrimonioApi from '../../services/patrimonioApiService';
 import { format, parse, isValid } from 'date-fns';
 
+const blackFocusedStyle = {
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'black',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+        color: 'black',
+    },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: '#343a40',
+    },
+};
 
 const createData = (id, nome, codigo, dataAquisicao, status) => {
   return { id, nome, codigo, dataAquisicao, status };
@@ -40,20 +51,9 @@ const createData = (id, nome, codigo, dataAquisicao, status) => {
 const allRows = [
   createData(1, 'Leg Press', '001', '25/07/2020', 'Ativo'),
   createData(2, 'Esteira Ergométrica', '002', '13/06/2021', 'Ativo'),
-  createData(3, 'Bicicleta Ergométrica', '003', '20/06/2022', 'Ativo'),
-  createData(4, 'Máquina de supino', '004', '20/06/2023', 'Ativo'),
-  createData(5, 'Cross-over', '005', '20/06/2024', 'Ativo'),
-  createData(6, 'Peck Deck', '006', '24/08/2025', 'Ativo'),
-  createData(7, 'Máquina Smith', '007', '10/03/2021', 'Ativo'),
-  createData(8, 'Cadeira Extensora', '008', '10/03/2022', 'Ativo'),
-  createData(9, 'Máquina de Remo', '009', '18/03/2023', 'Ativo'),
-  createData(10, 'Computador', '010', '25/05/2024', 'Ativo'),
-  createData(11, 'Bebedouro', '011', '10/01/2025', 'Manutenção'),
-  createData(12, 'Anilhas', '012', '15/02/2021', 'Ativo'),
   createData(13, 'Halteres', '013', '15/02/2022', 'Inativo'),
 ];
 
-const useInitialRows = () => sampleRows;
 
 const columns = [
     { id: 'nome', label: 'Nome do Item' },
@@ -80,7 +80,7 @@ export default function PatrimonioPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
 
-    const [rows, setRows] = useState(allRows);
+    const [rows, setRows] = useState(allRows); 
 
     const [anchorElReport, setAnchorElReport] = useState(null);
 
@@ -250,11 +250,11 @@ export default function PatrimonioPage() {
             headers: ['Nome do Item', 'Código', 'Data de Aquisição', 'Status'],
             columnWidths: [300, 120, 150, 172], 
             
-            data: allRows.map(row => [ 
+            data: filteredRows.map(row => [ 
                 row.nome,
                 row.codigo,
-                row.dataAquisicao,
-                row.status
+                formatDateValue(row.dataAquisicao), 
+                displayStatus(row.status) 
             ])
         };
 
@@ -292,7 +292,7 @@ export default function PatrimonioPage() {
                         size="small"
                         placeholder="Pesquisa por Nome ou Código"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(e.target.value)} 
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -303,12 +303,14 @@ export default function PatrimonioPage() {
                         variant="outlined"
                         sx={{ 
                             width: '400px',
+                            ...blackFocusedStyle
                         }}
                     />
                     <FormControl 
                         size="small" 
                         sx={{ 
                             minWidth: 180,
+                            ...blackFocusedStyle
                         }}
                     >
                         <InputLabel>Filtrar por Status</InputLabel>
@@ -335,6 +337,10 @@ export default function PatrimonioPage() {
                             borderColor: 'grey.400',
                             fontWeight: 'normal',
                             borderRadius: '25px',
+                            '&:hover': {
+                                backgroundColor: '#f5f5f5',
+                                borderColor: 'black',
+                            }
                         }}
                     >
                         Relatórios
@@ -358,78 +364,92 @@ export default function PatrimonioPage() {
                 </Box>
             </Box>
 
-            <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
-                <Table stickyHeader aria-label="sticky table">
-                    <TableHead>
-                        <TableRow>
-                            {columns.map((column) => (
-                                <TableCell
-                                    key={column.id}
-                                    align={column.align || 'left'} 
-                                    sx={{ fontWeight: 'bold' }}
-                                >
-                                    {column.label}
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredRows
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((row) => (
-                                <TableRow 
-                                    hover 
-                                    role="checkbox" 
-                                    tabIndex={-1} 
-                                    key={row.id}
-                                    sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
-                                >
-                                    {columns.map((column) => {
-                                        const value = row[column.id];
-                                        return (
-                                            <TableCell key={column.id} align={column.align || 'left'}>
-                                                {column.id === 'actions' ? (
-                                                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleEdit(row)}
-                                                        >
-                                                            <EditIcon fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleDelete(row.id)}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                ) : column.id === 'dataAquisicao' ? (
-                                                    formatDateValue(value)
-                                                ) : column.id === 'status' ? (
-                                                    displayStatus(value)
-                                                ) : (
-                                                    value
-                                                )}
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-                            ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Paper 
+                variant="outlined" 
+                elevation={0} 
+                sx={{ 
+                    borderRadius: 2, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    flexGrow: 1, 
+                    overflow: 'hidden' 
+                }}
+            >
+                <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
+                    <Table stickyHeader aria-label="sticky table">
+                        <TableHead>
+                            <TableRow>
+                                {columns.map((column) => (
+                                    <TableCell
+                                        key={column.id}
+                                        align={column.align || 'left'} 
+                                        sx={{ fontWeight: 'bold' }}
+                                    >
+                                        {column.label}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredRows
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((row) => (
+                                    <TableRow 
+                                        hover 
+                                        role="checkbox" 
+                                        tabIndex={-1} 
+                                        key={row.id_patrimonio || row.id} 
+                                        sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
+                                    >
+                                        {columns.map((column) => {
+                                            const value = row[column.id];
+                                            return (
+                                                <TableCell key={column.id} align={column.align || 'left'}>
+                                                    {column.id === 'actions' ? (
+                                                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                            <IconButton 
+                                                                size="small" 
+                                                                onClick={() => handleEdit(row)}
+                                                            >
+                                                                <EditIcon fontSize="small" />
+                                                            </IconButton>
+                                                            <IconButton 
+                                                                size="small" 
+                                                                onClick={() => handleDelete(row.id_patrimonio || row.id)} 
+                                                            >
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Box>
+                                                    ) : column.id === 'dataAquisicao' ? (
+                                                        formatDateValue(value)
+                                                    ) : column.id === 'status' ? (
+                                                        displayStatus(value)
+                                                    ) : (
+                                                        value
+                                                    )}
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </TableRow>
+                                ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
-            <TablePagination
-                rowsPerPageOptions={[10, 25, 100]}
-                component="div"
-                count={filteredRows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                labelRowsPerPage="Itens por página:"
-            />
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    component="div"
+                    count={filteredRows.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage="Itens por página:"
+                    sx={{ borderTop: '1px solid rgba(224, 224, 224, 1)' }} 
+                />
             
+            </Paper>
+
             <ItemDialog
                 open={isAddDialogOpen}
                 onClose={handleCloseDialogs}

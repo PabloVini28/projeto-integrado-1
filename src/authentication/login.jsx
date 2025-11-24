@@ -10,6 +10,35 @@ import {
 } from '@mui/material';
 import logoImage from '../assets/logo/icon.png';
 
+const blackFocusedTextFieldStyle = {
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'black',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'black',
+  },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#343a40',
+  },
+};
+
+const errorTextFieldStyle = {
+    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'red !important',
+    },
+    '& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'darkred !important',
+    },
+    '& .MuiInputLabel-root.Mui-error': {
+        color: 'red !important',
+    },
+};
+
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+};
+
 const Logo = () => (
   <Box
     component="img"
@@ -25,25 +54,36 @@ const Logo = () => (
 
 function LoginPage() {
   const navigate = useNavigate();
+  
+  // Estados unificados
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const [showError, setShowError] = useState(false); 
-  const [apiError, setApiError] = useState('');      
-
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
+  // Estados de erro visual (vindos da develop)
+  const [error, setError] = useState(false); 
+  const [errorMessage, setErrorMessage] = useState(''); 
+  const [fieldErrors, setFieldErrors] = useState({}); 
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    setShowError(true);
-    setApiError(''); 
     
+    setError(false);
+    setErrorMessage('');
+    setFieldErrors({});
+
     if (!validateEmail(email)) {
-      return; 
+      setFieldErrors({ email: true });
+      setErrorMessage("Formato de e-mail inválido.");
+      setError(true);
+      return;
+    }
+
+    if (!password) {
+      setFieldErrors({ password: true });
+      setErrorMessage("A senha é obrigatória.");
+      setError(true);
+      return;
     }
 
     setLoading(true);
@@ -67,11 +107,14 @@ function LoginPage() {
         
         navigate('/');
       } else {
-        setApiError(data.error || 'Falha ao realizar login.');
+        setError(true);
+        setErrorMessage(data.error || 'Credenciais inválidas.');
+        setFieldErrors({ email: true, password: true });
       }
     } catch (error) {
       console.error('Erro de conexão:', error);
-      setApiError('Não foi possível conectar ao servidor.');
+      setError(true);
+      setErrorMessage('Não foi possível conectar ao servidor.');
     } finally {
       setLoading(false);
     }
@@ -84,16 +127,25 @@ function LoginPage() {
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
-    if (apiError) setApiError('');
+    if (error) {
+        setError(false);
+        setFieldErrors({});
+        setErrorMessage('');
+    }
   };
 
   const handlePasswordChange = (event) => {
     setPassword(event.target.value);
-    if (apiError) setApiError('');
+    if (error) {
+        setError(false);
+        setFieldErrors({});
+        setErrorMessage('');
+    }
   };
 
-  const isEmailValid = validateEmail(email);
-  const displayEmailError = showError && !isEmailValid;
+  const isEmailError = !!fieldErrors.email;
+  const isPasswordError = !!fieldErrors.password;
+  const showHelperText = Object.keys(fieldErrors).length > 0;
 
   return (
     <Container
@@ -128,19 +180,21 @@ function LoginPage() {
           Corpo em Forma Gestão
         </Typography>
 
+        {error && (
+            <Typography 
+                color="error" 
+                variant="body2" 
+                mb={2} 
+                textAlign="center" 
+                fontWeight="bold"
+                sx={{ backgroundColor: '#ffebee', p: 1, borderRadius: 1, width: '100%' }}
+            >
+                {errorMessage}
+            </Typography>
+        )}
+
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1, width: '100%' }}>
           
-          {apiError && (
-            <Typography 
-              color="error" 
-              variant="body2" 
-              align="center" 
-              sx={{ mb: 2, fontWeight: 'bold', backgroundColor: '#ffebee', p: 1, borderRadius: 1 }}
-            >
-              {apiError}
-            </Typography>
-          )}
-
           <TextField
             margin="dense"
             size="small"
@@ -155,8 +209,8 @@ function LoginPage() {
             value={email}
             onChange={handleEmailChange}
             disabled={loading}
-            error={displayEmailError}
-            helperText={displayEmailError ? 'Formato de e-mail inválido.' : ''}
+            error={isEmailError}
+            sx={{...blackFocusedTextFieldStyle, ...(isEmailError && errorTextFieldStyle)}}
           />
           <TextField
             margin="dense"
@@ -171,6 +225,8 @@ function LoginPage() {
             value={password}
             onChange={handlePasswordChange}
             disabled={loading}
+            error={isPasswordError}
+            sx={{...blackFocusedTextFieldStyle, ...(isPasswordError && errorTextFieldStyle)}}
           />
           <Box
             sx={{
@@ -193,7 +249,7 @@ function LoginPage() {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={loading || !email || !password} 
+            disabled={loading || !email.trim() || !password.trim()} 
             sx={{
               mt: 2,
               mb: 2,

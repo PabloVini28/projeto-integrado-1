@@ -88,14 +88,14 @@ function RowItem({ row, isRecipe, onEdit, onDelete, isAdmin, columns }) {
                     <>
                       <IconButton
                         size="small"
-                        sx={{ color: "#343a40" }}
+                        sx={{color: '#6f7174ff'}}
                         onClick={() => onEdit(row, isRecipe)}
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton
                         size="small"
-                        sx={{ color: "#343a40" }}
+                        sx={{color: '#6f7174ff'}}
                         onClick={() => onDelete(row.id, isRecipe)}
                       >
                         <DeleteIcon fontSize="small" />
