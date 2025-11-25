@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
     Box, 
     Typography, 
@@ -29,6 +29,8 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ItemDialog from './PatrimonioComponents/ItemDialog';
 import ConfirmaDialog from './PatrimonioComponents/ConfirmaDialog';
+import * as patrimonioApi from '../../services/patrimonioApiService';
+import { format, parse, isValid } from 'date-fns';
 
 
 const createData = (id, nome, codigo, dataAquisicao, status) => {
@@ -38,18 +40,10 @@ const createData = (id, nome, codigo, dataAquisicao, status) => {
 const allRows = [
   createData(1, 'Leg Press', '001', '25/07/2020', 'Ativo'),
   createData(2, 'Esteira Ergométrica', '002', '13/06/2021', 'Ativo'),
-  createData(3, 'Bicicleta Ergométrica', '003', '20/06/2022', 'Ativo'),
-  createData(4, 'Máquina de supino', '004', '20/06/2023', 'Ativo'),
-  createData(5, 'Cross-over', '005', '20/06/2024', 'Ativo'),
-  createData(6, 'Peck Deck', '006', '24/08/2025', 'Ativo'),
-  createData(7, 'Máquina Smith', '007', '10/03/2021', 'Ativo'),
-  createData(8, 'Cadeira Extensora', '008', '10/03/2022', 'Ativo'),
-  createData(9, 'Máquina de Remo', '009', '18/03/2023', 'Ativo'),
-  createData(10, 'Computador', '010', '25/05/2024', 'Ativo'),
-  createData(11, 'Bebedouro', '011', '10/01/2025', 'Manutenção'),
-  createData(12, 'Anilhas', '012', '15/02/2021', 'Ativo'),
+  // ... (etc)
   createData(13, 'Halteres', '013', '15/02/2022', 'Inativo'),
 ];
+
 
 const columns = [
     { id: 'nome', label: 'Nome do Item' },
@@ -76,7 +70,13 @@ export default function PatrimonioPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
 
+    const [rows, setRows] = useState(allRows); 
+
     const [anchorElReport, setAnchorElReport] = useState(null);
+
+    const [notification, setNotification] = useState({ open: false, severity: 'info', message: '' });
+    const showNotification = (severity, message) => setNotification({ open: true, severity, message });
+    const handleCloseNotification = (event, reason) => { if (reason === 'clickaway') return; setNotification(prev => ({ ...prev, open: false })); };
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -84,6 +84,35 @@ export default function PatrimonioPage() {
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
+    const fetchPatrimonios = async () => {
+        try {
+            const res = await patrimonioApi.getPatrimonios();
+            const normalized = (res.data || []).map(r => ({
+                id: r.id_patrimonio || r.id,
+                id_patrimonio: r.id_patrimonio || r.id,
+                nome: r.nome,
+                codigo: r.id_patrimonio ? String(r.id_patrimonio) : (r.codigo || ''),
+                dataAquisicao: r.data_aquisicao || r.dataAquisicao || null,
+                data_aquisicao: r.data_aquisicao || r.dataAquisicao || null,
+                status: r.status_patrimonio || r.status || '',
+                status_patrimonio: r.status_patrimonio || r.status || '',
+                _raw: r,
+            }));
+            setRows(normalized);
+        } catch (err) {
+            console.error('Erro ao buscar patrimônio', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchPatrimonios();
+    }, []);
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
         setPage(0);
     };
 
@@ -97,9 +126,18 @@ export default function PatrimonioPage() {
         setIsDeleteDialogOpen(true); 
     };
 
-    const confirmDelete = () => {
-        console.log(`Excluindo item com ID: ${itemToDelete}`);
-        handleCloseDialogs();
+    const confirmDelete = async () => {
+        try {
+            await patrimonioApi.deletePatrimonio(itemToDelete);
+            await fetchPatrimonios();
+            showNotification('success', 'Patrimônio excluído com sucesso');
+        } catch (err) {
+            console.error('Erro ao deletar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao deletar';
+            showNotification('error', msg);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
     const handleCloseDialogs = () => {
@@ -110,31 +148,80 @@ export default function PatrimonioPage() {
         setItemToDelete(null); 
     };
 
-    const handleSaveNewItem = (data) => {
-        console.log("Salvando NOVO item:", data);
-        handleCloseDialogs();
+    const handleSaveNewItem = async (data) => {
+        try {
+            await patrimonioApi.createPatrimonio(data);
+            await fetchPatrimonios();
+            showNotification('success', 'Patrimônio cadastrado com sucesso');
+        } catch (err) {
+            console.error('Erro ao criar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao criar';
+            showNotification('error', msg);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
-    const handleUpdateItem = (data) => {
-        console.log("Atualizando item:", data);
-        handleCloseDialogs();
+    // handleUpdateItem (da 'develop')
+    const handleUpdateItem = async (data) => {
+        if (!currentItem || !currentItem.id_patrimonio) return;
+        try {
+            await patrimonioApi.updatePatrimonio(currentItem.id_patrimonio, data);
+            await fetchPatrimonios();
+            showNotification('success', 'Patrimônio atualizado com sucesso');
+        } catch (err) {
+            console.error('Erro ao atualizar', err);
+            const msg = err?.response?.data?.error || err?.message || 'Erro ao atualizar';
+            showNotification('error', msg);
+        } finally {
+            handleCloseDialogs();
+        }
     };
 
     const filteredRows = useMemo(() => {
-        let tempRows = allRows;
+        let tempRows = rows || [];
 
         if (statusFilter !== 'Todos') {
-            tempRows = tempRows.filter(row => row.status === statusFilter);
+            tempRows = tempRows.filter(row => {
+                const s = String(row.status || '').toLowerCase();
+                if (statusFilter === 'Manutenção') return s.includes('manut') || s.includes('manutenção') || s.includes('em manutenção');
+                return s === String(statusFilter || '').toLowerCase();
+            });
         }
         if (searchTerm) {
             const lowerSearchTerm = searchTerm.toLowerCase();
             tempRows = tempRows.filter(row =>
-                row.nome.toLowerCase().includes(lowerSearchTerm) ||
-                row.codigo.toLowerCase().includes(lowerSearchTerm)
+                String(row.nome || '').toLowerCase().includes(lowerSearchTerm) ||
+                String(row.codigo || '').toLowerCase().includes(lowerSearchTerm)
             );
         }
         return tempRows;
-    }, [searchTerm, statusFilter]);
+    }, [searchTerm, statusFilter, rows]);
+
+    function formatDateValue(value) {
+        if (!value) return '-';
+        try {
+            let date;
+            if (String(value).includes('-')) {
+                date = new Date(value);
+            } else {
+                date = parse(String(value), 'dd/MM/yyyy', new Date());
+            }
+            if (!isValid(date)) return '-';
+            return format(date, 'dd/MM/yyyy');
+        } catch (e) {
+            return '-';
+        }
+    }
+
+    function displayStatus(value) {
+        if (!value) return '-';
+        const s = String(value || '').toLowerCase();
+        if (s === 'ativo') return 'Ativo';
+        if (s === 'inativo') return 'Inativo';
+        if (s.includes('manut') || s.includes('manutenção') || s === 'manutenção' || s === 'em manutenção') return 'Em Manutenção';
+        return String(value).charAt(0).toUpperCase() + String(value).slice(1);
+    }
 
     const handleReportMenuClick = (event) => {
         setAnchorElReport(event.currentTarget);
@@ -154,11 +241,11 @@ export default function PatrimonioPage() {
             headers: ['Nome do Item', 'Código', 'Data de Aquisição', 'Status'],
             columnWidths: [300, 120, 150, 172], 
             
-            data: allRows.map(row => [ 
+            data: filteredRows.map(row => [ 
                 row.nome,
                 row.codigo,
-                row.dataAquisicao,
-                row.status
+                formatDateValue(row.dataAquisicao), 
+                displayStatus(row.status) 
             ])
         };
 
@@ -196,7 +283,7 @@ export default function PatrimonioPage() {
                         size="small"
                         placeholder="Pesquisa por Nome ou Código"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(e.target.value)} 
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -237,7 +324,7 @@ export default function PatrimonioPage() {
                         sx={{
                             color: 'text.secondary',
                             borderColor: 'grey.400',
-                            fontWeight: 'bold',
+                            fontWeight: 'normal',
                             borderRadius: '25px',
                         }}
                     >
@@ -250,7 +337,7 @@ export default function PatrimonioPage() {
                         sx={{ 
                             backgroundColor: primaryColor,
                             color: 'black',
-                            fontWeight: 'bold',
+                            fontWeight: 'normal',
                             borderRadius: '25px',
                             '&:hover': {
                                 backgroundColor: primaryHoverColor,
@@ -262,74 +349,92 @@ export default function PatrimonioPage() {
                 </Box>
             </Box>
 
-            <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
-                <Table stickyHeader aria-label="sticky table">
-                    <TableHead>
-                        <TableRow>
-                            {columns.map((column) => (
-                                <TableCell
-                                    key={column.id}
-                                    align={column.align || 'left'} 
-                                    sx={{ fontWeight: 'bold' }}
-                                >
-                                    {column.label}
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredRows
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((row) => (
-                                <TableRow 
-                                    hover 
-                                    role="checkbox" 
-                                    tabIndex={-1} 
-                                    key={row.id}
-                                    sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
-                                >
-                                    {columns.map((column) => {
-                                        const value = row[column.id];
-                                        return (
-                                            <TableCell key={column.id} align={column.align || 'left'}>
-                                                {column.id === 'actions' ? (
-                                                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleEdit(row)}
-                                                        >
-                                                            <EditIcon fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleDelete(row.id)}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                ) : (
-                                                    value
-                                                )}
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-                            ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Paper 
+                variant="outlined" 
+                elevation={0} 
+                sx={{ 
+                    borderRadius: 2, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    flexGrow: 1, 
+                    overflow: 'hidden' 
+                }}
+            >
+                <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
+                    <Table stickyHeader aria-label="sticky table">
+                        <TableHead>
+                            <TableRow>
+                                {columns.map((column) => (
+                                    <TableCell
+                                        key={column.id}
+                                        align={column.align || 'left'} 
+                                        sx={{ fontWeight: 'bold' }}
+                                    >
+                                        {column.label}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredRows
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((row) => (
+                                    <TableRow 
+                                        hover 
+                                        role="checkbox" 
+                                        tabIndex={-1} 
+                                        key={row.id_patrimonio || row.id} 
+                                        sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}
+                                    >
+                                        {columns.map((column) => {
+                                            const value = row[column.id];
+                                            return (
+                                                <TableCell key={column.id} align={column.align || 'left'}>
+                                                    {column.id === 'actions' ? (
+                                                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                            <IconButton 
+                                                                size="small" 
+                                                                onClick={() => handleEdit(row)}
+                                                            >
+                                                                <EditIcon fontSize="small" />
+                                                            </IconButton>
+                                                            <IconButton 
+                                                                size="small" 
+                                                                onClick={() => handleDelete(row.id_patrimonio || row.id)} 
+                                                            >
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Box>
+                                                    ) : column.id === 'dataAquisicao' ? (
+                                                        formatDateValue(value)
+                                                    ) : column.id === 'status' ? (
+                                                        displayStatus(value)
+                                                    ) : (
+                                                        value
+                                                    )}
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </TableRow>
+                                ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
-            <TablePagination
-                rowsPerPageOptions={[10, 25, 100]}
-                component="div"
-                count={filteredRows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                labelRowsPerPage="Itens por página:"
-            />
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    component="div"
+                    count={filteredRows.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage="Itens por página:"
+                    sx={{ borderTop: '1px solid rgba(224, 224, 224, 1)' }} 
+                />
             
+            </Paper>
+
             <ItemDialog
                 open={isAddDialogOpen}
                 onClose={handleCloseDialogs}

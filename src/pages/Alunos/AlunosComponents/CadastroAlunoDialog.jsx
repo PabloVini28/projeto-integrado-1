@@ -19,13 +19,12 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
     const [cpf, setCpf] = useState('');
     const [dataInicio, setDataInicio] = useState(null);
     const [plano, setPlano] = useState('');
-    const [formaPagamento, setFormaPagamento] = useState('');
     const [genero, setGenero] = useState('prefiro');
 
     const handleSave = () => {
         const novoAluno = {
             nome, dataNascimento, email, endereco, telefone, cpf,
-            dataInicio, plano, formaPagamento, genero
+            dataInicio, plano, genero
         };
         console.log("Salvando novo aluno:", novoAluno);
         onSave(novoAluno);
@@ -41,7 +40,6 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
         setCpf('');
         setDataInicio(null);
         setPlano('');
-        setFormaPagamento('');
         setGenero('prefiro');
         onClose();
     };
@@ -109,6 +107,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
                             onChange={(newValue) => setDataNascimento(newValue)}
                             format="dd/MM/yyyy"
                             slotProps={{ textField: { size: 'small' } }}
+                            disableFuture
                         />
                     </LocalizationProvider>
 
@@ -131,26 +130,12 @@ export default function CadastroAlunoDialog({ open, onClose, onSave }) {
                             onChange={(newValue) => setDataInicio(newValue)}
                             format="dd/MM/yyyy"
                             slotProps={{ textField: { size: 'small' } }}
+                            disableFuture
                         />
                     </LocalizationProvider>
                     
                     <TextField label="Plano" size="small" value={plano} onChange={(e) => setPlano(e.target.value)} />
                     
-                    <FormControl variant="outlined" size="small">
-                        <InputLabel id="forma-pagamento-label">Forma de Pagamento</InputLabel>
-                        <Select
-                            labelId="forma-pagamento-label"
-                            value={formaPagamento}
-                            onChange={(e) => setFormaPagamento(e.target.value)}
-                            label="Forma de Pagamento"
-                        >
-                            <MenuItem value="pix">Pix</MenuItem>
-                            <MenuItem value="cartao">Cartão</MenuItem>
-                            <MenuItem value="boleto">Boleto</MenuItem>
-                            <MenuItem value="outro">Outro</MenuItem>
-                        </Select>
-                    </FormControl>
-
                     <FormControl sx={{ pt: 1, pb: 1 }}>
                         <FormLabel 
                             sx={{ 

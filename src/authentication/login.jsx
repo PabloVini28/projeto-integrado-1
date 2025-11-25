@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -8,13 +8,13 @@ import {
   Button,
   Link,
 } from '@mui/material';
-import logoImage from '../assets/logo/icon.png'; 
+import logoImage from '../assets/logo/icon.png';
 
 const Logo = () => (
   <Box
     component="img"
     sx={{
-      width: 60, 
+      width: 60,
       height: 'auto',
       mb: 1,
     }}
@@ -25,28 +25,49 @@ const Logo = () => (
 
 function LoginPage() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false); 
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
 
   const handleLogin = (event) => {
     event.preventDefault();
+    setShowError(true); 
+    
+    if (!validateEmail(email)) {
+      return; 
+    }
     console.log("Navegando para a página inicial...");
     navigate('/');
   };
 
   const handleForgotPasswordClick = (event) => {
-      event.preventDefault();
-      // Usa o useNavigate para ir para a rota que definimos no main.jsx
-      navigate('/esqueci-senha'); 
+    event.preventDefault();
+    navigate('/esqueci-senha');
   };
 
+
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
+  };
+
+  const isEmailValid = validateEmail(email);
+  const displayEmailError = showError && !isEmailValid;
+
   return (
-    <Container 
-      component="main" 
-      sx={{ 
-        maxWidth: '340px !important', 
+    <Container
+      component="main"
+      sx={{
+        maxWidth: '340px !important',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center', 
-        minHeight: '100vh' 
+        justifyContent: 'center',
+        minHeight: '100vh',
       }}
     >
       <Box
@@ -54,18 +75,18 @@ function LoginPage() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          width: '100%' 
+          width: '100%',
         }}
       >
         <Logo />
 
-        <Typography 
-          variant="h6" 
-          component="h1" 
-          sx={{ 
-            fontWeight: 400, 
-            mb: 3, 
-            color: 'text.secondary' 
+        <Typography
+          variant="h6"
+          component="h1"
+          sx={{
+            fontWeight: 400,
+            mb: 3,
+            color: 'text.secondary',
           }}
         >
           Corpo em Forma Gestão
@@ -80,8 +101,14 @@ function LoginPage() {
             id="email"
             label="E-mail"
             name="email"
+            type="email"
             autoComplete="email"
             autoFocus
+            value={email}
+            onChange={handleEmailChange}
+            disabled={loading}
+            error={displayEmailError}
+            helperText={displayEmailError ? 'Formato de e-mail inválido.' : ''}
           />
           <TextField
             margin="dense"
@@ -93,6 +120,9 @@ function LoginPage() {
             type="password"
             id="password"
             autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
           />
           <Box
             sx={{
@@ -102,11 +132,11 @@ function LoginPage() {
               mt: 1,
             }}
           >
-            <Link 
-                href="#" 
-                variant="body2"
-                onClick={handleForgotPasswordClick} 
-                sx={{ cursor: 'pointer' }} // Boa prática para indicar que é clicável
+            <Link
+              href="#"
+              variant="body2"
+              onClick={handleForgotPasswordClick}
+              sx={{ cursor: 'pointer' }}
             >
               Esqueceu sua senha?
             </Link>
@@ -115,26 +145,25 @@ function LoginPage() {
             type="submit"
             fullWidth
             variant="contained"
+            disabled={loading || !email || !password} 
             sx={{
               mt: 2,
               mb: 2,
               py: 1.2,
-              backgroundColor: '#e0e0e0',
+              backgroundColor: '#F2D95C',
               color: 'black',
               '&:hover': {
-                backgroundColor: '#d5d5d5',
+                backgroundColor: '#E0C84D',
+              },
+              '&.Mui-disabled': {
+                backgroundColor: '#F7E9A9',
+                color: 'rgba(0, 0, 0, 0.4)',
               },
             }}
           >
             Entrar
           </Button>
           
-          <Typography variant="body2" align="center" sx={{ mt: 3 }}>
-            Não tem uma conta?{' '}
-            <Link href="#" variant="body2">
-              Crie agora mesmo
-            </Link>
-          </Typography>
         </Box>
       </Box>
     </Container>

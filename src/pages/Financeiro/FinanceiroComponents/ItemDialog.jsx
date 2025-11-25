@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Dialog,
@@ -12,7 +12,100 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Grid,
+  Autocomplete,
+  CircularProgress,
+  Typography
 } from "@mui/material";
+
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { ptBR } from 'date-fns/locale';
+import { parse } from 'date-fns/parse';
+import { format } from 'date-fns/format';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const blackFocusedTextFieldStyle = {
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'black',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'black',
+  },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#343a40',
+  },
+  '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'red !important',
+  },
+};
+
+const blackTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#000000',
+    },
+  },
+  components: {
+    MuiPickersDay: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: '#000000',
+            color: '#FFFFFF',
+          },
+          '&.Mui-selected': {
+            backgroundColor: '#000000',
+            color: '#FFFFFF',
+            '&:hover': {
+              backgroundColor: '#333333',
+            },
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#000000',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#343a40',
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'red !important',
+          },
+          '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'rgba(0, 0, 0, 0.23) !important',
+          },
+        }
+      }
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focused': {
+            color: '#000000',
+          },
+          '&.Mui-error': {
+            color: 'red !important',
+          },
+          '&.Mui-disabled': {
+            color: 'rgba(0, 0, 0, 0.6)',
+          }
+        }
+      }
+    }
+  },
+});
+
+const mockAlunos = [
+  { id: 1, nome: 'Gabriel Pereira de Souza' },
+  { id: 2, nome: 'Ana Clara Souza' },
+  { id: 3, nome: 'Rafael Oliveira Almeida' },
+];
 
 export default function ItemDialog({
   open,
@@ -22,150 +115,442 @@ export default function ItemDialog({
   itemToEdit,
   isRecipe,
 }) {
-  const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [nome, setNome] = useState("");
+  const [alunoSelecionado, setAlunoSelecionado] = useState(null);
+
+  const [data, setData] = useState(new Date());
+
+  const [valor, setValor] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const [showErrorText, setShowErrorText] = useState(false);
+
+  const [buscaAluno, setBuscaAluno] = useState("");
+  const [opcoesAlunos, setOpcoesAlunos] = useState([]);
+  const [loadingAlunos, setLoadingAlunos] = useState(false);
 
   const type = isRecipe ? "receita" : "despesa";
   const categoriasReceita = ["Alunos", "Outras"];
   const categoriasDespesa = [
-    "Despesa",
-    "Custo Fixo",
-    "Imposto",
-    "Salários",
-    "Manutenção",
-    "Água",
-    "Luz",
-    "Internet",
+    "Instalações e infraestrutura",
+    "Pessoal",
+    "Investimentos",
+    "Operacional e Administrativo",
+    "Outras"
   ];
 
-  useEffect(() => {
-    const defaultCategoria = isRecipe
-      ? categoriasReceita[0]
-      : categoriasDespesa[0];
+  useMemo(() => {
+    if (!isRecipe || categoria !== 'Alunos') {
+      setOpcoesAlunos([]);
+      return;
+    }
+    setLoadingAlunos(true);
+    setOpcoesAlunos([]);
+    const timer = setTimeout(() => {
+      if (buscaAluno === "") {
+        setOpcoesAlunos(mockAlunos.slice(0, 5));
+      } else {
+        const alunosFiltrados = mockAlunos.filter((aluno) =>
+          aluno.nome.toLowerCase().includes(buscaAluno.toLowerCase())
+        );
+        setOpcoesAlunos(alunosFiltrados);
+      }
+      setLoadingAlunos(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [buscaAluno, isRecipe, categoria]);
 
-    if (itemToEdit) {
-      setDescricao(itemToEdit.descricao || "");
-      setValor(String(itemToEdit.valor) || "");
-      setCategoria(itemToEdit.categoria || defaultCategoria);
-    } else {
-      setDescricao("");
-      setValor("");
-      setCategoria(defaultCategoria);
+  useEffect(() => {
+    if (open) {
+      if (itemToEdit) {
+        setCategoria(itemToEdit.categoria || "");
+        setNome(itemToEdit.nome || "");
+        setValor(String(itemToEdit.valor) || "");
+        setDescricao(itemToEdit.descricao || "");
+
+        let dataObjeto = new Date();
+        if (itemToEdit.data) {
+          const parsedDate = parse(itemToEdit.data, 'dd/MM/yyyy', new Date());
+          if (parsedDate.toString() !== 'Invalid Date') {
+            dataObjeto = parsedDate;
+          }
+        }
+        setData(dataObjeto);
+
+        if (isRecipe && itemToEdit.categoria === 'Alunos' && itemToEdit.nome_aluno) {
+          const aluno = mockAlunos.find(a => a.nome === itemToEdit.nome_aluno);
+          setAlunoSelecionado(aluno || null);
+          if (aluno) { setOpcoesAlunos([aluno]); }
+        } else {
+          setAlunoSelecionado(null);
+        }
+      } else {
+        setCategoria("");
+        setNome("");
+        setData(new Date());
+        setValor("");
+        setDescricao("");
+        setAlunoSelecionado(null);
+        setBuscaAluno("");
+      }
+      setErrors({});
+      setShowErrorText(false);
     }
   }, [itemToEdit, isRecipe, open]);
 
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!categoria) newErrors.categoria = true;
+    if (!data || data.toString() === 'Invalid Date') newErrors.data = true;
+    if (!valor || parseFloat(valor) <= 0) newErrors.valor = true;
+
+    if (isRecipe) {
+      if (categoria === 'Alunos' && !alunoSelecionado) {
+        newErrors.aluno = true;
+      }
+      if (categoria === 'Outras' && !nome.trim()) {
+        newErrors.nome = true;
+      }
+    } else {
+      if (!nome.trim()) {
+        newErrors.nome = true;
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = () => {
-    const itemData = {
-      descricao,
-      valor: parseFloat(valor),
+    if (!validateForm()) {
+      setShowErrorText(true);
+      return;
+    }
+    setShowErrorText(false);
+
+    const dataFormatadaSalvar = format(data, 'dd/MM/yyyy');
+
+    let itemData = {
       categoria,
+      data: dataFormatadaSalvar,
+      valor: parseFloat(valor) || 0,
+      descricao,
       type: type,
     };
+
+    if (isRecipe) {
+      if (categoria === 'Alunos') {
+        itemData.nome = 'Mensalidade';
+        itemData.aluno_id = alunoSelecionado?.id || null;
+        itemData.nome_aluno = alunoSelecionado?.nome || null;
+      } else {
+        itemData.nome = nome;
+      }
+    } else {
+      itemData.nome = nome;
+    }
+
     onSave(itemData);
   };
 
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      PaperProps={{ sx: { borderRadius: 2 } }}
-    >
-      <DialogTitle
-        sx={{
-          textAlign: "center",
-          fontWeight: "normal",
-          fontSize: "1.5rem",
-          pb: 0,
-        }}
-      >
-        {title || `Cadastre uma nova ${type}`}
-      </DialogTitle>
-      <DialogContent>
-        <Box
-          component="form"
-          sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
-        >
+  const renderReceitaForm = () => (
+    <Grid container spacing={2} sx={{ pt: 2 }}>
+      <Grid item xs={12}>
+        <FormControl fullWidth size="small" required error={!!errors.categoria} sx={blackFocusedTextFieldStyle}>
+          <InputLabel id="categoria-label">Categoria</InputLabel>
+          <Select
+            labelId="categoria-label"
+            value={categoria}
+            label="Categoria"
+            onChange={(e) => setCategoria(e.target.value)}
+          >
+            <MenuItem value="" disabled>
+              *Selecione uma categoria*
+            </MenuItem>
+            {categoriasReceita.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+
+      {categoria === 'Alunos' && (
+        <Grid item xs={12}>
+          <Autocomplete
+            fullWidth
+            size="small"
+            value={alunoSelecionado}
+            onChange={(event, newValue) => {
+              setAlunoSelecionado(newValue);
+            }}
+            inputValue={buscaAluno}
+            onInputChange={(event, newInputValue) => {
+              setBuscaAluno(newInputValue);
+            }}
+            options={opcoesAlunos}
+            getOptionLabel={(option) => option.nome}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            loading={loadingAlunos}
+            loadingText="Buscando alunos..."
+            noOptionsText="Nenhum aluno encontrado"
+            sx={blackFocusedTextFieldStyle}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Selecionar Aluno"
+                required
+                error={!!errors.aluno}
+                sx={blackFocusedTextFieldStyle}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loadingAlunos ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Grid>
+      )}
+
+      {categoria === 'Outras' && (
+        <Grid item xs={12}>
           <TextField
             autoFocus
             required
-            id="descricao"
-            label="Descrição*"
+            error={!!errors.nome}
+            id="nome"
+            label="Nome da Receita"
             fullWidth
             size="small"
-            value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            sx={blackFocusedTextFieldStyle}
           />
+        </Grid>
+      )}
 
-          <FormControl fullWidth size="small" required>
-            <InputLabel id="categoria-label">Categoria</InputLabel>
-            <Select
-              labelId="categoria-label"
-              id="categoria"
-              value={categoria}
-              label="Categoria"
-              onChange={(e) => setCategoria(e.target.value)}
-            >
-              {(isRecipe ? categoriasReceita : categoriasDespesa).map((cat) => (
-                <MenuItem key={cat} value={cat}>
-                  {cat}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            required
-            id="valor"
-            label="Valor"
-            fullWidth
-            size="small"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">R$</InputAdornment>
-              ),
-              type: "number",
+      <Grid item xs={12} sm={6}>
+        <ThemeProvider theme={blackTheme}>
+          <DatePicker
+            label="Data"
+            value={data}
+            onChange={(newDate) => setData(newDate || new Date())}
+            format="dd/MM/yyyy"
+            disableFuture
+            slotProps={{
+              textField: {
+                size: 'small',
+                fullWidth: true,
+                required: true,
+                error: !!errors.data
+              }
             }}
           />
-        </Box>
-      </DialogContent>
-      
-      <DialogActions
-        sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
+        </ThemeProvider>
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <TextField
+          required
+          error={!!errors.valor}
+          id="valor"
+          label="Valor"
+          fullWidth
+          size="small"
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+          sx={blackFocusedTextFieldStyle}
+          InputProps={{
+            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+            type: "number",
+          }}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          id="descricao"
+          label="Descrição (Opcional)"
+          fullWidth
+          size="small"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          multiline
+          rows={2}
+          sx={blackFocusedTextFieldStyle}
+        />
+      </Grid>
+    </Grid>
+  );
+
+  const renderDespesaForm = () => (
+    <Grid container spacing={2} sx={{ pt: 2 }}>
+      <Grid item xs={12}>
+        <TextField
+          autoFocus
+          required
+          error={!!errors.nome}
+          id="nome"
+          label="Nome da Despesa"
+          fullWidth
+          size="small"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          sx={blackFocusedTextFieldStyle}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <FormControl fullWidth size="small" required error={!!errors.categoria} sx={blackFocusedTextFieldStyle}>
+          <InputLabel id="categoria-label">Categoria</InputLabel>
+          <Select
+            labelId="categoria-label"
+            value={categoria}
+            label="Categoria"
+            onChange={(e) => setCategoria(e.target.value)}
+          >
+            <MenuItem value="" disabled>
+              *Selecione uma categoria*
+            </MenuItem>
+            {categoriasDespesa.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <ThemeProvider theme={blackTheme}>
+
+          <DatePicker
+            label="Data"
+            value={data}
+            onChange={(newDate) => setData(newDate || new Date())}
+            format="dd/MM/yyyy"
+            disableFuture
+            slotProps={{
+              textField: {
+                size: 'small',
+                fullWidth: true,
+                required: true,
+                error: !!errors.data
+              }
+            }}
+          />
+        </ThemeProvider>
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <TextField
+          required
+          error={!!errors.valor}
+          id="valor"
+          label="Valor"
+          fullWidth
+          size="small"
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+          sx={blackFocusedTextFieldStyle}
+          InputProps={{
+            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+            type: "number",
+          }}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          id="descricao"
+          label="Descrição (Opcional)"
+          fullWidth
+          size="small"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          multiline
+          rows={2}
+          sx={blackFocusedTextFieldStyle}
+        />
+      </Grid>
+    </Grid>
+  );
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
       >
-        <Button
-          onClick={onClose}
-          variant="contained"
-          size="small" 
+        <DialogTitle
           sx={{
-            backgroundColor: "#343a40",
-            color: "white",
-            "&:hover": { backgroundColor: "#23272b" },
-            fontWeight: "normal",
-			borderRadius: '8px',
+            textAlign: "center",
+            fontWeight: "bold",
+            fontSize: "1.5rem",
+            pb: 0,
           }}
         >
-          CANCELAR
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          size="small" 
-          sx={{
-            backgroundColor: "#F2D95C",
-            color: "black",
-            "&:hover": { backgroundColor: "#e0c850" },
-            fontWeight: "normal", 
-			borderRadius: '8px',
-          }}
+          {title}
+        </DialogTitle>
+
+        <DialogContent>
+          {isRecipe ? renderReceitaForm() : renderDespesaForm()}
+
+          {showErrorText && (
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ textAlign: 'center', mt: 2 }}
+            >
+              Por favor, preencha os campos obrigatórios.
+            </Typography>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
         >
-          SALVAR {type.toUpperCase()}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <Button
+            onClick={onClose}
+            variant="contained"
+            sx={{
+              backgroundColor: "#343a40",
+              color: "white",
+              "&:hover": { backgroundColor: "#23272b" },
+              fontWeight: "normal",
+              textTransform: 'uppercase',
+            }}
+          >
+            CANCELAR
+          </Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            sx={{
+              backgroundColor: "#F2D95C",
+              color: "black",
+              "&:hover": { backgroundColor: "#e0c850" },
+              fontWeight: "normal",
+              textTransform: 'uppercase',
+            }}
+          >
+            SALVAR
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </LocalizationProvider>
   );
 }

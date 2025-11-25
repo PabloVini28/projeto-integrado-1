@@ -7,22 +7,22 @@ import { Add, Edit, Delete } from '@mui/icons-material';
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
-  color: '#1F2937',
-  fontWeight: 'bold',
-  '&:hover': {
-    bgcolor: '#EAB308',
-  },
-  textTransform: 'none', 
+    color: 'black',
+    fontWeight: 'normal',
+    '&:hover': {
+        bgcolor: '#e0c850',
+    },
+    textTransform: 'none',
 };
 
 const grayButtonSx = { 
-  bgcolor: '#6B7280',
-  color: '#F2D95C',
-  fontWeight: 'bold',
-  '&:hover': {
-    bgcolor: '#4B5563',
-  },
-  textTransform: 'none',
+  bgcolor: '#343a40',
+    color: 'white', 
+    fontWeight: 'normal',
+    '&:hover': {
+        bgcolor: '#23272b',
+    },
+    textTransform: 'none',
 };
 
 export default function AdminArea({ funcionarios, onAddUser, onEditUser, onDeleteUser }) {
@@ -39,7 +39,7 @@ export default function AdminArea({ funcionarios, onAddUser, onEditUser, onDelet
   };
 
   const capitalizeRole = (role) => {
-    if (!role) return 'Funcionário'; // Padrão
+    if (!role) return 'Funcionário'; 
     return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
   };
 
@@ -49,21 +49,23 @@ export default function AdminArea({ funcionarios, onAddUser, onEditUser, onDelet
         <Typography variant="h5" fontWeight="Semi bold">Área do Administrador</Typography>
       </Box>
 
-      <TableContainer 
-        component={Paper} 
-        variant="outlined" 
-        sx={{ borderRadius: 2 }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}> 
           <Button
             variant="contained"
             endIcon={<Add/>}
             sx={{ ...yellowButtonSx, borderRadius: '20px', px: 2, py: 1 }}
             onClick={onAddUser}
           >
-            Cadastrar Novo Usuário
+            CADASTRAR NOVO USUÁRIO
           </Button>
-        </Box>
+      </Box>
+
+      <TableContainer 
+        component={Paper} 
+        variant="outlined" 
+        sx={{ borderRadius: 2 }}
+      >
+        
         <Table>
           <TableHead>
             <TableRow>
