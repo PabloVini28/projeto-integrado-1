@@ -40,24 +40,27 @@ async function findById(id_funcionario) {
 }
 
 async function create(funcionarios) {
-  const q = `INSERT INTO funcionarios (
-    id_funcionario, nome_funcionario, email_funcionario, cpf_funcionario, senha, nivel_acesso,
-    verificationCode, verificationCodeExpiry, passwordResetCode, passwordResetExpiry, isEnabled
-  ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-    RETURNING ${FIELDS_SQL}`;
-  const vals = [
-    funcionarios.id_funcionario,
-    funcionarios.nome_funcionario,
-    funcionarios.email_funcionario,
-    funcionarios.cpf_funcionario,
-    funcionarios.senha,
-    funcionarios.nivel_acesso,
-    funcionarios.verificationCode || null,
-    funcionarios.verificationCodeExpiry || null,
-    funcionarios.passwordResetCode || null,
-    funcionarios.passwordResetExpiry || null,
-    funcionarios.isEnabled === undefined ? false : funcionarios.isEnabled,
-  ];
+
+  const cols = [];
+  const placeholders = [];
+  const vals = [];
+  let idx = 1;
+
+  const push = (col, val) => { cols.push(col); placeholders.push(`$${idx++}`); vals.push(val); };
+
+  if (funcionarios.id_funcionario) push('id_funcionario', funcionarios.id_funcionario);
+  push('nome_funcionario', funcionarios.nome_funcionario);
+  push('email_funcionario', funcionarios.email_funcionario);
+  push('cpf_funcionario', funcionarios.cpf_funcionario);
+  push('senha', funcionarios.senha);
+  push('nivel_acesso', funcionarios.nivel_acesso);
+  push('verificationCode', funcionarios.verificationCode || null);
+  push('verificationCodeExpiry', funcionarios.verificationCodeExpiry || null);
+  push('passwordResetCode', funcionarios.passwordResetCode || null);
+  push('passwordResetExpiry', funcionarios.passwordResetExpiry || null);
+  push('isEnabled', funcionarios.isEnabled === undefined ? false : funcionarios.isEnabled);
+
+  const q = `INSERT INTO funcionarios (${cols.join(', ')}) VALUES (${placeholders.join(', ')}) RETURNING ${FIELDS_SQL}`;
   try {
     const r = await pool.query(q, vals);
     return r.rows[0];
