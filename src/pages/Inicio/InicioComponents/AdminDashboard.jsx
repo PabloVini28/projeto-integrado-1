@@ -3,12 +3,12 @@ import { Typography, Box, Paper, Stack, Button, Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CachedIcon from '@mui/icons-material/Cached';
 
-import CadastroAlunoDialog from '../../Alunos/AlunosComponents/CadastroAlunoDialog'; 
-import RenovarMensalidadeDialog from '../../Alunos/AlunosComponents/RenovarMensalidadeDialog';
+import CadastroAlunoDialog from '../../Alunos/AlunosComponents/CadastroAlunoDialog';
+import ItemDialog from '../../Financeiro/FinanceiroComponents/ItemDialog';
 
 const StatCard = ({ title, value, color }) => (
   <Paper
-    variant="outlined" 
+    variant="outlined"
     sx={{
       p: 3,
       borderRadius: 3,
@@ -45,18 +45,19 @@ const StatCard = ({ title, value, color }) => (
 
 export default function AdminDashboard() {
   const [isAlunoDialogOpen, setIsAlunoDialogOpen] = useState(false);
-  const [isRenovarDialogOpen, setIsRenovarDialogOpen] = useState(false);
-  
+  const [isReceitaDialogOpen, setIsReceitaDialogOpen] = useState(false);
+  const [isDespesaDialogOpen, setIsDespesaDialogOpen] = useState(false);
+
   const alunosExemplo = [
     { id: 1, nome: 'Gabriel Pereira de Souza', matricula: '25010', data_expiracao: '15/08/2025' },
   ];
 
   const shortcutButtonStyle = {
-    borderRadius: 50, 
+    borderRadius: 50,
     bgcolor: '#F2D95C',
-    color: '#111', 
-    fontWeight: 'bold',
-    padding: '8px 20px', 
+    color: '#111',
+    fontWeight: 'normal',
+    padding: '8px 20px',
     '&:hover': { bgcolor: '#e0c850' },
     whiteSpace: 'nowrap',
     flexGrow: 1,
@@ -68,11 +69,6 @@ export default function AdminDashboard() {
     setIsAlunoDialogOpen(false);
   };
 
-  const handleRenovarMensalidade = (idAluno) => {
-    console.log(`Renovando mensalidade do aluno ID ${idAluno}`);
-    setIsRenovarDialogOpen(false);
-  };
-
   return (
     <Box sx={{ padding: 3 }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -81,10 +77,10 @@ export default function AdminDashboard() {
 
       <Paper
         variant="outlined"
-        sx={{ 
-            padding: 3, 
-            borderRadius: 4, 
-            marginTop: 2 
+        sx={{
+          padding: 3,
+          borderRadius: 4,
+          marginTop: 2
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -101,47 +97,50 @@ export default function AdminDashboard() {
           <StatCard title="Receitas esse mês" value="297" color="green" />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <StatCard title="Despesas esse mês" value="297" color="#F6A500" />
+          <StatCard title="Despesas esse mês" value="297" color="#ff0000ff" />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <StatCard title="Resultado no mês" value="297" color="#1976d2" />
+          <StatCard title="Resultado no mês" value="297" color="black" />
         </Grid>
       </Grid>
 
-      <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mt: 4 }}>
+      <Typography variant="h5" fontWeight="normal" gutterBottom sx={{ mt: 4 }}>
         Atalhos rápidos
       </Typography>
 
       <Paper
         variant="outlined"
-        sx={{ 
-            padding: 3, 
-            borderRadius: 4, 
-            marginTop: 2 
+        sx={{
+          padding: 3,
+          borderRadius: 4,
+          marginTop: 2
         }}
       >
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <Button variant="contained" endIcon={<AddIcon />} sx={shortcutButtonStyle}>
+        <Stack direction={{ xs: 'column', sm: 'row', }} spacing={2}>
+          <Button
+            variant="contained"
+            endIcon={<AddIcon />}
+            sx={shortcutButtonStyle}
+            onClick={() => setIsReceitaDialogOpen(true)}
+          >
             Registrar Receita
           </Button>
-          <Button variant="contained" endIcon={<AddIcon />} sx={shortcutButtonStyle}>
+
+          <Button
+            variant="contained"
+            endIcon={<AddIcon />}
+            sx={shortcutButtonStyle}
+            onClick={() => setIsDespesaDialogOpen(true)}
+          >
             Registrar Despesa
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             endIcon={<AddIcon />}
             sx={shortcutButtonStyle}
             onClick={() => setIsAlunoDialogOpen(true)}
           >
             Cadastrar Novo Aluno
-          </Button>
-          <Button 
-            variant="contained" 
-            endIcon={<CachedIcon />}
-            sx={shortcutButtonStyle}
-            onClick={() => setIsRenovarDialogOpen(true)}
-          >
-            Renovar Mensalidade
           </Button>
         </Stack>
       </Paper>
@@ -151,11 +150,17 @@ export default function AdminDashboard() {
         onClose={() => setIsAlunoDialogOpen(false)}
         onSave={handleSaveAluno}
       />
-      <RenovarMensalidadeDialog
-        open={isRenovarDialogOpen}
-        onClose={() => setIsRenovarDialogOpen(false)}
-        onRenovar={handleRenovarMensalidade}
-        studentList={alunosExemplo}
+      <ItemDialog
+        open={isReceitaDialogOpen}
+        onClose={() => setIsReceitaDialogOpen(false)}
+        isRecipe={true}
+        title="Registrar Receita"
+      />
+      <ItemDialog
+        open={isDespesaDialogOpen}
+        onClose={() => setIsDespesaDialogOpen(false)}
+        isRecipe={false}
+        title="Registrar Despesa"
       />
     </Box>
   );
