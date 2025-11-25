@@ -33,7 +33,6 @@ async function create(payload) {
   const hashed = await bcrypt.hash(String(payload.senha), 10);
   
   const verificationCode = generate6Digit();
-  const passwordResetCode = generate6Digit();
   const expiresAt = new Date(Date.now() + 1000 * 60 * CODE_EXPIRY_MINUTES); 
 
   const toCreate = {
@@ -41,8 +40,6 @@ async function create(payload) {
     senha: hashed,
     verificationCode,
     verificationCodeExpiry: expiresAt.toISOString(),
-    passwordResetCode, 
-    passwordResetExpiry: expiresAt.toISOString(),
     isEnabled: false, 
   };
 
