@@ -1,7 +1,6 @@
 const { pool } = require('../db');
 
-const FIELDS = ['id_financeiro', 'tipo', 'nome', 'data', 'categoria', 'valor', 'descricao', 'nome_aluno'];
-const FIELDS_SQL = FIELDS.join(', ');
+const FIELDS = ['id_financeiro', 'tipo', 'nome', 'data', 'categoria', 'valor', 'descricao'];
 
 async function findAll() {
   const query = `SELECT * FROM financeiro ORDER BY data DESC`;
@@ -17,8 +16,8 @@ async function findById(id) {
 
 async function create(dados) {
   const query = `
-    INSERT INTO financeiro (tipo, nome, data, categoria, valor, descricao, nome_aluno)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO financeiro (tipo, nome, data, categoria, valor, descricao)
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *
   `;
   const values = [
@@ -27,8 +26,7 @@ async function create(dados) {
     dados.data,
     dados.categoria,
     dados.valor,
-    dados.descricao,
-    dados.nome_aluno || null
+    dados.descricao
   ];
   
   const res = await pool.query(query, values);
@@ -38,8 +36,8 @@ async function create(dados) {
 async function update(id, dados) {
   const query = `
     UPDATE financeiro 
-    SET nome=$1, data=$2, categoria=$3, valor=$4, descricao=$5, nome_aluno=$6
-    WHERE id_financeiro = $7
+    SET nome=$1, data=$2, categoria=$3, valor=$4, descricao=$5
+    WHERE id_financeiro = $6
     RETURNING *
   `;
   const values = [
@@ -48,7 +46,6 @@ async function update(id, dados) {
     dados.categoria,
     dados.valor,
     dados.descricao,
-    dados.nome_aluno || null,
     id
   ];
   

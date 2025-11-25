@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -124,34 +124,39 @@ const blackTheme = createTheme({
 });
 
 
+const formatDatabaseDate = (isoDate) => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+    const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
+    return adjustedDate.toLocaleDateString('pt-BR');
+};
+
 const parseDateString = (dateStr) => {
+  if (!dateStr) return new Date();
   const [day, month, year] = dateStr.split('/').map(Number);
   return new Date(year, month - 1, day);
 };
 
-const receitasData = [
-  { id: 1, nome: 'Mensalidade', data: '01/11/2025', descricao: "Ref. Gabriel", categoria: "Alunos", valor: 80.0, nome_aluno: "Gabriel P. Souza" },
-  { id: 2, nome: 'Mensalidade', data: '01/11/2025', descricao: "Ref. Ana Clara", categoria: "Alunos", valor: 80.0, nome_aluno: "Ana Clara Souza" },
-  { id: 3, nome: 'Aluguel Loja', data: '02/11/2025', descricao: "Aluguel Loja 03", categoria: "Outras", valor: 1200.0 },
-  { id: 6, nome: 'Mensalidade', data: '03/11/2025', descricao: "Ref. Júlia", categoria: "Alunos", valor: 150.0, nome_aluno: "Júlia A. Ribeiro" },
-  { id: 9, nome: 'Mensalidade', data: '01/10/2025', descricao: "Ref. Gabriel (Mês Antigo)", categoria: "Alunos", valor: 80.0, nome_aluno: "Gabriel P. Souza" },
-];
+const formatDateForAPI = (dateObj) => {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
-const despesasData = [
-  { id: 10, nome: 'Água', data: '02/11/2025', descricao: "Pagamento conta de água", categoria: "Outras", valor: 100.0 },
-  { id: 11, nome: 'Aluguel', data: '05/11/2025', descricao: "Pagamento aluguel", categoria: "Outras", valor: 1200.0 },
-  { id: 12, nome: 'Energia', data: '06/11/2025', descricao: "Pagamento conta de energia", categoria: "Pessoal", valor: 500.0 },
-  { id: 15, nome: 'Energia', data: '06/10/2025', descricao: "Pagamento conta de energia (Mês Antigo)", categoria: "Investimento", valor: 480.0 },
-];
 
 export default function FinanceiroPage() {
 
-  const [isAdmin, setIsAdmin] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  const [transacoes, setTransacoes] = useState([]);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [receitasPage, setReceitasPage] = useState(0);
   const [despesasPage, setDespesasPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -159,11 +164,59 @@ export default function FinanceiroPage() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isCurrentRecipe, setIsCurrentRecipe] = useState(true);
   const [tabValue, setTabValue] = useState(0);
+  
   const [receitaSearch, setReceitaSearch] = useState('');
   const [receitaCategory, setReceitaCategory] = useState('Todas');
   const [despesaSearch, setDespesaSearch] = useState('');
   const [despesaCategory, setDespesaCategory] = useState('Todas');
 
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem('userData');
+      if (storedData) {
+        const parsedUser = JSON.parse(storedData);
+        if (parsedUser && parsedUser.nivel_acesso && parsedUser.nivel_acesso.toUpperCase() === 'ADMINISTRADOR') {
+          setIsAdmin(true);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao verificar permissão:", error);
+    }
+  }, []);
+
+  const fetchTransacoes = useCallback(async () => {
+    const token = localStorage.getItem('authToken');
+    try {
+        const response = await fetch('http://localhost:4000/api/financeiro', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            const formattedData = data.map(item => ({
+                id: item.id_financeiro,
+                tipo: item.tipo,
+                nome: item.nome,
+                data: formatDatabaseDate(item.data),
+                originalDate: item.data,
+                categoria: item.categoria,
+                valor: Number(item.valor),
+                descricao: item.descricao,
+            }));
+            setTransacoes(formattedData);
+        }
+    } catch (error) {
+        console.error("Erro de conexão com API Financeiro:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTransacoes();
+  }, [fetchTransacoes]);
+
+  const receitasData = useMemo(() => transacoes.filter(t => t.tipo === 'Receita'), [transacoes]);
+  const despesasData = useMemo(() => transacoes.filter(t => t.tipo === 'Despesa'), [transacoes]);
 
   const receitasDoMes = useMemo(() => {
     const selectedMonth = selectedDate.getMonth();
@@ -185,7 +238,6 @@ export default function FinanceiroPage() {
     });
   }, [despesasData, selectedDate]);
 
-
   const { receitasAlunos, outrasReceitas, despesas, resultado } = useMemo(() => {
     const rAlunos = receitasDoMes.filter(r => r.categoria === 'Alunos').reduce((acc, r) => acc + r.valor, 0);
     const rOutras = receitasDoMes.filter(r => r.categoria !== 'Alunos').reduce((acc, r) => acc + r.valor, 0);
@@ -199,7 +251,6 @@ export default function FinanceiroPage() {
     };
   }, [receitasDoMes, despesasDoMes]);
 
-
   const filteredReceitas = useMemo(() => {
     let temp = receitasDoMes;
     if (receitaCategory !== 'Todas') {
@@ -209,9 +260,7 @@ export default function FinanceiroPage() {
       const search = receitaSearch.toLowerCase();
       temp = temp.filter(r => r.nome.toLowerCase().includes(search) || r.descricao.toLowerCase().includes(search));
     }
-
     return temp.slice().sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
-
   }, [receitasDoMes, receitaSearch, receitaCategory]);
 
   const filteredDespesas = useMemo(() => {
@@ -223,7 +272,6 @@ export default function FinanceiroPage() {
       const search = despesaSearch.toLowerCase();
       temp = temp.filter(d => d.nome.toLowerCase().includes(search) || d.descricao.toLowerCase().includes(search));
     }
-
     return temp.slice().sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
   }, [despesasDoMes, despesaSearch, despesaCategory]);
 
@@ -250,10 +298,6 @@ export default function FinanceiroPage() {
     setItemToDelete({ id, type: isRecipe ? "Receita" : "Despesa" });
     setIsDeleteDialogOpen(true);
   };
-  const confirmDelete = () => {
-    console.log(`Excluindo ${itemToDelete.type} com ID: ${itemToDelete.id}`);
-    handleCloseDialogs();
-  };
   const handleCloseDialogs = () => {
     setIsAddDialogOpen(false);
     setIsEditDialogOpen(false);
@@ -261,13 +305,103 @@ export default function FinanceiroPage() {
     setCurrentItem(null);
     setItemToDelete(null);
   };
-  const handleSaveNewItem = (data) => {
-    console.log(`Salvando NOVA Transação (${data.type}):`, data);
-    handleCloseDialogs();
+
+
+  const handleSaveNewItem = async (data) => {
+    const token = localStorage.getItem('authToken');
+    
+    const [day, month, year] = data.data.split('/').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    const apiDate = formatDateForAPI(dateObj);
+
+    let nomeFinal = data.nome;
+    if (isCurrentRecipe && data.categoria === 'Alunos' && data.nome_aluno) {
+        nomeFinal = data.nome_aluno;
+    }
+
+    const payload = {
+        tipo: isCurrentRecipe ? 'Receita' : 'Despesa',
+        nome: nomeFinal, 
+        data: apiDate,
+        categoria: data.categoria,
+        valor: parseFloat(data.valor),
+        descricao: data.descricao
+    };
+
+    try {
+        const response = await fetch('http://localhost:4000/api/financeiro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+            await fetchTransacoes();
+            handleCloseDialogs();
+        } else {
+            alert("Erro ao salvar.");
+        }
+    } catch (error) {
+        console.error("Erro API:", error);
+    }
   };
-  const handleUpdateItem = (data) => {
-    console.log(`Atualizando Transação (${data.type}) com ID ${currentItem?.id}:`, data);
-    handleCloseDialogs();
+
+  const handleUpdateItem = async (data) => {
+    const token = localStorage.getItem('authToken');
+    
+    const [day, month, year] = data.data.split('/').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    const apiDate = formatDateForAPI(dateObj);
+
+    let nomeFinal = data.nome;
+    if (isCurrentRecipe && data.categoria === 'Alunos' && data.nome_aluno) {
+        nomeFinal = data.nome_aluno;
+    }
+
+    const payload = {
+        tipo: isCurrentRecipe ? 'Receita' : 'Despesa',
+        nome: nomeFinal,
+        data: apiDate,
+        categoria: data.categoria,
+        valor: parseFloat(data.valor),
+        descricao: data.descricao
+    };
+
+    try {
+        const response = await fetch(`http://localhost:4000/api/financeiro/${currentItem.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            await fetchTransacoes();
+            handleCloseDialogs();
+        } else {
+            alert("Erro ao atualizar.");
+        }
+    } catch (error) {
+        console.error("Erro API:", error);
+    }
+  };
+
+  const confirmDelete = async () => {
+    const token = localStorage.getItem('authToken');
+    try {
+        const response = await fetch(`http://localhost:4000/api/financeiro/${itemToDelete.id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            await fetchTransacoes();
+            handleCloseDialogs();
+        } else {
+            alert("Erro ao excluir.");
+        }
+    } catch (error) {
+        console.error("Erro API:", error);
+    }
   };
 
   const handleTabChange = (event, newValue) => {
@@ -294,7 +428,12 @@ export default function FinanceiroPage() {
       data: []
     };
 
-    let apiToCall = window.electronAPI.generateReport;
+    let apiToCall = window.electronAPI ? window.electronAPI.generateReport : null;
+    
+    if (!apiToCall) {
+        console.warn("API do Electron não detectada.");
+        return;
+    }
 
     const receitasAlunosDoMes = receitasDoMes.filter(r => r.categoria === 'Alunos');
     const outrasReceitasDoMes = receitasDoMes.filter(r => r.categoria !== 'Alunos');
@@ -362,7 +501,6 @@ export default function FinanceiroPage() {
         break;
 
       default:
-        console.warn(`Tipo de relatório desconhecido: ${reportType}`);
         return;
     }
 
@@ -540,7 +678,7 @@ export default function FinanceiroPage() {
                     <MenuItem value="Todas">Todas</MenuItem>
                     <MenuItem value="Instalações e infraestrutura">Instalações e infraestrutura</MenuItem>
                     <MenuItem value="Pessoal">Pessoal</MenuItem>
-                    <MenuItem value="Investimento">Investimento</MenuItem>
+                    <MenuItem value="Investimentos">Investimentos</MenuItem>
                     <MenuItem value="Operacional e Administrativo">Operacional e Administrativo</MenuItem>
                     <MenuItem value="Outras">Outras</MenuItem>
                   </Select>
