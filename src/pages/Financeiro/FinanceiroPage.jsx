@@ -147,9 +147,7 @@ const formatDateForAPI = (dateObj) => {
 
 
 export default function FinanceiroPage() {
-
   const [isAdmin, setIsAdmin] = useState(false);
-  
   const [transacoes, setTransacoes] = useState([]);
 
   const [selectedDate, setSelectedDate] = useState(new Date());

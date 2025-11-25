@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
     Box, Typography, TextField, InputAdornment, Button, Paper, 
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
@@ -16,7 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-
+import * as planosApi from '../../services/planosApiService';
 import { PlanoFormDialog } from './PlanosComponents/PlanoFormDialog'; 
 import { ExcluirPlanoDialog } from './PlanosComponents/ExcluirPlanoDialog'; 
 
@@ -28,14 +28,6 @@ const formatCurrency = (amount) => {
 const createData = (id, nome, codigo, valor, status) => {
   return { id, nome, codigo, valor: formatCurrency(valor), status };
 };
-
-const initialRows = [
-  createData(1, 'Diária', '001', 10.00, 'Ativo'),
-  createData(2, 'Semanal', '002', 50.00, 'Ativo'),
-  createData(3, 'Mensal', '003', 100.00, 'Ativo'),
-  createData(4, 'Trimestral', '004', 250.00, 'Ativo'),
-  createData(5, 'Anual', '005', 1000.00, 'Inativo'),
-];
 
 const columns = [
     { id: 'nome', label: 'Nome do Item' },
@@ -61,7 +53,7 @@ export default function PlanosPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
-    const [rows, setRows] = useState(initialRows); 
+    const [rows, setRows] = useState([]);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -69,6 +61,28 @@ export default function PlanosPage() {
     
     const [statusFilter, setStatusFilter] = useState('Todos');
     const [anchorElReport, setAnchorElReport] = useState(null);
+
+    const loadPlanos = async () => {
+        try {
+            const response = await planosApi.getPlanos();
+            const dadosFormatados = response.data.map((p) => 
+                createData(
+                    p.cod_plano, 
+                    p.nome_plano, 
+                    p.cod_plano, 
+                    parseFloat(p.valor_plano), 
+                    p.status_plano
+                )
+            );
+            setRows(dadosFormatados);
+        } catch (error) {
+            console.error("Erro ao buscar planos:", error);
+        }
+    };
+
+    useEffect(() => {
+        loadPlanos();
+    }, []);
 
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
@@ -115,30 +129,50 @@ export default function PlanosPage() {
         setIsDeleteOpen(true);
     };
 
-    const handleConfirmDelete = () => {
-        if (selectedPlan) {
-            setRows(prevRows => prevRows.filter(row => row.id !== selectedPlan.id));
+    const handleSavePlan = async (payload) => {
+        const isEdit = !!selectedPlan; 
+
+        try {
+            const apiPayload = {
+                cod_plano: payload.codigo,
+                nome_plano: payload.nome,
+                valor_plano: payload.valor,
+                status_plano: payload.status
+            };
+
+            if (isEdit) {
+                await planosApi.updatePlano(payload.codigo, apiPayload);
+                alert("Plano atualizado com sucesso!");
+            } else {
+                await planosApi.createPlano(apiPayload);
+                alert("Plano criado com sucesso!");
+            }
+            
+            loadPlanos(); 
+            
+            setIsFormOpen(false);
+            setSelectedPlan(null);
+
+        } catch (err) {
+            console.error(err);
+            const msg = err.response?.data?.message || err.response?.data?.error || "Erro ao salvar plano.";
+            alert(msg);
         }
-        setIsDeleteOpen(false);
-        setSelectedPlan(null);
     };
 
-    const handleSavePlan = (planData) => {
-        if (planData.id) {
-            setRows(prevRows => prevRows.map(row => 
-                row.id === planData.id 
-                ? createData(row.id, planData.nome, planData.codigo, planData.valor, planData.status) 
-                : row
-            ));
-        } else {
-            const maxCodigo = rows.reduce((max, r) => Math.max(max, parseInt(r.codigo, 10)), 0);
-            const newCodigo = String(maxCodigo + 1).padStart(3, '0');
-            const newId = rows.length ? Math.max(...rows.map(r => r.id)) + 1 : 1;
-            
-            const newRow = createData(newId, planData.nome, newCodigo, planData.valor, planData.status);
-            setRows(prevRows => [...prevRows, newRow]);
+    const handleConfirmDelete = async () => {
+        if (selectedPlan) {
+            try {
+                await planosApi.deletePlano(selectedPlan.codigo);
+                alert("Plano excluído com sucesso!");
+                loadPlanos(); 
+            } catch (err) {
+                console.error(err);
+                const msg = err.response?.data?.message || err.response?.data?.error || "Erro ao excluir plano.";
+                alert(msg);
+            }
         }
-        setIsFormOpen(false);
+        setIsDeleteOpen(false);
         setSelectedPlan(null);
     };
     

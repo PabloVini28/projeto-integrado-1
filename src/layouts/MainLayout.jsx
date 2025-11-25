@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import {
     Box, Drawer as MuiDrawer, AppBar as MuiAppBar, Toolbar, List, CssBaseline,
@@ -97,13 +97,32 @@ const breadcrumbNameMap = {
 export default function MainLayout() {
     const theme = useTheme();
     const [open, setOpen] = useState(false);
+    const [userName, setUserName] = useState(''); 
     const location = useLocation();
     const pathnames = location.pathname.split('/').filter((x) => x);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        try {
+            const storedData = localStorage.getItem('userData');
+            if (storedData) {
+                const parsedUser = JSON.parse(storedData);
+                if (parsedUser && parsedUser.nome_funcionario) {
+                    setUserName(parsedUser.nome_funcionario.toUpperCase());
+                }
+            }
+        } catch (error) {
+            console.error("Erro ao carregar nome do usuário no layout:", error);
+        }
+    }, []);
+
     const handleDrawerOpen = () => setOpen(true);
     const handleDrawerClose = () => setOpen(false);
+    
     const handleLogout = () => {
+        localStorage.removeItem('token'); 
+        localStorage.removeItem('userData');
+        localStorage.removeItem('user_data'); 
         console.log("Usuário deslogado");
         navigate('/login');
     };
@@ -142,7 +161,7 @@ export default function MainLayout() {
                                 fontSize: 11,
                             }}
                         >
-                            JOSÉ USUÁRIO DA SILVA
+                            {userName || 'USUÁRIO'} 
                         </Typography>
                         <Button
                             variant="text"
