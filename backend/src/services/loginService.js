@@ -28,13 +28,19 @@ async function authenticate(email, password) {
 
     const payload = {
         id: user.id_funcionario,
+        nome: user.nome_funcionario, 
         nivel_acesso: user.nivel_acesso
     };
 
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
 
-    const { senha, ...userSafe } = user || {};
-    return { token, user: userSafe };
+    const userDisplay = {
+        id_funcionario: user.id_funcionario,
+        nome_funcionario: user.nome_funcionario,
+        nivel_acesso: user.nivel_acesso
+    };
+
+    return { token, user: userDisplay };
 }
 
 module.exports = { authenticate };
