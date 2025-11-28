@@ -3,6 +3,7 @@ const repo = require('../repositories/funcionarioRepository');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('./emailService'); 
 
 const CODE_EXPIRY_MINUTES = 10;
+const CODE_EXPIRY_MS = CODE_EXPIRY_MINUTES * 60 * 1000;
 
 function generate6Digit() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -36,34 +37,24 @@ async function resendVerificationCode(cpf_funcionario) {
 }
 
 async function initiatePasswordReset(email) {
-  const funcionario = await repo.findByEmail(email);
+  const user = await repo.findByEmail(email);
 
-  if (!funcionario) {
-    console.log("DEBUG: Funcionário não encontrado pelo email:", email);
-    return { message: 'Se o email estiver registrado, o código de reset foi enviado.' };
+  if (!user) {
+    const error = new Error('Email não encontrado na base de dados.');
+    error.status = 404; 
+    throw error;
   }
 
-  // --- ÁREA DE DEBUG (Adicione isso) ---
-  console.log("DEBUG: Objeto Funcionário Completo:", JSON.stringify(funcionario, null, 2));
-  
-  const idParaUpdate = funcionario.cpf || funcionario.cpf_funcionario;
-  console.log("DEBUG: ID que será usado no UPDATE:", idParaUpdate);
-  // ------------------------------------
+  const code = generate6Digit();
 
-  const newCode = generate6Digit();
-  const expiresAt = new Date(Date.now() + 1000 * 60 * CODE_EXPIRY_MINUTES);
-
-  // Armazene o resultado do update para ver se ele retorna algo
-  const resultadoUpdate = await repo.update(idParaUpdate, {
-    passwordresetcode: newCode,               
-    passwordresetexpiry: expiresAt.toISOString(), 
+  await repo.update(user.cpf_funcionario, {
+    passwordresetcode: code,
+    passwordresetexpiry: new Date(Date.now() + CODE_EXPIRY_MS)
   });
-  
-  console.log("DEBUG: Resultado do Update:", resultadoUpdate);
 
-  await sendPasswordResetEmail(email, newCode);
+  await sendPasswordResetEmail(email, code);
 
-  return { message: 'Se o email estiver registrado, o código de reset foi enviado.' };
+  return { message: 'Código de redefinição enviado para o seu email.' };
 }
 
 async function resetPassword(email, code, newPassword) {
@@ -90,6 +81,14 @@ async function resetPassword(email, code, newPassword) {
 
   if (now > expiryDate) {
     const err = new Error('Código de reset expirado');
+    err.status = 400;
+    throw err;
+  }
+
+  const isSamePassword = await bcrypt.compare(String(newPassword), funcionario.senha);
+
+  if (isSamePassword) {
+    const err = new Error('A nova senha não pode ser igual à senha atual.');
     err.status = 400;
     throw err;
   }
