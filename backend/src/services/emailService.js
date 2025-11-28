@@ -14,6 +14,26 @@ const transporter = nodemailer.createTransport({
 
 const generate6Digit = () => String(Math.floor(100000 + Math.random() * 900000));
 
+async function requestPasswordReset(email) {
+    const user = await repo.findByEmail(email);
+
+    if (!user) {
+      const error = new Error('Email não encontrado na base de dados.');
+      error.status = 404; 
+      throw error;
+    }
+    const code = generate6Digit();
+    const expiration = new Date(Date.now() + CODE_EXPIRY_MS);
+
+    await repo.update(user.cpf_funcionario, {
+      passwordresetcode: code,
+      passwordresetexpiry: expiration
+    });
+    await sendPasswordResetEmail(email, code);
+
+    return { message: 'Código de redefinição enviado.' };
+}
+
 async function sendVerificationEmail(email, code) {
   const mailOptions = {
     from: `Corpo em Forma - <${process.env.SMTP_USER}>`,
@@ -239,6 +259,7 @@ async function verifyTransporter() {
 }
 
 module.exports = {
+  requestPasswordReset,
   sendVerificationEmail,
   sendPasswordResetEmail,
   verifyEmail,
