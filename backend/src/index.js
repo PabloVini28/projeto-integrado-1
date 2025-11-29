@@ -8,6 +8,7 @@ const alunoRouter = require('./routes/alunos');
 const planosRouter = require('./routes/planos');
 const loginRouter = require('./routes/login');
 const funcionarioRouter = require('./routes/funcionario');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -21,6 +22,7 @@ app.use('/api/alunos', alunoRouter);
 app.use('/api/planos', planosRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/funcionario', funcionarioRouter);
+app.use('/api/auth', authRoutes);
 
 async function start() {
   try {

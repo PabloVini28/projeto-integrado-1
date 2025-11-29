@@ -1,4 +1,3 @@
-// Allowed access levels. Keep both accented and unaccented 'Funcionario' variants
 const STATUSES = ["Administrador", "Funcionário", "Funcionario"];
 
 function validateFuncionario(payload) {
