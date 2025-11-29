@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography, Box, Paper, Stack, Button, Grid } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import CachedIcon from '@mui/icons-material/Cached';
+import AddIcon from "@mui/icons-material/Add";
 
-import CadastroAlunoDialog from '../../Alunos/AlunosComponents/CadastroAlunoDialog';
+import * as alunosApi from "../../../services/alunosApiService";
+import * as planosApi from "../../../services/planosApiService";
+
+import CadastroAlunoDialog from "../../Alunos/AlunosComponents/CadastroAlunoDialog";
 import ItemDialog from '../../Financeiro/FinanceiroComponents/ItemDialog';
 
 const StatCard = ({ title, value, color }) => (
@@ -47,10 +49,20 @@ export default function AdminDashboard() {
   const [isAlunoDialogOpen, setIsAlunoDialogOpen] = useState(false);
   const [isReceitaDialogOpen, setIsReceitaDialogOpen] = useState(false);
   const [isDespesaDialogOpen, setIsDespesaDialogOpen] = useState(false);
+  
+  const [listaPlanos, setListaPlanos] = useState([]);
 
-  const alunosExemplo = [
-    { id: 1, nome: 'Gabriel Pereira de Souza', matricula: '25010', data_expiracao: '15/08/2025' },
-  ];
+  useEffect(() => {
+    const fetchPlanos = async () => {
+      try {
+        const response = await planosApi.getPlanos();
+        setListaPlanos(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar planos para o dashboard:", error);
+      }
+    };
+    fetchPlanos();
+  }, []);
 
   const shortcutButtonStyle = {
     borderRadius: 50,
@@ -64,9 +76,33 @@ export default function AdminDashboard() {
     textTransform: 'uppercase',
   };
 
-  const handleSaveAluno = (novoAluno) => {
-    console.log("Novo aluno cadastrado:", novoAluno);
-    setIsAlunoDialogOpen(false);
+  const handleSaveAluno = async (novoAluno) => {
+    try {
+      const payload = {
+        matricula: novoAluno.matricula,
+        nome_aluno: novoAluno.nome,
+        email_aluno: novoAluno.email,
+        cpf_aluno: novoAluno.cpf,
+        cod_plano: novoAluno.cod_plano,
+        data_nascimento: novoAluno.dataNascimento,
+        telefone: novoAluno.telefone,
+        logradouro: novoAluno.endereco,
+        numero: "S/N",
+        status_aluno: "Ativo",
+        genero: novoAluno.genero,
+      };
+
+      await alunosApi.createAluno(payload);
+      alert("Aluno cadastrado com sucesso via Dashboard!");
+      setIsAlunoDialogOpen(false);
+    } catch (err) {
+      console.error(err);
+      const msg =
+        err.response?.data?.details?.join("\n") ||
+        err.response?.data?.message ||
+        "Erro ao cadastrar aluno.";
+      alert(`Erro: ${msg}`);
+    }
   };
 
   return (
@@ -88,7 +124,7 @@ export default function AdminDashboard() {
             <Box sx={{ width: 12, height: 12, bgcolor: 'success.main', borderRadius: '50%' }} />
             <Typography variant="h6" color="text.secondary">Alunos Ativos</Typography>
           </Box>
-          <Typography variant="h2" fontWeight="bold">297</Typography>
+          <Typography variant="h2" fontWeight="bold">297</Typography> 
         </Box>
       </Paper>
 
@@ -149,6 +185,7 @@ export default function AdminDashboard() {
         open={isAlunoDialogOpen}
         onClose={() => setIsAlunoDialogOpen(false)}
         onSave={handleSaveAluno}
+        listaPlanos={listaPlanos}
       />
       <ItemDialog
         open={isReceitaDialogOpen}
