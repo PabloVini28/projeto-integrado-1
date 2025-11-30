@@ -10,7 +10,7 @@ RUN npm install
 COPY . .
 
 # Expõe a porta que a API usa
-EXPOSE 3000
+EXPOSE 4000
 
 # Comando para iniciar a API
 CMD ["node", "src/index.js"]

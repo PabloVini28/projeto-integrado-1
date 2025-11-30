@@ -70,6 +70,7 @@ const blackFocusedStyle = {
 };
 
 export default function PlanosPage() {
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,6 +79,7 @@ export default function PlanosPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+
 
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [anchorElReport, setAnchorElReport] = useState(null);
@@ -102,6 +104,7 @@ export default function PlanosPage() {
   useEffect(() => {
     loadPlanos();
   }, []);
+
 
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {

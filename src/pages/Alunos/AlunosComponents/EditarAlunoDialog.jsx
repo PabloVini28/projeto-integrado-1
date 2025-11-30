@@ -23,6 +23,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { ptBR } from "date-fns/locale";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
+
 export default function EditarAlunoDialog({
   open,
   onClose,
@@ -49,6 +50,7 @@ export default function EditarAlunoDialog({
 
       setGenero(alunoParaEditar.genero || "prefiro");
       setEmail(alunoParaEditar.email || "");
+
 
       const end = alunoParaEditar.endereco?.logradouro
         ? `${alunoParaEditar.endereco.logradouro}, ${alunoParaEditar.endereco.numero || ""}`
@@ -96,6 +98,7 @@ export default function EditarAlunoDialog({
     }
     setError(false);
   }, [alunoParaEditar, open]);
+
 
   const handleSave = () => {
     if (
@@ -266,6 +269,7 @@ export default function EditarAlunoDialog({
             </LocalizationProvider>
           </ThemeProvider>
 
+
           <TextField
             label="E-mail*"
             size="small"
@@ -333,6 +337,7 @@ export default function EditarAlunoDialog({
               ))}
             </Select>
           </FormControl>
+
 
           <FormControl sx={{ pt: 1, pb: 1 }}>
             <FormLabel

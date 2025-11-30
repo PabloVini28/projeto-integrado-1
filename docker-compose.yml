@@ -24,7 +24,6 @@ services:
       - db
     networks:
       - projeto-network
-
   api:
     build: ./backend      
     container_name: projeto_api

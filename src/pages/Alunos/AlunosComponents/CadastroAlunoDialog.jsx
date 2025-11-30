@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+
   Dialog,
   DialogTitle,
   DialogContent,
@@ -58,6 +59,7 @@ export default function CadastroAlunoDialog({
     setErrorMessage("");
   };
 
+
   const handleCancel = () => {
     resetStates();
     onClose();
@@ -99,6 +101,7 @@ export default function CadastroAlunoDialog({
     resetStates();
     onClose();
   };
+
 
   const blackTheme = createTheme({
     palette: { primary: { main: "#000000" } },
@@ -246,6 +249,7 @@ export default function CadastroAlunoDialog({
             </LocalizationProvider>
           </ThemeProvider>
 
+
           <TextField
             required
             label="E-mail"
@@ -303,6 +307,7 @@ export default function CadastroAlunoDialog({
               label="Plano"
               onChange={(e) => setPlano(e.target.value)}
             >
+
               {listaPlanos.map((p) => (
                 <MenuItem key={p.cod_plano} value={p.cod_plano}>
                   {p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}
