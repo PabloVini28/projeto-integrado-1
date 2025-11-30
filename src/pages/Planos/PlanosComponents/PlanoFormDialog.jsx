@@ -238,10 +238,7 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
 
           <FormControl sx={{ pt: 1 }}>
             <FormLabel
-              sx={{
-                color: "rgba(0, 0, 0, 0.6)",
-                "&.Mui-focused": { color: "rgba(0, 0, 0, 0.6)" },
-              }}
+              sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }}
             >
               Status:
             </FormLabel>
