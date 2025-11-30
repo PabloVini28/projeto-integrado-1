@@ -9,7 +9,6 @@ import {
 
 import AdminArea from './ConfigComponents/AdminArea';
 
-// IMPORTAÇÕES DOS NOVOS ARQUIVOS SEPARADOS
 import AlterarSenhaDialog from './ConfigPageComponents/AlterarSenhaDialog';
 import AlterarEmailDialog from './ConfigPageComponents/AlterarEmailDialog';
 import CadastrarNovoUsuarioDialog from './ConfigPageComponents/CadastrarNovoUsuarioDialog';
@@ -18,6 +17,7 @@ import ExcluirUsuarioDialog from './ConfigPageComponents/ExcluirUsuarioDialog';
 
 function InfoItem({ icon, title, value }) {
   const capitalizeRole = (val) => {
+    if (!val || val === '---') return val;
     if (typeof val === 'string' && (val.toUpperCase() === 'ADMINISTRADOR' || val.toUpperCase() === 'FUNCIONARIO')) {
         return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
     }
@@ -39,9 +39,9 @@ export default function ConfigPage() {
   const [user, setUser] = useState({
     id: '',
     nome: 'Carregando...',
-    matricula: '',
-    cpf: '',
-    email: '',
+    matricula: '---',
+    cpf: '---',
+    email: '---',
     role: ''
   });
 
@@ -50,22 +50,50 @@ export default function ConfigPage() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    try {
-        const storedData = localStorage.getItem('userData');
-        if (storedData) {
-            const parsedUser = JSON.parse(storedData);
-            setUser({
-                id: parsedUser.id_funcionario,
-                nome: parsedUser.nome_funcionario,
-                matricula: parsedUser.id_funcionario ? parsedUser.id_funcionario.toString() : '---', 
-                cpf: parsedUser.cpf_funcionario,
-                email: parsedUser.email_funcionario,
-                role: parsedUser.nivel_acesso ? parsedUser.nivel_acesso.toUpperCase() : 'FUNCIONARIO'
-            });
+    const loadUserData = async () => {
+        try {
+            const storedData = localStorage.getItem('userData');
+            const token = localStorage.getItem('authToken');
+
+            if (storedData) {
+                const parsedUser = JSON.parse(storedData);
+                const id = parsedUser.id_funcionario || parsedUser.id;
+
+                setUser({
+                    id: id,
+                    nome: parsedUser.nome_funcionario || parsedUser.nome || '---',
+                    matricula: id ? id.toString() : '---',
+                    cpf: parsedUser.cpf_funcionario || parsedUser.cpf || '---',
+                    email: parsedUser.email_funcionario || parsedUser.email || '---',
+                    role: parsedUser.nivel_acesso ? parsedUser.nivel_acesso.toUpperCase() : 'FUNCIONARIO'
+                });
+
+                if (id && token) {
+                    try {
+                        const response = await fetch(`http://localhost:4000/api/funcionario/id/${id}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (response.ok) {
+                            const fullData = await response.json();
+                            setUser(prev => ({
+                                ...prev,
+                                nome: fullData.nome_funcionario,
+                                cpf: fullData.cpf_funcionario,
+                                email: fullData.email_funcionario,
+                                role: fullData.nivel_acesso ? fullData.nivel_acesso.toUpperCase() : prev.role
+                            }));
+                        }
+                    } catch (err) {
+                        console.error("Erro ao buscar detalhes do usuário:", err);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Erro ao ler dados do usuário:", error);
         }
-    } catch (error) {
-        console.error("Erro ao ler dados do usuário:", error);
-    }
+    };
+
+    loadUserData();
   }, []);
 
   useEffect(() => {
@@ -113,14 +141,12 @@ export default function ConfigPage() {
 
   const handleAddUser = async (userData) => {
     const token = localStorage.getItem('authToken');
-    const tempId = Math.floor(Math.random() * 100000);
     const payload = {
-        id_funcionario: tempId,
         nome_funcionario: userData.nome,
         email_funcionario: userData.email,
         cpf_funcionario: userData.cpf,
         senha: userData.senha,
-        nivel_acesso: userData.role === 'ADMINISTRADOR' ? 'Administrador' : 'Funcionário' // Ajustado para usar 'role' do novo componente
+        nivel_acesso: userData.role === 'ADMINISTRADOR' ? 'Administrador' : 'Funcionário' 
     };
 
     try {
@@ -157,10 +183,9 @@ export default function ConfigPage() {
     
     const payload = {
         nome_funcionario: updatedData.nome,
-        email_funcionario: updatedData.email,
-        // Caso queira enviar CPF e ROLE também, descomente abaixo:
-        // cpf_funcionario: updatedData.cpf,
-        // nivel_acesso: updatedData.role === 'ADMINISTRADOR' ? 'Administrador' : 'Funcionário'
+        cpf_funcionario: updatedData.cpf,
+        nivel_acesso: updatedData.role === 'ADMINISTRADOR' ? 'Administrador' : 'Funcionário',
+        senha: updatedData.senha 
     };
 
     try {
@@ -178,8 +203,8 @@ export default function ConfigPage() {
                     return {
                         ...f,
                         nome: atualizado.nome_funcionario,
-                        email: atualizado.email_funcionario,
-                        // Se backend retornar novos dados de cpf/role, atualize aqui também
+                        cpf: atualizado.cpf_funcionario,
+                        role: atualizado.nivel_acesso ? atualizado.nivel_acesso.toUpperCase() : 'FUNCIONARIO',
                     };
                 }
                 return f;
@@ -189,7 +214,8 @@ export default function ConfigPage() {
             alert("Usuário atualizado com sucesso!");
             handleCloseModal();
         } else {
-            alert("Erro ao atualizar usuário.");
+            const err = await response.json();
+            alert("Erro ao atualizar: " + (err.error || "Erro desconhecido"));
         }
     } catch (error) {
         console.error("Erro:", error);
@@ -255,7 +281,6 @@ export default function ConfigPage() {
         </Box>
       )}
 
-      {/* Componentes Dialogs Importados */}
       <AlterarSenhaDialog open={modalOpen === 'senha'} onClose={handleCloseModal} />
       <AlterarEmailDialog open={modalOpen === 'email'} onClose={handleCloseModal} />
       <CadastrarNovoUsuarioDialog open={modalOpen === 'cadastrar'} onClose={handleCloseModal} onSave={handleAddUser} />

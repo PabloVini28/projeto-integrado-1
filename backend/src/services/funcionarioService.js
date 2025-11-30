@@ -14,6 +14,10 @@ async function getByCpf(cpf_funcionario) {
   return repo.findByCpf(cpf_funcionario);
 }
 
+async function getById(id) {
+  return repo.findById(id);
+}
+
 async function create(payload) {
   const { valid, errors } = validateFuncionario(payload);
   if (!valid) {
@@ -55,7 +59,35 @@ async function create(payload) {
 }
 
 async function update(cpf_funcionario, payload) {
-  const { valid, errors } = validateFuncionario(payload);
+  if (!payload.senha) {
+    const err = new Error('Senha obrigatória para confirmar as alterações.');
+    err.status = 400; 
+    throw err;
+  }
+
+  const currentFuncionario = await repo.findByCpf(cpf_funcionario);
+  if (!currentFuncionario) {
+      const err = new Error('Funcionário não encontrado.');
+      err.status = 404;
+      throw err;
+  }
+
+  const match = await bcrypt.compare(String(payload.senha), currentFuncionario.senha);
+  if (!match) {
+      const err = new Error('Senha incorreta. Alteração não permitida.');
+      err.status = 401; 
+      throw err;
+  }
+
+  const dadosParaValidar = {
+      ...payload,
+      email_funcionario: payload.email_funcionario || currentFuncionario.email_funcionario,
+      nivel_acesso: payload.nivel_acesso || currentFuncionario.nivel_acesso,
+      senha: payload.senha 
+  };
+
+  const { valid, errors } = validateFuncionario(dadosParaValidar);
+  
   if (!valid) {
     const err = new Error('Validação falhou');
     err.status = 400;
@@ -64,7 +96,8 @@ async function update(cpf_funcionario, payload) {
   }
 
   const updatePayload = { ...payload };
-  delete updatePayload.senha;
+  
+  delete updatePayload.senha; 
   delete updatePayload.verificationCode;
   delete updatePayload.passwordResetCode;
 
@@ -75,9 +108,7 @@ async function remove(cpf_funcionario) {
   return repo.remove(cpf_funcionario);
 }
 
-// --- NOVA FUNÇÃO DE LÓGICA PARA ALTERAR SENHA ---
 async function changePassword(id, senhaAtual, novaSenha) {
-  // 1. Busca funcionário pelo ID (Matrícula)
   const funcionario = await repo.findById(id);
   
   if (!funcionario) {
@@ -86,25 +117,23 @@ async function changePassword(id, senhaAtual, novaSenha) {
     throw err;
   }
 
-  // 2. Compara a senha atual digitada com o hash no banco
   const match = await bcrypt.compare(String(senhaAtual), funcionario.senha);
-  
   if (!match) {
     const err = new Error('Senha atual incorreta');
-    err.status = 401; // Unauthorized
+    err.status = 401;
     throw err;
   }
 
-  // 3. Gera novo hash e salva
   const newHash = await bcrypt.hash(String(novaSenha), 10);
   return repo.updatePassword(id, newHash);
 }
 
 module.exports = { 
   listAll, 
-  getByCpf, 
+  getByCpf,
+  getById,
   create, 
   update, 
   remove,
-  changePassword // Exportando a nova função
+  changePassword
 };

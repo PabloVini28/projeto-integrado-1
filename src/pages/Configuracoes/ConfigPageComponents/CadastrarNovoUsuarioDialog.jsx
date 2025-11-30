@@ -4,7 +4,6 @@ import {
   DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Box
 } from '@mui/material';
 
-// IMPORTAÇÃO DA VERIFICAÇÃO (Ajuste o caminho se necessário)
 import UserVerification from '../../../authentication/UserVerification'; 
 
 const yellowButtonSx = {
@@ -69,6 +68,14 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
     const { name, value } = e.target;
     let newValue = value;
     if (name === 'cpf') newValue = formatCPF(value);
+    
+    if (fieldErrors[name]) {
+        setFieldErrors(prev => ({ ...prev, [name]: false }));
+        if (Object.keys(fieldErrors).length <= 1) {
+            setError(false);
+            setErrorMessage("");
+        }
+    }
     setFormData(prev => ({ ...prev, [name]: newValue }));
   };
 
@@ -99,10 +106,12 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
       specificErrors.senha = "As senhas não coincidem.";
       specificErrors.confirmarSenha = "As senhas não coincidem.";
     }
+    
+    if (senha.length < 6) {
+        specificErrors.senha = "A senha deve ter no mínimo 6 dígitos.";
+    }
 
-    const countLogicalErrors = (specificErrors.email ? 1 : 0) + (specificErrors.cpf ? 1 : 0) + (senhaMismatch ? 1 : 0);
-
-    if (countLogicalErrors > 0) {
+    if (Object.keys(specificErrors).length > 0) {
       setFieldErrors(specificErrors);
       setErrorMessage("Corrija os campos em erro.");
       setError(true);
@@ -112,7 +121,6 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
     setError(false);
     setFieldErrors({});
     setErrorMessage("");
-    // Se a validação passar, abre a verificação
     setOpenVerification(true);
   };
 
@@ -129,8 +137,7 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
   };
 
   const hasSpecificError = error && !errorMessage.includes("preencha todos");
-  const isMultipleSpecificErrors = hasSpecificError && !errorMessage.includes("As senhas") && !errorMessage.includes("Formato") && !errorMessage.includes("CPF");
-  const showHelperText = isMultipleSpecificErrors;
+  const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 0;
 
   return (
     <>
@@ -146,20 +153,13 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
             helperText={showHelperText && fieldErrors.nome ? fieldErrors.nome : ""}
             sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle) }}
           />
-
-          {/* Container do Email com Botão de Teste (Pode remover o botão depois) */}
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-            <TextField 
-              label="E-mail*" type="email" name="email" value={formData.email}
-              onChange={(e) => { handleChange(e); resetFieldError('email'); }}
-              error={!!fieldErrors.email} 
-              helperText={showHelperText && fieldErrors.email ? fieldErrors.email : ""}
-              sx={{ flex: 1, ...blackFocusedTextFieldStyle, ...(fieldErrors.email && errorTextFieldStyle) }}
-            />
-            {/* Botão de teste para abrir verificação direto */}
-            {/* <Button variant="outlined" size="small" onClick={() => setOpenVerification(true)} sx={{ height: '40px', mt: '2px', borderColor: 'black', color: 'black' }}>Testar Verificação</Button> */}
-          </Box>
-
+          <TextField 
+            label="E-mail*" type="email" name="email" value={formData.email}
+            onChange={(e) => { handleChange(e); resetFieldError('email'); }}
+            error={!!fieldErrors.email} 
+            helperText={showHelperText && fieldErrors.email ? fieldErrors.email : ""}
+            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.email && errorTextFieldStyle) }}
+          />
           <TextField 
             label="Senha*" type="password" name="senha" value={formData.senha}
             onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
@@ -170,9 +170,9 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
           <TextField 
             label="Confirmar Senha*" type="password" name="confirmarSenha" value={formData.confirmarSenha}
             onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
-            error={!!fieldErrors.confirmarSenha} 
-            helperText={showHelperText && fieldErrors.confirmarSenha ? fieldErrors.confirmarSenha : ""}
-            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarSenha && errorTextFieldStyle) }}
+            error={!!fieldErrors.confirmarNovaSenha} 
+            helperText={showHelperText && fieldErrors.confirmarNovaSenha ? fieldErrors.confirmarNovaSenha : ""}
+            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarNovaSenha && errorTextFieldStyle) }}
           />
           <TextField 
             label="CPF*" name="cpf" value={formData.cpf}
@@ -195,7 +195,6 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
         </DialogActions>
       </Dialog>
 
-      {/* DIÁLOGO DA VERIFICAÇÃO */}
       <Dialog
         open={openVerification}
         onClose={() => setOpenVerification(false)}

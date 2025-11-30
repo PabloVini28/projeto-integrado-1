@@ -46,6 +46,9 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const [cpf, setCpf] = useState('');
     const [email, setEmail] = useState('');
     const [role, setRole] = useState('FUNCIONARIO'); 
+    
+    const [senha, setSenha] = useState('');
+
     const [error, setError] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
     const [errorMessage, setErrorMessage] = useState("");
@@ -55,13 +58,15 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
             setNome(user.nome || '');
             setCpf(user.cpf || '');
             setEmail(user.email || '');
-            setRole(user.role || 'FUNCIONARIO'); 
+            setRole(user.role ? user.role.toUpperCase() : 'FUNCIONARIO'); 
         } else {
             setNome('');
             setCpf('');
             setEmail('');
             setRole('FUNCIONARIO');
         }
+        setSenha('');
+        
         if (!open) {
             setError(false);
             setFieldErrors({});
@@ -80,6 +85,11 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
         resetFieldError('nome');
     };
 
+    const handleSenhaChange = (e) => {
+        setSenha(e.target.value);
+        resetFieldError('senha');
+    };
+
     const handleRoleChange = (e) => {
         setRole(e.target.value);
     };
@@ -92,19 +102,22 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
 
     const handleSave = () => {
         let errors = {};
-        const hasEmpty = !nome.trim() || !cpf.trim();
+        
+        const hasEmpty = !nome.trim() || !cpf.trim() || !senha.trim();
 
         if (hasEmpty) {
             if (!nome.trim()) errors.nome = true;
             if (!cpf.trim()) errors.cpf = true;
+            if (!senha.trim()) errors.senha = true;
+            
             setFieldErrors(errors);
-            setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
+            setErrorMessage("Por favor, preencha todos os campos e a senha do usuário.");
             setError(true);
             return;
         }
         
         let specificErrors = {};
-        if (!isValidCPFFormat(cpf)) { specificErrors.cpf = "Formato de CPF inválido. Utilize o padrão 000.000.000-00."; }
+        if (!isValidCPFFormat(cpf)) { specificErrors.cpf = "Formato de CPF inválido."; }
 
         const errorCount = Object.keys(specificErrors).length;
 
@@ -120,10 +133,16 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
         setFieldErrors({});
         setErrorMessage("");
         
-        onSave({ ...user, nome, cpf, role }); 
+        onSave({ 
+            ...user, 
+            nome, 
+            cpf, 
+            role,
+            senha 
+        }); 
     }
 
-    const hasSpecificError = error && !errorMessage.includes("preencha todos");
+    const hasSpecificError = error && !errorMessage.includes("todos os campos");
     const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 1;
 
     return (
@@ -131,9 +150,28 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
             <DialogTitle fontWeight="bold" textAlign="center">Editar Usuário</DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
                 {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
-                <TextField autoFocus label="Nome*" fullWidth variant="outlined" value={nome} onChange={handleNomeChange} error={!!fieldErrors.nome} helperText={showHelperText && fieldErrors.nome ? fieldErrors.nome : ""} sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle)}} />
-                <TextField label="E-mail" fullWidth variant="outlined" value={email} disabled={true} />
-                <TextField label="CPF*" fullWidth variant="outlined" value={cpf} onChange={handleCpfChange} inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf} helperText={showHelperText && fieldErrors.cpf ? fieldErrors.cpf : ""} sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle)}} />
+                
+                <TextField 
+                    autoFocus label="Nome*" fullWidth variant="outlined" 
+                    value={nome} onChange={handleNomeChange} 
+                    error={!!fieldErrors.nome} 
+                    helperText={showHelperText && fieldErrors.nome ? fieldErrors.nome : ""} 
+                    sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle)}} 
+                />
+                
+                <TextField 
+                    label="E-mail" fullWidth variant="outlined" value={email} disabled={true} 
+                    sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)' } }}
+                />
+                
+                <TextField 
+                    label="CPF*" fullWidth variant="outlined" 
+                    value={cpf} onChange={handleCpfChange} inputProps={{ maxLength: 14 }} 
+                    error={!!fieldErrors.cpf} 
+                    helperText={showHelperText && fieldErrors.cpf ? fieldErrors.cpf : ""} 
+                    sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle)}} 
+                />
+
                 <FormControl component="fieldset" sx={{ mt: 1 }}>
                     <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
                     <RadioGroup row name="role" value={role} onChange={handleRoleChange}>
@@ -141,6 +179,17 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
                         <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
                     </RadioGroup>
                 </FormControl>
+
+                <Typography variant="caption" color="text.secondary" sx={{mt:1}}>
+                    Digite a senha deste usuário para confirmar:
+                </Typography>
+                <TextField 
+                    label="Senha Atual*" fullWidth variant="outlined" type="password"
+                    value={senha} onChange={handleSenhaChange} 
+                    error={!!fieldErrors.senha} 
+                    sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle)}} 
+                />
+
             </DialogContent>
             <DialogActions sx={{ p: '0 24px 16px' }}>
                 <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>

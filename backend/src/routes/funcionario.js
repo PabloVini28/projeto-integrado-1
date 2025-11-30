@@ -12,6 +12,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/id/:id', async (req, res) => {
+  try {
+    const row = await service.getById(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Funcionario não encontrado' });
+    res.json(row);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Falhou ao obter funcionario por ID' });
+  }
+});
+
 router.get('/:cpf_funcionario', async (req, res) => {
   try {
     const row = await service.getByCpf(req.params.cpf_funcionario);
