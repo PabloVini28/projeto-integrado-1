@@ -23,6 +23,75 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { ptBR } from "date-fns/locale";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
+const formatCPF = (value) => {
+  const numeric = value.replace(/\D/g, "");
+  return numeric
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
+    .substring(0, 14);
+};
+
+const formatTelefone = (value) => {
+  const numeric = value.replace(/\D/g, "");
+  return numeric
+    .replace(/^(\d{2})(\d)/g, "($1) $2")
+    .replace(/(\d)(\d{4})$/, "$1-$2")
+    .substring(0, 16);
+};
+
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isValidCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf);
+const isValidTelefone = (tel) => {
+    const clean = tel.replace(/\D/g, "");
+    return clean.length >= 10;
+}
+
+const blackTheme = createTheme({
+  palette: { primary: { main: "#000000" } },
+  components: {
+    MuiPickersDay: {
+      styleOverrides: {
+        root: {
+          "&.Mui-selected": {
+            backgroundColor: "#000000",
+            color: "#FFFFFF",
+            "&:hover": { backgroundColor: "#333333" },
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#000000" },
+          "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#343a40" },
+          "&.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: "red !important" },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          "&.Mui-focused": { color: "#000000" },
+          "&.Mui-error": { color: "red !important" },
+        },
+      },
+    },
+  },
+});
+
+const blackFocusedStyle = {
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "black" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "black" },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#343a40" },
+};
+
+const errorTextFieldStyle = {
+  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: "red !important" },
+  "& .MuiInputLabel-root.Mui-error": { color: "red !important" },
+};
+
 
 export default function EditarAlunoDialog({
   open,
@@ -34,7 +103,11 @@ export default function EditarAlunoDialog({
   const [nome, setNome] = useState("");
   const [dataNascimento, setDataNascimento] = useState(null);
   const [email, setEmail] = useState("");
-  const [endereco, setEndereco] = useState("");
+  
+  const [logradouro, setLogradouro] = useState("");
+  const [enderecoAluno, setEnderecoAluno] = useState("");
+  const [numero, setNumero] = useState("");
+
   const [telefone, setTelefone] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataInicio, setDataInicio] = useState(null);
@@ -42,54 +115,48 @@ export default function EditarAlunoDialog({
   const [genero, setGenero] = useState("prefiro");
 
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (alunoParaEditar) {
       setNome(alunoParaEditar.nome || "");
       setPlano(alunoParaEditar.cod_plano || "");
-
       setGenero(alunoParaEditar.genero || "prefiro");
       setEmail(alunoParaEditar.email || "");
 
-
-      const end = alunoParaEditar.endereco?.logradouro
-        ? `${alunoParaEditar.endereco.logradouro}, ${alunoParaEditar.endereco.numero || ""}`
-        : alunoParaEditar.endereco || "";
-      setEndereco(end);
+      setLogradouro(alunoParaEditar.logradouro || ""); 
+      setEnderecoAluno(alunoParaEditar.endereco_aluno || "");
+      setNumero(alunoParaEditar.numero || "");
+      
 
       setTelefone(alunoParaEditar.telefone || "");
       setCpf(alunoParaEditar.cpf || "");
 
-      if (alunoParaEditar.dataNascimento) {
-        const d = new Date(alunoParaEditar.dataNascimento);
-        if (!isNaN(d.getTime())) {
-          setDataNascimento(d);
-        } else if (typeof alunoParaEditar.dataNascimento === "string") {
-          const parts = alunoParaEditar.dataNascimento.split("/");
-          if (parts.length === 3)
-            setDataNascimento(new Date(`${parts[2]}-${parts[1]}-${parts[0]}`));
-        }
-      } else {
-        setDataNascimento(null);
-      }
+      const parseDate = (dateString) => {
+         if (!dateString) return null;
+         if (dateString instanceof Date) return dateString;
+         
+         const d = new Date(dateString);
+         if (!isNaN(d.getTime())) return d;
 
-      if (alunoParaEditar.data_matricula) {
-        const d = new Date(alunoParaEditar.data_matricula);
-        if (!isNaN(d.getTime())) {
-          setDataInicio(d);
-        } else if (typeof alunoParaEditar.data_matricula === "string") {
-          const parts = alunoParaEditar.data_matricula.split("/");
-          if (parts.length === 3)
-            setDataInicio(new Date(`${parts[2]}-${parts[1]}-${parts[0]}`));
-        }
-      } else {
-        setDataInicio(null);
-      }
+         if (typeof dateString === "string" && dateString.includes('/')) {
+            const parts = dateString.split("/");
+            if (parts.length === 3) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+         }
+         return null;
+      };
+
+      setDataNascimento(parseDate(alunoParaEditar.dataNascimento));
+      setDataInicio(parseDate(alunoParaEditar.data_matricula || alunoParaEditar.dataInicio));
+
     } else {
       setNome("");
       setDataNascimento(null);
       setEmail("");
-      setEndereco("");
+      setLogradouro("");
+      setEnderecoAluno("");
+      setNumero("");
       setTelefone("");
       setCpf("");
       setDataInicio(null);
@@ -97,90 +164,83 @@ export default function EditarAlunoDialog({
       setGenero("prefiro");
     }
     setError(false);
+    setErrorMessage("");
+    setFieldErrors({});
   }, [alunoParaEditar, open]);
 
+  const handleCpfChange = (e) => {
+    setCpf(formatCPF(e.target.value));
+    if (fieldErrors.cpf) setFieldErrors(prev => ({...prev, cpf: false}));
+  };
+
+  const handleTelefoneChange = (e) => {
+    setTelefone(formatTelefone(e.target.value));
+    if (fieldErrors.telefone) setFieldErrors(prev => ({...prev, telefone: false}));
+  };
+
+  const handleChangeGeneric = (setter, field) => (e) => {
+      setter(e.target.value);
+      if (fieldErrors[field]) setFieldErrors(prev => ({...prev, [field]: false}));
+  }
 
   const handleSave = () => {
-    if (
-      !nome ||
-      !dataNascimento ||
-      !email ||
-      !endereco ||
-      !telefone ||
-      !cpf ||
-      !dataInicio ||
-      !plano
-    ) {
+    setError(false);
+    setErrorMessage("");
+    let errors = {};
+
+    if (!nome.trim()) errors.nome = true;
+    if (!email.trim()) errors.email = true;
+    if (!cpf.trim()) errors.cpf = true;
+    if (!plano) errors.plano = true;
+    if (!dataNascimento) errors.dataNascimento = true;
+    if (!dataInicio) errors.dataInicio = true;
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setErrorMessage("Preencha todos os campos obrigatórios.");
       setError(true);
       return;
     }
 
+    let specificErrors = {};
+    if (!isValidEmail(email)) specificErrors.email = true;
+    if (!isValidCPF(cpf)) specificErrors.cpf = true;
+    if (telefone.length > 0 && !isValidTelefone(telefone)) specificErrors.telefone = true;
+
+    if (Object.keys(specificErrors).length > 0) {
+        setFieldErrors(specificErrors);
+        setErrorMessage("Verifique os campos em vermelho (formato inválido).");
+        setError(true);
+        return;
+    }
+
     const alunoEditado = {
       id: alunoParaEditar.id,
-      nome,
-      dataNascimento,
+      matricula: alunoParaEditar.matricula, 
+      
+      nome,         
       email,
-      endereco,
-      telefone,
       cpf,
-      dataInicio,
+      telefone,
+      dataNascimento,
+      dataInicio,   
+      
+      logradouro,
+      endereco_aluno: enderecoAluno,
+      numero,
       cod_plano: plano,
       genero,
     };
+
     console.log("Salvando aluno editado:", alunoEditado);
     onSave(alunoEditado);
     onClose();
   };
 
-  const blackTheme = createTheme({
-    palette: { primary: { main: "#000000" } },
-    components: {
-      MuiPickersDay: {
-        styleOverrides: {
-          root: {
-            "&.Mui-selected": {
-              backgroundColor: "#000000",
-              color: "#FFFFFF",
-              "&:hover": { backgroundColor: "#333333" },
-            },
-          },
-        },
-      },
-      MuiOutlinedInput: {
-        styleOverrides: {
-          root: {
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#000000",
-            },
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#343a40",
-            },
-            "&.Mui-error .MuiOutlinedInput-notchedOutline": {
-              borderColor: "red !important",
-            },
-          },
-        },
-      },
-      MuiInputLabel: {
-        styleOverrides: {
-          root: {
-            "&.Mui-focused": { color: "#000000" },
-            "&.Mui-error": { color: "red !important" },
-          },
-        },
-      },
-    },
+  const getSx = (fieldName) => ({
+      ...blackFocusedStyle,
+      ...(fieldErrors[fieldName] && errorTextFieldStyle)
   });
-
-  const blackFocusedStyle = {
-    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: "black",
-    },
-    "& .MuiInputLabel-root.Mui-focused": { color: "black" },
-    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#343a40",
-    },
-  };
 
   return (
     <Dialog
@@ -188,147 +248,132 @@ export default function EditarAlunoDialog({
       onClose={onClose}
       maxWidth="xs"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 2, maxHeight: "450px" } }}
+      PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
     >
-      <DialogTitle
-        sx={{
-          textAlign: "center",
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-          pt: 2,
-          pb: 0.5,
-          px: 3,
-        }}
-      >
+      <DialogTitle sx={{ textAlign: "center", fontSize: "1.5rem", fontWeight: "bold", pt: 2, pb: 0.5, px: 3 }}>
         Editar Aluno
       </DialogTitle>
 
       <DialogContent
         sx={{
-          px: 3,
-          pt: 1,
-          pb: 0,
+          px: 3, pt: 1, pb: 0,
           "&::-webkit-scrollbar": { width: "0.4em" },
           "&::-webkit-scrollbar-track": { background: "transparent" },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "rgba(0,0,0,.15)",
-            borderRadius: "20px",
-          },
-          "&::-webkit-scrollbar-thumb:hover": {
-            backgroundColor: "rgba(0,0,0,.3)",
-          },
+          "&::-webkit-scrollbar-thumb": { backgroundColor: "rgba(0,0,0,.15)", borderRadius: "20px" },
+          "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "rgba(0,0,0,.3)" },
         }}
       >
         {error && (
-          <Typography
-            color="error"
-            variant="body2"
-            sx={{ mb: 1, fontWeight: "bold", textAlign: "center" }}
-          >
-            Preencha todos os campos obrigatórios.
+          <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
+            {errorMessage}
           </Typography>
         )}
+        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}>
 
-        <Box
-          component="form"
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
-            pt: 1,
-            ...blackFocusedStyle,
-          }}
-        >
-          <Typography variant="subtitle1" sx={{ fontWeight: "bold", mt: 1 }}>
-            Informações Pessoais:
-          </Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", mt: 1 }}>Informações Pessoais:</Typography>
 
           <TextField
-            label="Nome Completo*"
-            size="small"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            error={error && !nome}
+            required label="Nome Completo" size="small"
+            value={nome} onChange={handleChangeGeneric(setNome, 'nome')}
+            error={!!fieldErrors.nome} sx={getSx('nome')}
           />
 
           <ThemeProvider theme={blackTheme}>
-            <LocalizationProvider
-              dateAdapter={AdapterDateFns}
-              adapterLocale={ptBR}
-            >
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
               <DatePicker
-                label="Data de Nascimento*"
+                label="Data de Nascimento *"
                 value={dataNascimento}
                 onChange={(newValue) => setDataNascimento(newValue)}
                 format="dd/MM/yyyy"
                 slotProps={{
-                  textField: { size: "small", error: error && !dataNascimento },
+                  textField: { 
+                      size: "small", 
+                      error: !!fieldErrors.dataNascimento,
+                      sx: fieldErrors.dataNascimento ? errorTextFieldStyle : {}
+                  },
                 }}
                 disableFuture
               />
             </LocalizationProvider>
           </ThemeProvider>
 
-
           <TextField
-            label="E-mail*"
-            size="small"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={error && !email}
+            required label="E-mail" size="small" placeholder="email@exemplo.com"
+            value={email} onChange={handleChangeGeneric(setEmail, 'email')}
+            error={!!fieldErrors.email} sx={getSx('email')}
           />
+            
           <TextField
-            label="Endereço*"
-            size="small"
-            value={endereco}
-            onChange={(e) => setEndereco(e.target.value)}
-            error={error && !endereco}
-          />
-          <TextField
-            label="Telefone*"
-            size="small"
-            value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-            error={error && !telefone}
-          />
-          <TextField
-            label="CPF*"
-            size="small"
-            value={cpf}
-            onChange={(e) => setCpf(e.target.value)}
-            error={error && !cpf}
+            required label="CPF" size="small" placeholder="000.000.000-00"
+            value={cpf} onChange={handleCpfChange}
+            inputProps={{ maxLength: 14 }}
+            error={!!fieldErrors.cpf} sx={getSx('cpf')}
           />
 
-          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
-            Informações Administrativas e Financeiras:
-          </Typography>
+          <TextField
+            label="Telefone" size="small" placeholder="(DDD) 9 9999-9999"
+            value={telefone} onChange={handleTelefoneChange}
+            inputProps={{ maxLength: 16 }}
+            error={!!fieldErrors.telefone} sx={getSx('telefone')}
+          />
+          <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: "bold", pt: 1 }}
+                    >
+                      Endereço: <Typography component="span" color="text.secondary">(opcional)</Typography>
+                    </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+                label="Logradouro" size="small" placeholder="Rua, Av..." fullWidth
+                value={logradouro} onChange={handleChangeGeneric(setLogradouro, 'logradouro')}
+                sx={getSx('logradouro')}
+            />
+            <TextField
+                label="Nº" size="small" placeholder="123" sx={{ width: '80px', ...getSx('numero') }}
+                value={numero} onChange={handleChangeGeneric(setNumero, 'numero')}
+            />
+          </Box>
+          <TextField
+            label="Bairro/Complemento" size="small"
+            value={enderecoAluno} onChange={handleChangeGeneric(setEnderecoAluno, 'enderecoAluno')}
+            sx={getSx('enderecoAluno')}
+          />
+
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>Informações Administrativas:</Typography>
 
           <ThemeProvider theme={blackTheme}>
-            <LocalizationProvider
-              dateAdapter={AdapterDateFns}
-              adapterLocale={ptBR}
-            >
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
               <DatePicker
-                label="Data de início"
+                label="Data de início *"
                 value={dataInicio}
                 onChange={(newValue) => setDataInicio(newValue)}
                 format="dd/MM/yyyy"
                 slotProps={{
-                  textField: { size: "small", error: error && !dataInicio },
+                  textField: { 
+                      size: "small", 
+                      error: !!fieldErrors.dataInicio,
+                      sx: fieldErrors.dataInicio ? errorTextFieldStyle : {}
+                  },
                 }}
-                disabled={true}
+                disabled={true} 
                 disableFuture
               />
             </LocalizationProvider>
           </ThemeProvider>
 
-          <FormControl fullWidth size="small" required error={error && !plano}>
-            <InputLabel id="edit-plano-select-label">Plano</InputLabel>
+          <FormControl fullWidth size="small" required error={!!fieldErrors.plano}>
+            <InputLabel id="edit-plano-select-label" sx={fieldErrors.plano ? { color: 'red !important' } : { color: 'rgba(0, 0, 0, 0.6)', '&.Mui-focused': { color: 'black' } }}>Plano</InputLabel>
             <Select
               labelId="edit-plano-select-label"
               value={plano}
               label="Plano"
               onChange={(e) => setPlano(e.target.value)}
+              sx={fieldErrors.plano ? { 
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' } 
+              } : {
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'black' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#343a40' }
+              }}
             >
               {listaPlanos.map((p) => (
                 <MenuItem key={p.cod_plano} value={p.cod_plano}>
@@ -338,83 +383,20 @@ export default function EditarAlunoDialog({
             </Select>
           </FormControl>
 
-
           <FormControl sx={{ pt: 1, pb: 1 }}>
-            <FormLabel
-              sx={{
-                color: "rgba(0, 0, 0, 0.6)",
-                "&.Mui-focused": { color: "rgba(0, 0, 0, 0.6)" },
-              }}
-            >
-              Gênero:
-            </FormLabel>
-            <RadioGroup
-              row
-              value={genero}
-              onChange={(e) => setGenero(e.target.value)}
-            >
-              <FormControlLabel
-                value="masculino"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={<Typography variant="body2">Masculino</Typography>}
-              />
-              <FormControlLabel
-                value="feminino"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={<Typography variant="body2">Feminino</Typography>}
-              />
-              <FormControlLabel
-                value="prefiro"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2">Prefiro não informar</Typography>
-                }
-              />
+            <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }}>Gênero:</FormLabel>
+            <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
+              <FormControlLabel value="masculino" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label={<Typography variant="body2">Masculino</Typography>} />
+              <FormControlLabel value="feminino" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label={<Typography variant="body2">Feminino</Typography>} />
+              <FormControlLabel value="prefiro" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
             </RadioGroup>
           </FormControl>
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
-        <Button
-          onClick={onClose}
-          variant="contained"
-          sx={{
-            backgroundColor: "#343a40",
-            color: "white",
-            "&:hover": { backgroundColor: "#23272b" },
-            fontWeight: "normal",
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          sx={{
-            backgroundColor: "#F2D95C",
-            color: "black",
-            "&:hover": { backgroundColor: "#e0c850" },
-            fontWeight: "normal",
-          }}
-        >
-          Salvar
-        </Button>
+        <Button onClick={onClose} variant="contained" sx={{ backgroundColor: "#343a40", color: "white", "&:hover": { backgroundColor: "#23272b" }, fontWeight: "normal" }}>Cancelar</Button>
+        <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: "#F2D95C", color: "black", "&:hover": { backgroundColor: "#e0c850" }, fontWeight: "normal" }}>Salvar</Button>
       </DialogActions>
     </Dialog>
   );
