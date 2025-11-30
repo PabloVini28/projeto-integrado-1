@@ -98,7 +98,7 @@ export default function FinanceiroPage() {
 
   const fetchTransacoes = useCallback(async () => {
     try {
-        const response = await getLancamentos(); // Chamada limpa
+        const response = await getLancamentos(); 
         const data = response.data;
         
         const formattedData = data.map(item => ({
@@ -172,11 +172,16 @@ export default function FinanceiroPage() {
   const handleSaveNewItem = async (data) => {
     const [d, m, y] = data.data.split('/').map(Number);
     const apiDate = formatDateForAPI(new Date(y, m - 1, d));
+    
     const nomeFinal = (isCurrentRecipe && data.categoria === 'Alunos' && data.nome_aluno) ? data.nome_aluno : data.nome;
 
     const payload = {
         tipo: isCurrentRecipe ? 'Receita' : 'Despesa',
-        nome: nomeFinal, data: apiDate, categoria: data.categoria, valor: parseFloat(data.valor), descricao: data.descricao
+        nome: nomeFinal, 
+        data: apiDate, 
+        categoria: data.categoria, 
+        valor: parseFloat(data.valor), 
+        descricao: data.descricao
     };
 
     try {
@@ -189,11 +194,16 @@ export default function FinanceiroPage() {
   const handleUpdateItem = async (data) => {
     const [d, m, y] = data.data.split('/').map(Number);
     const apiDate = formatDateForAPI(new Date(y, m - 1, d));
+    
     const nomeFinal = (isCurrentRecipe && data.categoria === 'Alunos' && data.nome_aluno) ? data.nome_aluno : data.nome;
 
     const payload = {
         tipo: isCurrentRecipe ? 'Receita' : 'Despesa',
-        nome: nomeFinal, data: apiDate, categoria: data.categoria, valor: parseFloat(data.valor), descricao: data.descricao
+        nome: nomeFinal, 
+        data: apiDate, 
+        categoria: data.categoria, 
+        valor: parseFloat(data.valor), 
+        descricao: data.descricao
     };
 
     try {
@@ -214,7 +224,106 @@ export default function FinanceiroPage() {
   const handleTabChange = (e, v) => setTabValue(v);
   const handleDateChange = (d) => setSelectedDate((d && d.toString() !== 'Invalid Date') ? d : new Date());
 
-  const handleDownloadReport = async (reportType) => {  };
+  const handleDownloadReport = async (reportType) => {
+    const mesAno = selectedDate.toLocaleString('pt-BR', { month: '2-digit', year: 'numeric' });
+    const mesAnoArquivo = mesAno.replace('/', '-');
+
+    let reportOptions = {
+      title: `Relatório (${mesAno})`,
+      defaultFileName: `relatorio_${reportType}_${mesAnoArquivo}.pdf`,
+      headers: [],
+      columnWidths: [],
+      data: []
+    };
+
+    let apiToCall = window.electronAPI ? window.electronAPI.generateReport : null;
+    
+    if (!apiToCall) {
+        console.warn("API do Electron não detectada.");
+        return;
+    }
+
+    const receitasAlunosDoMes = receitasDoMes.filter(r => r.categoria === 'Alunos');
+    const outrasReceitasDoMes = receitasDoMes.filter(r => r.categoria !== 'Alunos');
+
+    const headersSimples = ['ID', 'Nome', 'Data', 'Categoria', 'Valor (R$)'];
+    const widthsSimples = [50, 200, 100, 150, 100];
+    const formatRowSimples = (row) => [
+      String(row.id),
+      row.nome || '-',
+      row.data || '-',
+      row.categoria || '-',
+      `R$ ${row.valor.toFixed(2).replace(".", ",")}`
+    ];
+
+    const headersDespesas = ['ID', 'Nome', 'Data', 'Categoria', 'Descrição', 'Valor (R$)'];
+    const widthsDespesas = [40, 120, 70, 100, 180, 80];
+    const formatDespesaRow = (row) => [
+      String(row.id),
+      row.nome || '-',
+      row.data || '-',
+      row.categoria || '-',
+      row.descricao || '-',
+      `(R$ ${row.valor.toFixed(2).replace(".", ",")})`
+    ];
+
+    switch (reportType) {
+      case 'balancete_mes':
+        reportOptions.title = `Demonstrativo Contábil (${mesAno})`;
+        reportOptions.headers = ['Descrição', 'Valor (R$)'];
+        reportOptions.columnWidths = [400, 200];
+        reportOptions.data = [
+          ['Receitas de Alunos', receitasAlunos],
+          ['Outras Receitas', outrasReceitas],
+          ['TOTAL DE DESPESAS', despesas],
+          ['RESULTADO DO MÊS', resultado]
+        ];
+        break;
+
+      case 'receitas_alunos':
+        reportOptions.title = `Relatório - Receitas de Alunos (${mesAno})`;
+        reportOptions.headers = headersSimples;
+        reportOptions.columnWidths = widthsSimples;
+        reportOptions.data = receitasAlunosDoMes.map(formatRowSimples);
+        break;
+
+      case 'outras_receitas':
+        reportOptions.title = `Relatório - Outras Receitas (${mesAno})`;
+        reportOptions.headers = headersSimples;
+        reportOptions.columnWidths = widthsSimples;
+        reportOptions.data = outrasReceitasDoMes.map(formatRowSimples);
+        break;
+
+      case 'todas_receitas':
+        reportOptions.title = `Relatório - Todas as Receitas (${mesAno})`;
+        reportOptions.headers = headersSimples;
+        reportOptions.columnWidths = widthsSimples;
+        reportOptions.data = receitasDoMes.map(formatRowSimples);
+        break;
+
+      case 'todas_despesas':
+        reportOptions.title = `Relatório - Todas as Despesas (${mesAno})`;
+        reportOptions.headers = headersDespesas;
+        reportOptions.columnWidths = widthsDespesas;
+        reportOptions.data = despesasDoMes.map(formatDespesaRow);
+        break;
+
+      default:
+        return;
+    }
+
+    try {
+      const result = await apiToCall(reportOptions);
+      if (result.success) {
+        alert(`Relatório salvo com sucesso em:\n${result.path}`);
+      } else if (result.error !== 'Save dialog canceled') {
+        alert(`Falha ao salvar relatório: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Erro ao chamar API do Electron:", error);
+      alert(`Erro ao gerar relatório: ${error.message}`);
+    }
+  };
 
   return (
     <Paper elevation={0} sx={{ width: "100%", p: 3, display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
