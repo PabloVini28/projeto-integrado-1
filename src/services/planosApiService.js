@@ -9,6 +9,7 @@ const apiClient = axios.create({
   },
 });
 
+
 export const getPlanos = () => apiClient.get('/');
 
 export const getPlanoByCod = (cod_plano) => apiClient.get(`/${cod_plano}`);

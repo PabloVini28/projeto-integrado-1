@@ -1,6 +1,19 @@
 const { pool } = require('../db');
 
-const FIELDS = ['id_funcionario', 'nome_funcionario', 'email_funcionario', 'cpf_funcionario', 'senha', 'nivel_acesso'];
+const FIELDS = [
+  'id_funcionario',
+  'nome_funcionario',
+  'email_funcionario',
+  'cpf_funcionario',
+  'senha',
+  'nivel_acesso',
+  'verificationcode',       
+  'verificationcodeexpiry',
+  'passwordresetcode',      
+  'passwordresetexpiry',    
+  'isenabled'               
+];
+
 const FIELDS_SQL = FIELDS.join(', ');
 
 async function findAll() {
@@ -28,17 +41,28 @@ async function findById(id_funcionario) {
 }
 
 async function create(funcionarios) {
-  const q = `INSERT INTO funcionarios (id_funcionario, nome_funcionario, email_funcionario, cpf_funcionario, senha, nivel_acesso)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING ${FIELDS_SQL}`;
-  const vals = [
-    funcionarios.id_funcionario,
-    funcionarios.nome_funcionario,
-    funcionarios.email_funcionario,
-    funcionarios.cpf_funcionario,
-    funcionarios.senha,
-    funcionarios.nivel_acesso,
-  ];
+  
+  const cols = [];
+  const placeholders = [];
+  const vals = [];
+  let idx = 1;
+
+  const push = (col, val) => { cols.push(col); placeholders.push(`$${idx++}`); vals.push(val); };
+
+  if (funcionarios.id_funcionario) push('id_funcionario', funcionarios.id_funcionario);
+  push('nome_funcionario', funcionarios.nome_funcionario);
+  push('email_funcionario', funcionarios.email_funcionario);
+  push('cpf_funcionario', funcionarios.cpf_funcionario);
+  push('senha', funcionarios.senha);
+  push('nivel_acesso', funcionarios.nivel_acesso);
+  
+  push('verificationcode', funcionarios.verificationCode || null);
+  push('verificationcodeexpiry', funcionarios.verificationCodeExpiry || null);
+  push('passwordresetcode', funcionarios.passwordResetCode || null);
+  push('passwordresetexpiry', funcionarios.passwordResetExpiry || null);
+  push('isenabled', funcionarios.isEnabled === undefined ? false : funcionarios.isEnabled);
+
+  const q = `INSERT INTO funcionarios (${cols.join(', ')}) VALUES (${placeholders.join(', ')}) RETURNING ${FIELDS_SQL}`;
   try {
     const r = await pool.query(q, vals);
     return r.rows[0];
@@ -52,18 +76,21 @@ async function create(funcionarios) {
   }
 }
 
-async function update(cpf_funcionario, funcionarios) {
-  const q = `UPDATE funcionarios SET nome_funcionario=$1, email_funcionario=$2, senha=$3, nivel_acesso=$4
-    WHERE cpf_funcionario = $5 RETURNING ${FIELDS_SQL}`;
-  const vals = [
-    funcionarios.nome_funcionario,
-    funcionarios.email_funcionario,
-    funcionarios.senha,
-    funcionarios.nivel_acesso,
-    cpf_funcionario,
-  ];
+async function update(cpf_funcionario, dadosParaAtualizar) {
+
+  const colunas = Object.keys(dadosParaAtualizar);
+  const valores = Object.values(dadosParaAtualizar);
+
+  if (colunas.length === 0) {
+    return null; 
+  }
+
+  const setClause = colunas.map((col, index) => `${col} = $${index + 1}`).join(', ');
+  
+  const q = `UPDATE funcionarios SET ${setClause} WHERE cpf_funcionario = $${colunas.length + 1} RETURNING *`;
+
   try {
-    const r = await pool.query(q, vals);
+    const r = await pool.query(q, [...valores, cpf_funcionario]);
     return r.rows[0] || null;
   } catch (error) {
     if (error.code === '23505') {

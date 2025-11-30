@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   Container,
   Box,
@@ -36,7 +37,6 @@ const errorTextFieldStyle = {
     },
 };
 
-
 const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(String(email).toLowerCase());
@@ -45,15 +45,15 @@ const validateEmail = (email) => {
 const Logo = () => (
   <Box
     component="img"
-    sx={{
-      width: 60,
-      height: 'auto',
-      mb: 1,
-    }}
+    sx={{ width: 60, height: 'auto', mb: 1 }}
     alt="CF Gestão Logo"
     src={logoImage}
   />
 );
+
+const api = axios.create({
+    baseURL: 'http://localhost:4000/api' 
+});
 
 function ForgotPassword() {
   const navigate = useNavigate();
@@ -63,6 +63,21 @@ function ForgotPassword() {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (error) {
+        setError(false);
+        setFieldErrors({});
+        setErrorMessage('');
+        setIpcStatus({message: '', type: ''});
+    }
+  };
+
+  const handleGoBack = (e) => {
+    e.preventDefault();
+    navigate('/login');
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -83,51 +98,28 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      const result = await new Promise(resolve => {
-          setTimeout(() => {
-              if (email === "test@admin.com") {
-                  resolve({ success: true, message: 'Link de recuperação enviado com sucesso!' });
-              } else {
-                  resolve({ success: false, message: 'E-mail não encontrado.' });
-              }
-          }, 1500);
-      });
+      const response = await api.post('/auth/forgot-password', { email });
       
-      if (result.success) {
-        setIpcStatus({ message: result.message, type: 'success' });
-        setEmail('');
-        setError(false); 
-      } else {
-        setIpcStatus({ message: result.message, type: 'error' });
-        setErrorMessage(result.message);
-        setError(true);
-      }
-    } catch (error) {
-      console.error("Erro na comunicação:", error);
-      setIpcStatus({ message: 'Erro: Falha na comunicação com o sistema.', type: 'error' });
+      setIpcStatus({ message: response.data.message, type: 'success' });
+      setError(false);
+      
+      setTimeout(() => {
+          navigate('/reset-password', { state: { email: email } });
+      }, 1500);
+
+    } catch (err) {
+      console.error("Erro na comunicação:", err);
+      const msg = err.response?.data?.message || 'Erro: Falha na comunicação com o sistema.';
+      
+      setIpcStatus({ message: msg, type: 'error' });
+      setErrorMessage(msg);
       setError(true);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoBack = (e) => {
-    e.preventDefault();
-    navigate('/login');
-  };
-
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    if (error) {
-        setError(false);
-        setFieldErrors({});
-        setErrorMessage('');
-        setIpcStatus({message: '', type: ''});
-    }
-  };
-
   const isEmailError = !!fieldErrors.email || (error && ipcStatus.message);
-
   const displayErrorMessage = isEmailError ? errorMessage || ipcStatus.message : '';
 
   return (
@@ -151,39 +143,15 @@ function ForgotPassword() {
       >
         <Logo />
 
-        <Typography
-          variant="h6"
-          component="h1"
-          sx={{
-            fontWeight: 400,
-            mb: 1,
-            color: 'text.secondary',
-          }}
-        >
+        <Typography variant="h6" component="h1" sx={{ fontWeight: 400, mb: 1, color: 'text.secondary' }}>
           Corpo em Forma Gestão
         </Typography>
 
-        <Typography
-          variant="h5"
-          component="h2"
-          sx={{
-            fontWeight: 500,
-            mt: 2,
-            mb: 1,
-          }}
-        >
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 500, mt: 2, mb: 1 }}>
           Recupere sua senha
         </Typography>
 
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 3,
-            color: 'text.secondary',
-            textAlign: 'center',
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary', textAlign: 'center', whiteSpace: 'nowrap' }}>
           Informe seu e-mail para um link de redefinição.
         </Typography>
 
@@ -201,7 +169,7 @@ function ForgotPassword() {
             autoFocus
             type="email"
             value={email}
-            onChange={handleEmailChange}
+            onChange={handleEmailChange} 
             disabled={loading}
             error={isEmailError} 
             helperText={isEmailError ? displayErrorMessage : ''}
@@ -234,7 +202,7 @@ function ForgotPassword() {
               },
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Enviar Link'}
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Enviar Código'}
           </Button>
           
           <Typography variant="body2" align="center">
@@ -243,9 +211,7 @@ function ForgotPassword() {
               href="#"
               onClick={handleGoBack}
               variant="body2"
-              sx={{
-                fontWeight: 'bold',
-              }}
+              sx={{ fontWeight: 'bold', cursor: 'pointer' }}
             >
               Voltar ao login
             </Link>
