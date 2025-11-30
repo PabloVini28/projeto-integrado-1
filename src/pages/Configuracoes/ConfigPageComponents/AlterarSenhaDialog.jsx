@@ -8,9 +8,7 @@ const yellowButtonSx = {
   bgcolor: '#F2D95C',
   color: 'black',
   fontWeight: 'normal',
-  '&:hover': {
-    bgcolor: '#e0c850',
-  },
+  '&:hover': { bgcolor: '#e0c850' },
   textTransform: 'none',
 };
 
@@ -18,133 +16,184 @@ const grayButtonSx = {
   bgcolor: '#343a40',
   color: 'white',
   fontWeight: 'normal',
-  '&:hover': {
-    bgcolor: '#23272b',
-  },
+  '&:hover': { bgcolor: '#23272b' },
   textTransform: 'none',
 };
 
 const blackFocusedTextFieldStyle = {
-  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'black',
-  },
-  '& .MuiInputLabel-root.Mui-focused': {
-    color: 'black',
-  },
-  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: '#343a40',
-  },
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'black' },
+  '& .MuiInputLabel-root.Mui-focused': { color: 'black' },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#343a40' },
 };
 
 const errorTextFieldStyle = {
-    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'red !important',
-    },
-    '& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'darkred !important',
-    },
-    '& .MuiInputLabel-root.Mui-error': {
-        color: 'red !important',
-    },
-};
-
-const isValidEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' },
+    '& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'darkred !important' },
+    '& .MuiInputLabel-root.Mui-error': { color: 'red !important' },
 };
 
 export default function AlterarSenhaDialog({ open, onClose }) {
-  const [email, setEmail] = useState('');
+  const [senhaAtual, setSenhaAtual] = useState('');
+  const [novaSenha, setNovaSenha] = useState('');
+  const [confirmarNovaSenha, setConfirmarNovaSenha] = useState('');
+  
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
-  const handleSendLink = () => {
-    setFieldErrors({});
-    setErrorMessage('');
-    
-    if (!email.trim()) {
-      setErrorMessage("Por favor, preencha o campo obrigatório.");
-      setError(true);
-      setFieldErrors({email: true});
-      return;
-    }
-    
-    let errors = {};
-    let message = "";
-
-    if (!isValidEmail(email)) {
-        errors.email = "Formato de e-mail inválido.";
-    } else if (email.toLowerCase() === 'invalido@email.com') {
-      errors.email = "E-mail não encontrado. Verifique se o e-mail está correto.";
-    }
-
-    const errorCount = Object.keys(errors).length;
-    
-    if (errorCount > 0) {
-      if (errorCount === 1) {
-          message = Object.values(errors)[0];
-      } else {
-          message = "Corrija os campos em erro.";
-      }
-      setError(true);
-      setFieldErrors(errors);
-      setErrorMessage(message);
-      return;
-    }
-
-    setErrorMessage('');
-    setError(false);
-    setFieldErrors({});
-    console.log("Link de redefinição enviado para:", email);
-    onClose();
-  };
-
   useEffect(() => {
-    if (!open) {
-      setEmail('');
+    if (open) {
+      setSenhaAtual('');
+      setNovaSenha('');
+      setConfirmarNovaSenha('');
       setError(false);
       setErrorMessage('');
       setFieldErrors({});
     }
   }, [open]);
 
-  const hasSpecificError = error && !errorMessage.includes("preencha todos");
-  const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 1;
+  const handleAlterarSenha = async () => {
+    setFieldErrors({});
+    setErrorMessage('');
+    setError(false);
+
+    // 1. Validação de campos vazios
+    if (!senhaAtual.trim() || !novaSenha.trim() || !confirmarNovaSenha.trim()) {
+        const errors = {};
+        if (!senhaAtual) errors.senhaAtual = true;
+        if (!novaSenha) errors.novaSenha = true;
+        if (!confirmarNovaSenha) errors.confirmarNovaSenha = true;
+        
+        setFieldErrors(errors);
+        setErrorMessage("Por favor, preencha todos os campos.");
+        setError(true);
+        return;
+    }
+
+    // 2. Validação de igualdade da nova senha
+    if (novaSenha !== confirmarNovaSenha) {
+        setFieldErrors({ novaSenha: true, confirmarNovaSenha: true });
+        setErrorMessage("As novas senhas não coincidem.");
+        setError(true);
+        return;
+    }
+
+    // 3. Validação de tamanho mínimo (opcional, mas recomendado)
+    if (novaSenha.length < 6) {
+        setFieldErrors({ novaSenha: true });
+        setErrorMessage("A nova senha deve ter pelo menos 6 caracteres.");
+        setError(true);
+        return;
+    }
+
+    // --- LÓGICA DE BACKEND ---
+    try {
+        const token = localStorage.getItem('authToken');
+        const userDataString = localStorage.getItem('userData');
+        
+        if (!userDataString) {
+            setErrorMessage("Sessão inválida. Faça login novamente.");
+            setError(true);
+            return;
+        }
+
+        const userData = JSON.parse(userDataString);
+        
+        // --- CORREÇÃO IMPORTANTE: USAR O ID (MATRÍCULA) ---
+        // O backend espera o ID na rota /alterar-senha/:id
+        const idUsuario = userData.id_funcionario || userData.id;
+
+        if (!idUsuario) {
+            console.error("Dados do usuário sem ID:", userData);
+            setErrorMessage("Erro: ID do usuário não identificado na sessão.");
+            setError(true);
+            return;
+        }
+
+        const response = await fetch(`http://localhost:4000/api/funcionario/alterar-senha/${idUsuario}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ 
+                senhaAtual: senhaAtual, 
+                novaSenha: novaSenha 
+            })
+        });
+
+        if (response.ok) {
+            alert("Senha alterada com sucesso!");
+            onClose();
+        } else {
+            const data = await response.json();
+            // Exibe mensagem de erro do backend (ex: Senha atual incorreta)
+            setErrorMessage(data.error || "Erro ao alterar senha.");
+            setError(true);
+            
+            // Se o erro for senha atual incorreta, marca o campo
+            if (data.error && (data.error.toLowerCase().includes('senha') || data.error.toLowerCase().includes('password'))) {
+                setFieldErrors({ senhaAtual: true });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        setErrorMessage("Erro de conexão com o servidor.");
+        setError(true);
+    }
+  };
+
+  const hasSpecificError = error && !errorMessage.includes("todos os campos");
+  const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 0;
 
   return (
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
       <DialogTitle fontWeight="bold" textAlign="center">Alterar Senha</DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" color="text.secondary" mb={2} textAlign="center">
-          Informe seu e-mail para um link de redefinição.
-        </Typography>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
         {error && (
           <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
             {errorMessage}
           </Typography>
         )}
+        
         <TextField
           autoFocus
-          margin="dense"
-          label="E-mail*"
-          type="email"
+          label="Senha Atual*"
+          type="password"
           fullWidth
           variant="outlined"
-          value={email}
-          onChange={(e) => { setEmail(e.target.value); setError(false); setFieldErrors({}); setErrorMessage(''); }}
-          error={!!fieldErrors.email}
-          helperText={showHelperText && fieldErrors.email ? fieldErrors.email : ""}
-          sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.email && errorTextFieldStyle)}}
+          value={senhaAtual}
+          onChange={(e) => { setSenhaAtual(e.target.value); setError(false); }}
+          error={!!fieldErrors.senhaAtual}
+          sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.senhaAtual && errorTextFieldStyle)}}
         />
+
+        <TextField
+          label="Nova Senha*"
+          type="password"
+          fullWidth
+          variant="outlined"
+          value={novaSenha}
+          onChange={(e) => { setNovaSenha(e.target.value); setError(false); }}
+          error={!!fieldErrors.novaSenha}
+          sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.novaSenha && errorTextFieldStyle)}}
+        />
+
+        <TextField
+          label="Confirmar Nova Senha*"
+          type="password"
+          fullWidth
+          variant="outlined"
+          value={confirmarNovaSenha}
+          onChange={(e) => { setConfirmarNovaSenha(e.target.value); setError(false); }}
+          error={!!fieldErrors.confirmarNovaSenha}
+          sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarNovaSenha && errorTextFieldStyle)}}
+        />
+
       </DialogContent>
       <DialogActions sx={{ p: '0 24px 16px' }}>
-        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
-          CANCELAR
-        </Button>
-        <Button onClick={handleSendLink} variant="contained" sx={yellowButtonSx}>
-          ENVIAR LINK
-        </Button>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
+        <Button onClick={handleAlterarSenha} variant="contained" sx={yellowButtonSx}>SALVAR SENHA</Button>
       </DialogActions>
     </Dialog>
   );

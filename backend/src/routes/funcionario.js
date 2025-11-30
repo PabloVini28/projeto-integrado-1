@@ -38,6 +38,23 @@ router.post('/', async (req, res) => {
   }
 });
 
+// --- ROTA NOVA DE ALTERAR SENHA ---
+router.put('/alterar-senha/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { senhaAtual, novaSenha } = req.body;
+
+    await service.changePassword(id, senhaAtual, novaSenha);
+
+    res.status(200).json({ message: 'Senha alterada com sucesso' });
+  } catch (err) {
+    console.error('Erro rota senha:', err);
+    // Retorna erro específico (ex: 401 Senha incorreta) ou 500 genérico
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message || 'Falhou ao alterar senha' });
+  }
+});
+
 router.put('/:cpf_funcionario', async (req, res) => {
   try {
     const updated = await service.update(req.params.cpf_funcionario, req.body);

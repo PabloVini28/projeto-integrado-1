@@ -43,15 +43,15 @@ async function create(payload) {
     isEnabled: false, 
   };
 
-    const created = await repo.create(toCreate);
+  const created = await repo.create(toCreate);
 
-    try {
-      await emailService.sendVerificationEmail(created.email_funcionario, verificationCode);
-    } catch (err) {
-      console.error('Erro ao enviar email de verificação:', err);
-    }
+  try {
+    await emailService.sendVerificationEmail(created.email_funcionario, verificationCode);
+  } catch (err) {
+    console.error('Erro ao enviar email de verificação:', err);
+  }
 
-    return created;
+  return created;
 }
 
 async function update(cpf_funcionario, payload) {
@@ -75,10 +75,36 @@ async function remove(cpf_funcionario) {
   return repo.remove(cpf_funcionario);
 }
 
+// --- NOVA FUNÇÃO DE LÓGICA PARA ALTERAR SENHA ---
+async function changePassword(id, senhaAtual, novaSenha) {
+  // 1. Busca funcionário pelo ID (Matrícula)
+  const funcionario = await repo.findById(id);
+  
+  if (!funcionario) {
+    const err = new Error('Funcionário não encontrado');
+    err.status = 404;
+    throw err;
+  }
+
+  // 2. Compara a senha atual digitada com o hash no banco
+  const match = await bcrypt.compare(String(senhaAtual), funcionario.senha);
+  
+  if (!match) {
+    const err = new Error('Senha atual incorreta');
+    err.status = 401; // Unauthorized
+    throw err;
+  }
+
+  // 3. Gera novo hash e salva
+  const newHash = await bcrypt.hash(String(novaSenha), 10);
+  return repo.updatePassword(id, newHash);
+}
+
 module.exports = { 
   listAll, 
   getByCpf, 
   create, 
   update, 
-  remove
+  remove,
+  changePassword // Exportando a nova função
 };
