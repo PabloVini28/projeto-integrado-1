@@ -113,7 +113,7 @@ export default function AlterarEmailDialog({ open, onClose }) {
       
       let errors = {};
       if (!isValidEmail(newEmail)) errors.newEmail = "Formato de e-mail inválido.";
-      if (password !== 'senha123') errors.password = "Senha atual incorreta."; // Simulação
+      if (password !== 'senha123') errors.password = "Senha atual incorreta."; 
 
       const errorCount = Object.keys(errors).length;
       if (errorCount > 0) {

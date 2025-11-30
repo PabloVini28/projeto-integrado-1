@@ -57,7 +57,6 @@ export default function AlterarSenhaDialog({ open, onClose }) {
     setErrorMessage('');
     setError(false);
 
-    // 1. Validação de campos vazios
     if (!senhaAtual.trim() || !novaSenha.trim() || !confirmarNovaSenha.trim()) {
         const errors = {};
         if (!senhaAtual) errors.senhaAtual = true;
@@ -70,7 +69,6 @@ export default function AlterarSenhaDialog({ open, onClose }) {
         return;
     }
 
-    // 2. Validação de igualdade da nova senha
     if (novaSenha !== confirmarNovaSenha) {
         setFieldErrors({ novaSenha: true, confirmarNovaSenha: true });
         setErrorMessage("As novas senhas não coincidem.");
@@ -78,7 +76,6 @@ export default function AlterarSenhaDialog({ open, onClose }) {
         return;
     }
 
-    // 3. Validação de tamanho mínimo (opcional, mas recomendado)
     if (novaSenha.length < 6) {
         setFieldErrors({ novaSenha: true });
         setErrorMessage("A nova senha deve ter pelo menos 6 caracteres.");
@@ -86,7 +83,6 @@ export default function AlterarSenhaDialog({ open, onClose }) {
         return;
     }
 
-    // --- LÓGICA DE BACKEND ---
     try {
         const token = localStorage.getItem('authToken');
         const userDataString = localStorage.getItem('userData');
@@ -98,9 +94,6 @@ export default function AlterarSenhaDialog({ open, onClose }) {
         }
 
         const userData = JSON.parse(userDataString);
-        
-        // --- CORREÇÃO IMPORTANTE: USAR O ID (MATRÍCULA) ---
-        // O backend espera o ID na rota /alterar-senha/:id
         const idUsuario = userData.id_funcionario || userData.id;
 
         if (!idUsuario) {
@@ -127,11 +120,9 @@ export default function AlterarSenhaDialog({ open, onClose }) {
             onClose();
         } else {
             const data = await response.json();
-            // Exibe mensagem de erro do backend (ex: Senha atual incorreta)
             setErrorMessage(data.error || "Erro ao alterar senha.");
             setError(true);
             
-            // Se o erro for senha atual incorreta, marca o campo
             if (data.error && (data.error.toLowerCase().includes('senha') || data.error.toLowerCase().includes('password'))) {
                 setFieldErrors({ senhaAtual: true });
             }

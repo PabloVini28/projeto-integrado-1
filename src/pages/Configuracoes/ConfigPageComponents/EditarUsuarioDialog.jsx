@@ -46,7 +46,6 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const [cpf, setCpf] = useState('');
     const [email, setEmail] = useState('');
     const [role, setRole] = useState('FUNCIONARIO'); 
-    
     const [senha, setSenha] = useState('');
 
     const [error, setError] = useState(false);
@@ -88,7 +87,7 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const handleSenhaChange = (e) => {
         setSenha(e.target.value);
         resetFieldError('senha');
-    };
+    }
 
     const handleRoleChange = (e) => {
         setRole(e.target.value);
@@ -102,7 +101,6 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
 
     const handleSave = () => {
         let errors = {};
-        
         const hasEmpty = !nome.trim() || !cpf.trim() || !senha.trim();
 
         if (hasEmpty) {
@@ -111,7 +109,7 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
             if (!senha.trim()) errors.senha = true;
             
             setFieldErrors(errors);
-            setErrorMessage("Por favor, preencha todos os campos e a senha do usuário.");
+            setErrorMessage("Por favor, preencha todos os campos.");
             setError(true);
             return;
         }
@@ -133,13 +131,7 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
         setFieldErrors({});
         setErrorMessage("");
         
-        onSave({ 
-            ...user, 
-            nome, 
-            cpf, 
-            role,
-            senha 
-        }); 
+        onSave({ ...user, nome, cpf, role, senha }); 
     }
 
     const hasSpecificError = error && !errorMessage.includes("todos os campos");
@@ -159,19 +151,9 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
                     sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle)}} 
                 />
                 
-                <TextField 
-                    label="E-mail" fullWidth variant="outlined" value={email} disabled={true} 
-                    sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)' } }}
-                />
+                <TextField label="E-mail" fullWidth variant="outlined" value={email} disabled={true} sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)' } }} />
+                <TextField label="CPF*" fullWidth variant="outlined" value={cpf} onChange={handleCpfChange} inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf} helperText={showHelperText && fieldErrors.cpf ? fieldErrors.cpf : ""} sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle)}} />
                 
-                <TextField 
-                    label="CPF*" fullWidth variant="outlined" 
-                    value={cpf} onChange={handleCpfChange} inputProps={{ maxLength: 14 }} 
-                    error={!!fieldErrors.cpf} 
-                    helperText={showHelperText && fieldErrors.cpf ? fieldErrors.cpf : ""} 
-                    sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle)}} 
-                />
-
                 <FormControl component="fieldset" sx={{ mt: 1 }}>
                     <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
                     <RadioGroup row name="role" value={role} onChange={handleRoleChange}>
@@ -180,11 +162,11 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
                     </RadioGroup>
                 </FormControl>
 
-                <Typography variant="caption" color="text.secondary" sx={{mt:1}}>
-                    Digite a senha deste usuário para confirmar:
+                <Typography variant="caption" color="text.secondary" sx={{mt: 1}}>
+                    Digite <strong>sua senha de administrador</strong> para confirmar a alteração:
                 </Typography>
                 <TextField 
-                    label="Senha Atual*" fullWidth variant="outlined" type="password"
+                    label="Senha do Admin*" fullWidth variant="outlined" type="password"
                     value={senha} onChange={handleSenhaChange} 
                     error={!!fieldErrors.senha} 
                     sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle)}} 

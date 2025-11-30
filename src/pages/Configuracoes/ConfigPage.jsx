@@ -185,7 +185,9 @@ export default function ConfigPage() {
         nome_funcionario: updatedData.nome,
         cpf_funcionario: updatedData.cpf,
         nivel_acesso: updatedData.role === 'ADMINISTRADOR' ? 'Administrador' : 'Funcionário',
-        senha: updatedData.senha 
+        
+        senha: updatedData.senha, 
+        adminId: user.id 
     };
 
     try {
