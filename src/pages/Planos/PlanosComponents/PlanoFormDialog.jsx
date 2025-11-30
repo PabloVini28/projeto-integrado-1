@@ -15,6 +15,18 @@ import {
   Typography,
 } from "@mui/material";
 
+const blackFocusedStyle = {
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "black",
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: "black",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#343a40",
+  },
+};
+
 const formatCurrency = (value) => {
   if (!value) return "";
 
@@ -43,9 +55,8 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
 
-  // valores
-  const [valor, setValor] = useState(""); // número cru em string, ex: "1050"
-  const [valorFormatado, setValorFormatado] = useState(""); // ex: "R$ 10,50"
+  const [valor, setValor] = useState("");
+  const [valorFormatado, setValorFormatado] = useState("");
 
   const [status, setStatus] = useState("Ativo");
 
@@ -56,11 +67,10 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const isEditMode = !!planToEdit;
 
   useEffect(() => {
+    
     if (planToEdit) {
       setNome(planToEdit.nome || "");
       setCodigo(planToEdit.codigo || "");
-
-      // converte valor vindo do banco para centavos e formata
       const raw = String(Math.round(parseFloat(planToEdit.valor) * 100));
       setValor(raw);
       setValorFormatado(formatCurrency(raw));
@@ -81,7 +91,6 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const handleValueChange = (e) => {
     let raw = e.target.value.replace(/\D/g, "");
 
-    // impede números absurdos
     if (raw.length > 12) raw = raw.slice(0, 12);
 
     setValor(raw);
@@ -116,7 +125,7 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
       return;
     }
 
-    const valorNumerico = Number(valor) / 100; // "1050" → 10.50
+    const valorNumerico = Number(valor) / 100;
 
     if (valorNumerico <= 0) {
       errors.valor = true;
@@ -141,17 +150,6 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const isNomeError = !!fieldErrors.nome;
   const isValorError = !!fieldErrors.valor;
 
-  const blackFocusedStyle = {
-    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: "black",
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "black",
-    },
-    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#343a40",
-    },
-  };
 
   const getSx = (isFieldInError) => ({
     ...blackFocusedStyle,
