@@ -12,16 +12,19 @@ import {
   Radio,
   FormLabel,
   FormControl,
-  InputAdornment,
   Typography,
 } from "@mui/material";
 
-const cleanCurrency = (formattedValue) => {
-  if (!formattedValue) return "";
-  return formattedValue
-    .toString()
-    .replace(/[R$\s]/g, "")
-    .replace(".", ",");
+const formatCurrency = (value) => {
+  if (!value) return "";
+
+  const numeric = value.replace(/\D/g, ""); // só números
+  const number = Number(numeric) / 100;
+
+  return number.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 };
 
 const errorTextFieldStyle = {
@@ -39,7 +42,10 @@ const errorTextFieldStyle = {
 export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
-  const [valor, setValor] = useState("");
+
+  // valores
+  const [valor, setValor] = useState(""); // número cru em string, ex: "1050"
+  const [valorFormatado, setValorFormatado] = useState(""); // ex: "R$ 10,50"
 
   const [status, setStatus] = useState("Ativo");
 
@@ -53,13 +59,18 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
     if (planToEdit) {
       setNome(planToEdit.nome || "");
       setCodigo(planToEdit.codigo || "");
-      setValor(cleanCurrency(planToEdit.valor));
+
+      // converte valor vindo do banco para centavos e formata
+      const raw = String(Math.round(parseFloat(planToEdit.valor) * 100));
+      setValor(raw);
+      setValorFormatado(formatCurrency(raw));
 
       setStatus(planToEdit.status || "Ativo");
     } else {
       setNome("");
       setCodigo("");
       setValor("");
+      setValorFormatado("");
       setStatus("Ativo");
     }
     setError(false);
@@ -68,8 +79,13 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   }, [planToEdit, open]);
 
   const handleValueChange = (e) => {
-    const rawValue = e.target.value.replace(/[^0-9,.]/g, "");
-    setValor(rawValue);
+    let raw = e.target.value.replace(/\D/g, "");
+
+    // impede números absurdos
+    if (raw.length > 12) raw = raw.slice(0, 12);
+
+    setValor(raw);
+    setValorFormatado(formatCurrency(raw));
     resetFieldError("valor");
   };
 
@@ -100,17 +116,12 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
       return;
     }
 
-    const valorLimpo = valor
-      .toString()
-      .replace("R$", "")
-      .trim()
-      .replace(/\./g, "")
-      .replace(",", ".");
-    const valorNumerico = parseFloat(valorLimpo) || 0;
+    const valorNumerico = Number(valor) / 100; // "1050" → 10.50
 
     if (valorNumerico <= 0) {
-      errors.valor = "O valor deve ser maior que zero.";
+      errors.valor = true;
       setFieldErrors(errors);
+      setErrorMessage("O valor deve ser maior que zero.");
       setError(true);
       return;
     }
@@ -122,6 +133,7 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
       valor: valorNumerico,
       status,
     };
+
     onSave(planoData);
     onClose();
   };
@@ -219,15 +231,10 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
             label="Valor"
             fullWidth
             size="small"
-            value={valor}
+            value={valorFormatado}
             onChange={handleValueChange}
             error={isValorError}
             helperText={error && isValorError ? fieldErrors.valor : ""}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">R$</InputAdornment>
-              ),
-            }}
             sx={getSx(isValorError)}
           />
 
