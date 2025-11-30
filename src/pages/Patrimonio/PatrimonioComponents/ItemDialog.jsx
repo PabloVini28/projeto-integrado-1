@@ -9,67 +9,67 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ptBR } from 'date-fns/locale';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-export default function ItemDialog({ open, onClose, onSave, title, itemToEdit }) {
-
-    const blackTheme = createTheme({
-        palette: {
-            primary: {
-                main: '#000000',
-            },
+const blackTheme = createTheme({
+    palette: {
+        primary: {
+            main: '#000000',
         },
-        components: {
-            MuiPickersDay: {
-                styleOverrides: {
-                    root: {
+    },
+    components: {
+        MuiPickersDay: {
+            styleOverrides: {
+                root: {
+                    '&:hover': {
+                        backgroundColor: '#000000',
+                        color: '#FFFFFF',
+                    },
+                    '&.Mui-selected': {
+                        backgroundColor: '#000000',
+                        color: '#FFFFFF',
                         '&:hover': {
-                            backgroundColor: '#000000',
-                            color: '#FFFFFF',
-                        },
-                        '&.Mui-selected': {
-                            backgroundColor: '#000000',
-                            color: '#FFFFFF',
-                            '&:hover': {
-                                backgroundColor: '#333333',
-                            },
+                            backgroundColor: '#333333',
                         },
                     },
                 },
             },
-            MuiOutlinedInput: {
-                styleOverrides: {
-                    root: {
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#000000',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#343a40',
-                        },
-                        '&.Mui-error .MuiOutlinedInput-notchedOutline': {
-                             borderColor: 'red !important', 
-                        },
-                        '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'rgba(0, 0, 0, 0.23) !important', 
-                        },
-                    }
-                }
-            },
-            MuiInputLabel: {
-                styleOverrides: {
-                    root: {
-                        '&.Mui-focused': {
-                            color: '#000000',
-                        },
-                        '&.Mui-error': {
-                            color: 'red !important', 
-                        },
-                        '&.Mui-disabled': {
-                            color: 'rgba(0, 0, 0, 0.6)', 
-                        }
-                    }
+        },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#000000',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#343a40',
+                    },
+                    '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+                         borderColor: 'red !important', 
+                    },
+                    '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(0, 0, 0, 0.23) !important', 
+                    },
                 }
             }
         },
-    });
+        MuiInputLabel: {
+            styleOverrides: {
+                root: {
+                    '&.Mui-focused': {
+                        color: '#000000',
+                    },
+                    '&.Mui-error': {
+                        color: 'red !important', 
+                    },
+                    '&.Mui-disabled': {
+                        color: 'rgba(0, 0, 0, 0.6)', 
+                    }
+                }
+            }
+        }
+    },
+});
+export default function ItemDialog({ open, onClose, onSave, title, itemToEdit }) {
+
 
     const [nome, setNome] = useState('');
     const [dataAquisicao, setDataAquisicao] = useState(null);
@@ -120,7 +120,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
         const isDateValid = dataAquisicao !== null;
 
         if (!isNomeValid || !isDateValid) {
-            setErrorMessage("O nome e a data de aquisição são obrigatórios.");
+            setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
             setError(true);
             return;
         }
@@ -144,7 +144,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
             PaperProps={{ sx: { borderRadius: 2, p: 2 } }}
         >
             <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', pb: 0 }}>
-                {title || 'Cadastre um novo Item'}
+                {title || 'Cadastre um Novo Item'}
             </DialogTitle>
 
             <DialogContent>
@@ -181,7 +181,7 @@ export default function ItemDialog({ open, onClose, onSave, title, itemToEdit })
 
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <DatePicker
-                                label="Data de Aquisição"
+                                label="Data de Aquisição *"
                                 value={dataAquisicao}
                                 onChange={(newValue) => setDataAquisicao(newValue)}
                                 slotProps={{
