@@ -6,7 +6,6 @@ import {
   DialogActions,
   Button,
   TextField,
-  InputAdornment,
   FormControl,
   InputLabel,
   Select,
@@ -24,13 +23,23 @@ import { ptBR } from 'date-fns/locale';
 import { parse } from 'date-fns/parse';
 import { format } from 'date-fns/format';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { getAlunos } from '../../../services/alunosApiService'; 
+import { getAlunos } from '../../../services/alunosApiService';
 
 const blackFocusedTextFieldStyle = {
   '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'black' },
   '& .MuiInputLabel-root.Mui-focused': { color: 'black' },
   '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#343a40' },
   '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' },
+};
+
+const formatCurrency = (value) => {
+  if (!value) return "";
+  const numeric = String(value).replace(/\D/g, "");
+  const number = Number(numeric) / 100;
+  return number.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 };
 
 const blackTheme = createTheme({
@@ -75,14 +84,14 @@ export default function ItemDialog({
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
 
   const [data, setData] = useState(new Date());
-  const [valor, setValor] = useState("");
+  const [valorFormatado, setValorFormatado] = useState("");
   const [descricao, setDescricao] = useState("");
   const [errors, setErrors] = useState({});
   const [showErrorText, setShowErrorText] = useState(false);
 
   const [buscaAluno, setBuscaAluno] = useState("");
-  const [listaCompletaAlunos, setListaCompletaAlunos] = useState([]); 
-  const [opcoesAlunos, setOpcoesAlunos] = useState([]); 
+  const [listaCompletaAlunos, setListaCompletaAlunos] = useState([]);
+  const [opcoesAlunos, setOpcoesAlunos] = useState([]);
   const [loadingAlunos, setLoadingAlunos] = useState(false);
 
   const type = isRecipe ? "receita" : "despesa";
@@ -92,18 +101,15 @@ export default function ItemDialog({
   useEffect(() => {
     if (open && isRecipe && categoria === 'Alunos') {
       setLoadingAlunos(true);
-      
       getAlunos()
         .then((response) => {
           const rawData = response.data || [];
-          
           const dadosFormatados = rawData.map(aluno => ({
-            ...aluno, 
-            id: aluno.id_aluno || aluno.id, 
-            nome: aluno.nome_aluno || aluno.nome, 
-            matricula: aluno.matricula || aluno.matricula_aluno 
+            ...aluno,
+            id: aluno.id_aluno || aluno.id,
+            nome: aluno.nome_aluno || aluno.nome,
+            matricula: aluno.matricula || aluno.matricula_aluno
           }));
-
           setListaCompletaAlunos(dadosFormatados);
           setOpcoesAlunos(dadosFormatados);
         })
@@ -121,7 +127,7 @@ export default function ItemDialog({
       setOpcoesAlunos(listaCompletaAlunos);
     } else {
       const termo = buscaAluno.toLowerCase();
-      const filtrados = listaCompletaAlunos.filter(aluno => 
+      const filtrados = listaCompletaAlunos.filter(aluno =>
         (aluno.nome && aluno.nome.toLowerCase().includes(termo)) ||
         (aluno.matricula && String(aluno.matricula).includes(termo))
       );
@@ -129,13 +135,18 @@ export default function ItemDialog({
     }
   }, [buscaAluno, listaCompletaAlunos]);
 
-
   useEffect(() => {
     if (open) {
       if (itemToEdit) {
         setCategoria(itemToEdit.categoria || "");
         setNome(itemToEdit.nome || "");
-        setValor(String(itemToEdit.valor) || "");
+        
+        let rawValue = "";
+        if (itemToEdit.valor !== undefined && itemToEdit.valor !== null) {
+            rawValue = Number(itemToEdit.valor).toFixed(2).replace('.', '');
+        }
+        setValorFormatado(formatCurrency(rawValue));
+
         setDescricao(itemToEdit.descricao || "");
 
         let dataObjeto = new Date();
@@ -146,7 +157,7 @@ export default function ItemDialog({
         setData(dataObjeto);
 
         if (isRecipe && itemToEdit.categoria === 'Alunos' && itemToEdit.nome) {
-          setAlunoSelecionado({ nome: itemToEdit.nome, matricula: '' }); 
+          setAlunoSelecionado({ nome: itemToEdit.nome, matricula: '' });
         } else {
           setAlunoSelecionado(null);
         }
@@ -154,7 +165,7 @@ export default function ItemDialog({
         setCategoria("");
         setNome("");
         setData(new Date());
-        setValor("");
+        setValorFormatado("");
         setDescricao("");
         setAlunoSelecionado(null);
         setBuscaAluno("");
@@ -164,12 +175,19 @@ export default function ItemDialog({
     }
   }, [itemToEdit, isRecipe, open]);
 
+  const handleValueChange = (e) => {
+    let raw = e.target.value.replace(/\D/g, "");
+    if (raw.length > 12) raw = raw.slice(0, 12);
+    setValorFormatado(formatCurrency(raw));
+  };
+
   const validateForm = () => {
     const newErrors = {};
+    const valorNumerico = Number(valorFormatado.replace(/\D/g, "")) / 100;
 
     if (!categoria) newErrors.categoria = true;
     if (!data || data.toString() === 'Invalid Date') newErrors.data = true;
-    if (!valor || parseFloat(valor) <= 0) newErrors.valor = true;
+    if (valorNumerico <= 0) newErrors.valor = true;
 
     if (isRecipe) {
       if (categoria === 'Alunos' && !alunoSelecionado) newErrors.aluno = true;
@@ -190,11 +208,12 @@ export default function ItemDialog({
     setShowErrorText(false);
 
     const dataFormatadaSalvar = format(data, 'dd/MM/yyyy');
+    const valorFinal = Number(valorFormatado.replace(/\D/g, "")) / 100;
 
     let itemData = {
       categoria,
       data: dataFormatadaSalvar,
-      valor: parseFloat(valor) || 0,
+      valor: valorFinal,
       descricao,
       type: type,
     };
@@ -203,12 +222,9 @@ export default function ItemDialog({
       if (categoria === 'Alunos') {
         const nomeBase = alunoSelecionado?.nome || 'Aluno Desconhecido';
         const matricula = alunoSelecionado?.matricula;
-
         const nomeCompleto = matricula ? `${nomeBase} (${matricula})` : nomeBase;
-
         itemData.nome = nomeCompleto;
-        itemData.nome_aluno = nomeCompleto; 
-
+        itemData.nome_aluno = nomeCompleto;
       } else {
         itemData.nome = nome;
       }
@@ -230,7 +246,7 @@ export default function ItemDialog({
             label="Categoria"
             onChange={(e) => {
                 setCategoria(e.target.value);
-                setAlunoSelecionado(null); 
+                setAlunoSelecionado(null);
             }}
           >
             <MenuItem value="" disabled>*Selecione uma categoria*</MenuItem>
@@ -293,7 +309,17 @@ export default function ItemDialog({
       </Grid>
 
       <Grid item xs={12} sm={6}>
-        <TextField required error={!!errors.valor} id="valor" label="Valor" fullWidth size="small" value={valor} onChange={(e) => setValor(e.target.value)} sx={blackFocusedTextFieldStyle} InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment>, type: "number" }} />
+        <TextField
+          required
+          error={!!errors.valor}
+          id="valor"
+          label="Valor"
+          fullWidth
+          size="small"
+          value={valorFormatado}
+          onChange={handleValueChange}
+          sx={blackFocusedTextFieldStyle}
+        />
       </Grid>
 
       <Grid item xs={12}>
@@ -322,7 +348,17 @@ export default function ItemDialog({
         </ThemeProvider>
       </Grid>
       <Grid item xs={12} sm={6}>
-        <TextField required error={!!errors.valor} id="valor" label="Valor" fullWidth size="small" value={valor} onChange={(e) => setValor(e.target.value)} sx={blackFocusedTextFieldStyle} InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment>, type: "number" }} />
+        <TextField
+            required
+            error={!!errors.valor}
+            id="valor"
+            label="Valor"
+            fullWidth
+            size="small"
+            value={valorFormatado}
+            onChange={handleValueChange}
+            sx={blackFocusedTextFieldStyle}
+        />
       </Grid>
       <Grid item xs={12}>
         <TextField id="descricao" label="Descrição (Opcional)" fullWidth size="small" value={descricao} onChange={(e) => setDescricao(e.target.value)} multiline rows={2} sx={blackFocusedTextFieldStyle} />
@@ -335,8 +371,18 @@ export default function ItemDialog({
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
         <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem", pb: 0 }}>{title}</DialogTitle>
         <DialogContent>
+          {showErrorText && (
+            <Typography
+                color="error"
+                variant="body2"
+                mb={1}
+                textAlign="center"
+                fontWeight="bold"
+            >
+                Por favor, preencha todos os campos obrigatórios.
+            </Typography>
+          )}
           {isRecipe ? renderReceitaForm() : renderDespesaForm()}
-          {showErrorText && <Typography variant="body2" color="error" sx={{ textAlign: 'center', mt: 2 }}>Por favor, preencha os campos obrigatórios.</Typography>}
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
           <Button onClick={onClose} variant="contained" sx={{ backgroundColor: "#343a40", color: "white", "&:hover": { backgroundColor: "#23272b" }, fontWeight: "normal", textTransform: 'uppercase' }}>CANCELAR</Button>
