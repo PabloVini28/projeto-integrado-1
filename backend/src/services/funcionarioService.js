@@ -1,10 +1,11 @@
-const repo = require('../repositories/funcionarioRepository');
-const { validateFuncionario } = require('../models/funcionarios.model');
-const bcrypt = require('bcrypt');
-const emailService = require('./emailService');
+const repo = require("../repositories/funcionarioRepository");
+const { validateFuncionario } = require("../models/funcionarios.model");
+const bcrypt = require("bcrypt");
+const emailService = require("./emailService");
 
 const CODE_EXPIRY_MINUTES = 60;
-const generate6Digit = () => String(Math.floor(100000 + Math.random() * 900000));
+const generate6Digit = () =>
+  String(Math.floor(100000 + Math.random() * 900000));
 
 async function listAll() {
   return repo.findAll();
@@ -21,7 +22,7 @@ async function getById(id) {
 async function create(payload) {
   const { valid, errors } = validateFuncionario(payload);
   if (!valid) {
-    const err = new Error('Validação falhou');
+    const err = new Error("Validação falhou");
     err.status = 400;
     err.details = errors;
     throw err;
@@ -29,81 +30,90 @@ async function create(payload) {
 
   const existingFuncionario = await repo.findByCpf(payload.cpf_funcionario);
   if (existingFuncionario) {
-    const err = new Error('Funcionário com este CPF já existe');
+    const err = new Error("Funcionário com este CPF já existe");
     err.status = 409;
     throw err;
   }
-  
+
   const hashed = await bcrypt.hash(String(payload.senha), 10);
-  
+
   const verificationCode = generate6Digit();
-  const expiresAt = new Date(Date.now() + 1000 * 60 * CODE_EXPIRY_MINUTES); 
+  const expiresAt = new Date(Date.now() + 1000 * 60 * CODE_EXPIRY_MINUTES);
 
   const toCreate = {
     ...payload,
     senha: hashed,
     verificationCode,
     verificationCodeExpiry: expiresAt.toISOString(),
-    isEnabled: false, 
+    isEnabled: false,
   };
 
   const created = await repo.create(toCreate);
 
   try {
-    await emailService.sendVerificationEmail(created.email_funcionario, verificationCode);
+    await emailService.sendVerificationEmail(
+      created.email_funcionario,
+      verificationCode
+    );
   } catch (err) {
-    console.error('Erro ao enviar email de verificação:', err);
+    console.error("Erro ao enviar email de verificação:", err);
   }
 
   return created;
 }
 
 async function update(cpf_funcionario, payload) {
-  
   if (!payload.senha) {
-    const err = new Error('Senha obrigatória para confirmar as alterações.');
-    err.status = 400; throw err;
+    const err = new Error("Senha obrigatória para confirmar as alterações.");
+    err.status = 400;
+    throw err;
   }
-  
+
   if (!payload.adminId) {
-    const err = new Error('ID do administrador não fornecido.');
-    err.status = 400; throw err;
+    const err = new Error("ID do administrador não fornecido.");
+    err.status = 400;
+    throw err;
   }
 
   const adminUser = await repo.findById(payload.adminId);
   if (!adminUser) {
-      const err = new Error('Usuário administrador não encontrado.');
-      err.status = 404; throw err;
+    const err = new Error("Usuário administrador não encontrado.");
+    err.status = 404;
+    throw err;
   }
 
   const match = await bcrypt.compare(String(payload.senha), adminUser.senha);
   if (!match) {
-      const err = new Error('Senha do administrador incorreta.');
-      err.status = 401; throw err;
+    const err = new Error("Senha do administrador incorreta.");
+    err.status = 401;
+    throw err;
   }
 
   const targetFuncionario = await repo.findByCpf(cpf_funcionario);
   if (!targetFuncionario) {
-      const err = new Error('Funcionário alvo não encontrado.');
-      err.status = 404; throw err;
+    const err = new Error("Funcionário alvo não encontrado.");
+    err.status = 404;
+    throw err;
   }
 
   const dadosParaValidar = {
-      ...payload,
-      email_funcionario: targetFuncionario.email_funcionario, 
-      nivel_acesso: payload.nivel_acesso || targetFuncionario.nivel_acesso,
-      senha: "SenhaValidadaPeloAdmin123" 
+    ...payload,
+    email_funcionario: targetFuncionario.email_funcionario,
+    nivel_acesso: payload.nivel_acesso || targetFuncionario.nivel_acesso,
+    senha: "SenhaValidadaPeloAdmin123",
   };
 
   const { valid, errors } = validateFuncionario(dadosParaValidar);
   if (!valid) {
-    const err = new Error('Validação falhou');
-    err.status = 400; err.details = errors; throw err;
+    const err = new Error("Validação falhou");
+    err.status = 400;
+    err.details = errors;
+    throw err;
   }
 
   const updatePayload = { ...payload };
-  delete updatePayload.senha; 
-  delete updatePayload.adminId; 
+  delete updatePayload.senha;
+  delete updatePayload.adminId;
   delete updatePayload.verificationCode;
   delete updatePayload.passwordResetCode;
 
@@ -116,16 +126,16 @@ async function remove(cpf_funcionario) {
 
 async function changePassword(id, senhaAtual, novaSenha) {
   const funcionario = await repo.findById(id);
-  
+
   if (!funcionario) {
-    const err = new Error('Funcionário não encontrado');
+    const err = new Error("Funcionário não encontrado");
     err.status = 404;
     throw err;
   }
 
   const match = await bcrypt.compare(String(senhaAtual), funcionario.senha);
   if (!match) {
-    const err = new Error('Senha atual incorreta');
+    const err = new Error("Senha atual incorreta");
     err.status = 401;
     throw err;
   }
@@ -134,12 +144,12 @@ async function changePassword(id, senhaAtual, novaSenha) {
   return repo.updatePassword(id, newHash);
 }
 
-module.exports = { 
-  listAll, 
+module.exports = {
+  listAll,
   getByCpf,
   getById,
-  create, 
-  update, 
+  create,
+  update,
   remove,
-  changePassword
+  changePassword,
 };

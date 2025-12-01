@@ -13,23 +13,29 @@ import {
   Grid,
   Autocomplete,
   CircularProgress,
-  Typography
+  Typography,
 } from "@mui/material";
 
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { ptBR } from 'date-fns/locale';
-import { parse } from 'date-fns/parse';
-import { format } from 'date-fns/format';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { getAlunos } from '../../../services/alunosApiService';
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { ptBR } from "date-fns/locale";
+import { parse } from "date-fns/parse";
+import { format } from "date-fns/format";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { getAlunos } from "../../../services/alunosApiService";
 
 const blackFocusedTextFieldStyle = {
-  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'black' },
-  '& .MuiInputLabel-root.Mui-focused': { color: 'black' },
-  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#343a40' },
-  '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "black",
+  },
+  "& .MuiInputLabel-root.Mui-focused": { color: "black" },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#343a40",
+  },
+  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": {
+    borderColor: "red !important",
+  },
 };
 
 const formatCurrency = (value) => {
@@ -43,31 +49,47 @@ const formatCurrency = (value) => {
 };
 
 const blackTheme = createTheme({
-  palette: { primary: { main: '#000000' } },
+  palette: { primary: { main: "#000000" } },
   components: {
     MuiPickersDay: {
       styleOverrides: {
         root: {
-          '&:hover': { backgroundColor: '#000000', color: '#FFFFFF' },
-          '&.Mui-selected': { backgroundColor: '#000000', color: '#FFFFFF', '&:hover': { backgroundColor: '#333333' } },
+          "&:hover": { backgroundColor: "#000000", color: "#FFFFFF" },
+          "&.Mui-selected": {
+            backgroundColor: "#000000",
+            color: "#FFFFFF",
+            "&:hover": { backgroundColor: "#333333" },
+          },
         },
       },
     },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#000000' },
-          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#343a40' },
-          '&.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' },
-          '&.Mui-disabled .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0, 0, 0, 0.23) !important' },
-        }
-      }
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#000000",
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#343a40",
+          },
+          "&.Mui-error .MuiOutlinedInput-notchedOutline": {
+            borderColor: "red !important",
+          },
+          "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+            borderColor: "rgba(0, 0, 0, 0.23) !important",
+          },
+        },
+      },
     },
     MuiInputLabel: {
       styleOverrides: {
-        root: { '&.Mui-focused': { color: '#000000' }, '&.Mui-error': { color: 'red !important' }, '&.Mui-disabled': { color: 'rgba(0, 0, 0, 0.6)' } }
-      }
-    }
+        root: {
+          "&.Mui-focused": { color: "#000000" },
+          "&.Mui-error": { color: "red !important" },
+          "&.Mui-disabled": { color: "rgba(0, 0, 0, 0.6)" },
+        },
+      },
+    },
   },
 });
 
@@ -96,19 +118,25 @@ export default function ItemDialog({
 
   const type = isRecipe ? "receita" : "despesa";
   const categoriasReceita = ["Alunos", "Outras"];
-  const categoriasDespesa = ["Instalações e infraestrutura", "Pessoal", "Investimentos", "Operacional e Administrativo", "Outras"];
+  const categoriasDespesa = [
+    "Instalações e infraestrutura",
+    "Pessoal",
+    "Investimentos",
+    "Operacional e Administrativo",
+    "Outras",
+  ];
 
   useEffect(() => {
-    if (open && isRecipe && categoria === 'Alunos') {
+    if (open && isRecipe && categoria === "Alunos") {
       setLoadingAlunos(true);
       getAlunos()
         .then((response) => {
           const rawData = response.data || [];
-          const dadosFormatados = rawData.map(aluno => ({
+          const dadosFormatados = rawData.map((aluno) => ({
             ...aluno,
             id: aluno.id_aluno || aluno.id,
             nome: aluno.nome_aluno || aluno.nome,
-            matricula: aluno.matricula || aluno.matricula_aluno
+            matricula: aluno.matricula || aluno.matricula_aluno,
           }));
           setListaCompletaAlunos(dadosFormatados);
           setOpcoesAlunos(dadosFormatados);
@@ -127,9 +155,10 @@ export default function ItemDialog({
       setOpcoesAlunos(listaCompletaAlunos);
     } else {
       const termo = buscaAluno.toLowerCase();
-      const filtrados = listaCompletaAlunos.filter(aluno =>
-        (aluno.nome && aluno.nome.toLowerCase().includes(termo)) ||
-        (aluno.matricula && String(aluno.matricula).includes(termo))
+      const filtrados = listaCompletaAlunos.filter(
+        (aluno) =>
+          (aluno.nome && aluno.nome.toLowerCase().includes(termo)) ||
+          (aluno.matricula && String(aluno.matricula).includes(termo))
       );
       setOpcoesAlunos(filtrados);
     }
@@ -140,10 +169,10 @@ export default function ItemDialog({
       if (itemToEdit) {
         setCategoria(itemToEdit.categoria || "");
         setNome(itemToEdit.nome || "");
-        
+
         let rawValue = "";
         if (itemToEdit.valor !== undefined && itemToEdit.valor !== null) {
-            rawValue = Number(itemToEdit.valor).toFixed(2).replace('.', '');
+          rawValue = Number(itemToEdit.valor).toFixed(2).replace(".", "");
         }
         setValorFormatado(formatCurrency(rawValue));
 
@@ -151,13 +180,13 @@ export default function ItemDialog({
 
         let dataObjeto = new Date();
         if (itemToEdit.data) {
-          const parsedDate = parse(itemToEdit.data, 'dd/MM/yyyy', new Date());
-          if (parsedDate.toString() !== 'Invalid Date') dataObjeto = parsedDate;
+          const parsedDate = parse(itemToEdit.data, "dd/MM/yyyy", new Date());
+          if (parsedDate.toString() !== "Invalid Date") dataObjeto = parsedDate;
         }
         setData(dataObjeto);
 
-        if (isRecipe && itemToEdit.categoria === 'Alunos' && itemToEdit.nome) {
-          setAlunoSelecionado({ nome: itemToEdit.nome, matricula: '' });
+        if (isRecipe && itemToEdit.categoria === "Alunos" && itemToEdit.nome) {
+          setAlunoSelecionado({ nome: itemToEdit.nome, matricula: "" });
         } else {
           setAlunoSelecionado(null);
         }
@@ -186,12 +215,12 @@ export default function ItemDialog({
     const valorNumerico = Number(valorFormatado.replace(/\D/g, "")) / 100;
 
     if (!categoria) newErrors.categoria = true;
-    if (!data || data.toString() === 'Invalid Date') newErrors.data = true;
+    if (!data || data.toString() === "Invalid Date") newErrors.data = true;
     if (valorNumerico <= 0) newErrors.valor = true;
 
     if (isRecipe) {
-      if (categoria === 'Alunos' && !alunoSelecionado) newErrors.aluno = true;
-      if (categoria === 'Outras' && !nome.trim()) newErrors.nome = true;
+      if (categoria === "Alunos" && !alunoSelecionado) newErrors.aluno = true;
+      if (categoria === "Outras" && !nome.trim()) newErrors.nome = true;
     } else {
       if (!nome.trim()) newErrors.nome = true;
     }
@@ -207,7 +236,7 @@ export default function ItemDialog({
     }
     setShowErrorText(false);
 
-    const dataFormatadaSalvar = format(data, 'dd/MM/yyyy');
+    const dataFormatadaSalvar = format(data, "dd/MM/yyyy");
     const valorFinal = Number(valorFormatado.replace(/\D/g, "")) / 100;
 
     let itemData = {
@@ -219,10 +248,12 @@ export default function ItemDialog({
     };
 
     if (isRecipe) {
-      if (categoria === 'Alunos') {
-        const nomeBase = alunoSelecionado?.nome || 'Aluno Desconhecido';
+      if (categoria === "Alunos") {
+        const nomeBase = alunoSelecionado?.nome || "Aluno Desconhecido";
         const matricula = alunoSelecionado?.matricula;
-        const nomeCompleto = matricula ? `${nomeBase} (${matricula})` : nomeBase;
+        const nomeCompleto = matricula
+          ? `${nomeBase} (${matricula})`
+          : nomeBase;
         itemData.nome = nomeCompleto;
         itemData.nome_aluno = nomeCompleto;
       } else {
@@ -238,24 +269,36 @@ export default function ItemDialog({
   const renderReceitaForm = () => (
     <Grid container spacing={2} sx={{ pt: 2 }}>
       <Grid item xs={12}>
-        <FormControl fullWidth size="small" required error={!!errors.categoria} sx={blackFocusedTextFieldStyle}>
+        <FormControl
+          fullWidth
+          size="small"
+          required
+          error={!!errors.categoria}
+          sx={blackFocusedTextFieldStyle}
+        >
           <InputLabel id="categoria-label">Categoria</InputLabel>
           <Select
             labelId="categoria-label"
             value={categoria}
             label="Categoria"
             onChange={(e) => {
-                setCategoria(e.target.value);
-                setAlunoSelecionado(null);
+              setCategoria(e.target.value);
+              setAlunoSelecionado(null);
             }}
           >
-            <MenuItem value="" disabled>*Selecione uma categoria*</MenuItem>
-            {categoriasReceita.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+            <MenuItem value="" disabled>
+              *Selecione uma categoria*
+            </MenuItem>
+            {categoriasReceita.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Grid>
 
-      {categoria === 'Alunos' && (
+      {categoria === "Alunos" && (
         <Grid item xs={12}>
           <Autocomplete
             fullWidth
@@ -263,13 +306,17 @@ export default function ItemDialog({
             value={alunoSelecionado}
             onChange={(event, newValue) => setAlunoSelecionado(newValue)}
             inputValue={buscaAluno}
-            onInputChange={(event, newInputValue) => setBuscaAluno(newInputValue)}
+            onInputChange={(event, newInputValue) =>
+              setBuscaAluno(newInputValue)
+            }
             options={opcoesAlunos}
             getOptionLabel={(option) => {
-                if (!option.nome) return "";
-                return `${option.nome} ${option.matricula ? `(${option.matricula})` : ''}`;
+              if (!option.nome) return "";
+              return `${option.nome} ${option.matricula ? `(${option.matricula})` : ""}`;
             }}
-            isOptionEqualToValue={(option, value) => option.id === value.id || option.matricula === value.matricula}
+            isOptionEqualToValue={(option, value) =>
+              option.id === value.id || option.matricula === value.matricula
+            }
             loading={loadingAlunos}
             loadingText="Buscando alunos..."
             noOptionsText="Nenhum aluno encontrado"
@@ -285,7 +332,9 @@ export default function ItemDialog({
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {loadingAlunos ? <CircularProgress color="inherit" size={20} /> : null}
+                      {loadingAlunos ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
                       {params.InputProps.endAdornment}
                     </>
                   ),
@@ -296,15 +345,40 @@ export default function ItemDialog({
         </Grid>
       )}
 
-      {categoria === 'Outras' && (
+      {categoria === "Outras" && (
         <Grid item xs={12}>
-          <TextField autoFocus required error={!!errors.nome} id="nome" label="Nome da Receita" fullWidth size="small" value={nome} onChange={(e) => setNome(e.target.value)} sx={blackFocusedTextFieldStyle} />
+          <TextField
+            autoFocus
+            required
+            error={!!errors.nome}
+            id="nome"
+            label="Nome da Receita"
+            fullWidth
+            size="small"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            sx={blackFocusedTextFieldStyle}
+          />
         </Grid>
       )}
 
       <Grid item xs={12} sm={6}>
         <ThemeProvider theme={blackTheme}>
-          <DatePicker label="Data" value={data} onChange={(newDate) => setData(newDate || new Date())} format="dd/MM/yyyy" disableFuture slotProps={{ textField: { size: 'small', fullWidth: true, required: true, error: !!errors.data } }} />
+          <DatePicker
+            label="Data"
+            value={data}
+            onChange={(newDate) => setData(newDate || new Date())}
+            format="dd/MM/yyyy"
+            disableFuture
+            slotProps={{
+              textField: {
+                size: "small",
+                fullWidth: true,
+                required: true,
+                error: !!errors.data,
+              },
+            }}
+          />
         </ThemeProvider>
       </Grid>
 
@@ -323,7 +397,17 @@ export default function ItemDialog({
       </Grid>
 
       <Grid item xs={12}>
-        <TextField id="descricao" label="Descrição (Opcional)" fullWidth size="small" value={descricao} onChange={(e) => setDescricao(e.target.value)} multiline rows={2} sx={blackFocusedTextFieldStyle} />
+        <TextField
+          id="descricao"
+          label="Descrição (Opcional)"
+          fullWidth
+          size="small"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          multiline
+          rows={2}
+          sx={blackFocusedTextFieldStyle}
+        />
       </Grid>
     </Grid>
   );
@@ -331,62 +415,153 @@ export default function ItemDialog({
   const renderDespesaForm = () => (
     <Grid container spacing={2} sx={{ pt: 2 }}>
       <Grid item xs={12}>
-        <TextField autoFocus required error={!!errors.nome} id="nome" label="Nome da Despesa" fullWidth size="small" value={nome} onChange={(e) => setNome(e.target.value)} sx={blackFocusedTextFieldStyle} />
+        <TextField
+          autoFocus
+          required
+          error={!!errors.nome}
+          id="nome"
+          label="Nome da Despesa"
+          fullWidth
+          size="small"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          sx={blackFocusedTextFieldStyle}
+        />
       </Grid>
       <Grid item xs={12}>
-        <FormControl fullWidth size="small" required error={!!errors.categoria} sx={blackFocusedTextFieldStyle}>
+        <FormControl
+          fullWidth
+          size="small"
+          required
+          error={!!errors.categoria}
+          sx={blackFocusedTextFieldStyle}
+        >
           <InputLabel id="categoria-label">Categoria</InputLabel>
-          <Select labelId="categoria-label" value={categoria} label="Categoria" onChange={(e) => setCategoria(e.target.value)}>
-            <MenuItem value="" disabled>*Selecione uma categoria*</MenuItem>
-            {categoriasDespesa.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+          <Select
+            labelId="categoria-label"
+            value={categoria}
+            label="Categoria"
+            onChange={(e) => setCategoria(e.target.value)}
+          >
+            <MenuItem value="" disabled>
+              *Selecione uma categoria*
+            </MenuItem>
+            {categoriasDespesa.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
         <ThemeProvider theme={blackTheme}>
-          <DatePicker label="Data" value={data} onChange={(newDate) => setData(newDate || new Date())} format="dd/MM/yyyy" disableFuture slotProps={{ textField: { size: 'small', fullWidth: true, required: true, error: !!errors.data } }} />
+          <DatePicker
+            label="Data"
+            value={data}
+            onChange={(newDate) => setData(newDate || new Date())}
+            format="dd/MM/yyyy"
+            disableFuture
+            slotProps={{
+              textField: {
+                size: "small",
+                fullWidth: true,
+                required: true,
+                error: !!errors.data,
+              },
+            }}
+          />
         </ThemeProvider>
       </Grid>
       <Grid item xs={12} sm={6}>
         <TextField
-            required
-            error={!!errors.valor}
-            id="valor"
-            label="Valor"
-            fullWidth
-            size="small"
-            value={valorFormatado}
-            onChange={handleValueChange}
-            sx={blackFocusedTextFieldStyle}
+          required
+          error={!!errors.valor}
+          id="valor"
+          label="Valor"
+          fullWidth
+          size="small"
+          value={valorFormatado}
+          onChange={handleValueChange}
+          sx={blackFocusedTextFieldStyle}
         />
       </Grid>
       <Grid item xs={12}>
-        <TextField id="descricao" label="Descrição (Opcional)" fullWidth size="small" value={descricao} onChange={(e) => setDescricao(e.target.value)} multiline rows={2} sx={blackFocusedTextFieldStyle} />
+        <TextField
+          id="descricao"
+          label="Descrição (Opcional)"
+          fullWidth
+          size="small"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          multiline
+          rows={2}
+          sx={blackFocusedTextFieldStyle}
+        />
       </Grid>
     </Grid>
   );
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
-        <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem", pb: 0 }}>{title}</DialogTitle>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <DialogTitle
+          sx={{
+            textAlign: "center",
+            fontWeight: "bold",
+            fontSize: "1.5rem",
+            pb: 0,
+          }}
+        >
+          {title}
+        </DialogTitle>
         <DialogContent>
           {showErrorText && (
             <Typography
-                color="error"
-                variant="body2"
-                mb={1}
-                textAlign="center"
-                fontWeight="bold"
+              color="error"
+              variant="body2"
+              mb={1}
+              textAlign="center"
+              fontWeight="bold"
             >
-                Por favor, preencha todos os campos obrigatórios.
+              Por favor, preencha todos os campos obrigatórios.
             </Typography>
           )}
           {isRecipe ? renderReceitaForm() : renderDespesaForm()}
         </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
-          <Button onClick={onClose} variant="contained" sx={{ backgroundColor: "#343a40", color: "white", "&:hover": { backgroundColor: "#23272b" }, fontWeight: "normal", textTransform: 'uppercase' }}>CANCELAR</Button>
-          <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: "#F2D95C", color: "black", "&:hover": { backgroundColor: "#e0c850" }, fontWeight: "normal", textTransform: 'uppercase' }}>SALVAR</Button>
+        <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
+          <Button
+            onClick={onClose}
+            variant="contained"
+            sx={{
+              backgroundColor: "#343a40",
+              color: "white",
+              "&:hover": { backgroundColor: "#23272b" },
+              fontWeight: "normal",
+              textTransform: "uppercase",
+            }}
+          >
+            CANCELAR
+          </Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            sx={{
+              backgroundColor: "#F2D95C",
+              color: "black",
+              "&:hover": { backgroundColor: "#e0c850" },
+              fontWeight: "normal",
+              textTransform: "uppercase",
+            }}
+          >
+            SALVAR
+          </Button>
         </DialogActions>
       </Dialog>
     </LocalizationProvider>
