@@ -88,7 +88,6 @@ const DetailItem = ({ title, value }) => (
 );
 
 function RowDetails({ row }) {
-
   const address = row.endereco
     ? `${row.endereco.logradouro || ""}, ${row.endereco.numero || ""}`
     : "Não informado";
@@ -145,7 +144,6 @@ const blackFocusedStyle = {
 };
 
 export default function AlunosPage() {
-
   const [rows, setRows] = useState([]);
   const [listaPlanos, setListaPlanos] = useState([]);
 
@@ -158,7 +156,6 @@ export default function AlunosPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
   const [openRowId, setOpenRowId] = useState(null);
-
 
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [anchorElReport, setAnchorElReport] = useState(null);
@@ -620,7 +617,6 @@ export default function AlunosPage() {
         />
       </Paper>
 
-
       <CadastroAlunoDialog
         open={cadastroOpen}
         onClose={handleCloseDialogs}
@@ -633,7 +629,7 @@ export default function AlunosPage() {
         onClose={handleCloseDialogs}
         onSave={handleSaveEdicao}
         alunoParaEditar={alunoSelecionado}
-        listaPlanos={listaPlanos} 
+        listaPlanos={listaPlanos}
       />
 
       <ExcluirAlunoDialog

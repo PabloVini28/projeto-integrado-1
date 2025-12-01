@@ -35,11 +35,10 @@ const formatCPF = (value) => {
 const gerarMatricula = () => {
   const ano = new Date().getFullYear().toString().slice(-2);
   const random = Math.floor(Math.random() * 10000)
-                 .toString()
-                 .padStart(4, "0");
+    .toString()
+    .padStart(4, "0");
   return ano + random;
 };
-
 
 const formatTelefone = (value) => {
   const numeric = value.replace(/\D/g, "");
@@ -60,7 +59,7 @@ const isValidCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf);
 const isValidTelefone = (tel) => {
   const clean = tel.replace(/\D/g, "");
   return clean.length >= 10;
-}
+};
 
 const blackTheme = createTheme({
   palette: { primary: { main: "#000000" } },
@@ -79,9 +78,15 @@ const blackTheme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#000000" },
-          "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#343a40" },
-          "&.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: "red !important" },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#000000",
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#343a40",
+          },
+          "&.Mui-error .MuiOutlinedInput-notchedOutline": {
+            borderColor: "red !important",
+          },
         },
       },
     },
@@ -97,18 +102,31 @@ const blackTheme = createTheme({
 });
 
 const blackFocusedStyle = {
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "black" },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "black",
+  },
   "& .MuiInputLabel-root.Mui-focused": { color: "black" },
-  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#343a40" },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#343a40",
+  },
 };
 
 const errorTextFieldStyle = {
-  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: "red !important" },
-  "& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline": { borderColor: "darkred !important" },
+  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": {
+    borderColor: "red !important",
+  },
+  "& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "darkred !important",
+  },
   "& .MuiInputLabel-root.Mui-error": { color: "red !important" },
 };
 
-export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos = [] }) {
+export default function CadastroAlunoDialog({
+  open,
+  onClose,
+  onSave,
+  listaPlanos = [],
+}) {
   const [nome, setNome] = useState("");
   const [dataNascimento, setDataNascimento] = useState(null);
   const [email, setEmail] = useState("");
@@ -151,18 +169,20 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
 
   const handleCpfChange = (e) => {
     setCpf(formatCPF(e.target.value));
-    if (fieldErrors.cpf) setFieldErrors(prev => ({ ...prev, cpf: false }));
+    if (fieldErrors.cpf) setFieldErrors((prev) => ({ ...prev, cpf: false }));
   };
 
   const handleTelefoneChange = (e) => {
     setTelefone(formatTelefone(e.target.value));
-    if (fieldErrors.telefone) setFieldErrors(prev => ({ ...prev, telefone: false }));
+    if (fieldErrors.telefone)
+      setFieldErrors((prev) => ({ ...prev, telefone: false }));
   };
 
   const handleChangeGeneric = (setter, field) => (e) => {
     setter(e.target.value);
-    if (fieldErrors[field]) setFieldErrors(prev => ({ ...prev, [field]: false }));
-  }
+    if (fieldErrors[field])
+      setFieldErrors((prev) => ({ ...prev, [field]: false }));
+  };
 
   const handleSave = () => {
     setError(false);
@@ -186,7 +206,8 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
     let specificErrors = {};
     if (!isValidEmail(email)) specificErrors.email = true;
     if (!isValidCPF(cpf)) specificErrors.cpf = true;
-    if (telefone.length > 0 && !isValidTelefone(telefone)) specificErrors.telefone = true;
+    if (telefone.length > 0 && !isValidTelefone(telefone))
+      specificErrors.telefone = true;
 
     if (Object.keys(specificErrors).length > 0) {
       setFieldErrors(specificErrors);
@@ -202,8 +223,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
       telefone,
       dataNascimento,
       dataInicio,
-
-
+	  
       logradouro,
       endereco_aluno: enderecoAluno,
       numero,
@@ -220,7 +240,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
 
   const getSx = (fieldName) => ({
     ...blackFocusedStyle,
-    ...(fieldErrors[fieldName] && errorTextFieldStyle)
+    ...(fieldErrors[fieldName] && errorTextFieldStyle),
   });
 
   return (
@@ -231,37 +251,69 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
       fullWidth
       PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
     >
-      <DialogTitle sx={{ textAlign: "center", fontSize: "1.5rem", fontWeight: "bold", pt: 3, pb: 1, px: 3 }}>
+      <DialogTitle
+        sx={{
+          textAlign: "center",
+          fontSize: "1.5rem",
+          fontWeight: "bold",
+          pt: 3,
+          pb: 1,
+          px: 3,
+        }}
+      >
         Cadastrar Novo Aluno
       </DialogTitle>
 
       <DialogContent
         sx={{
-          px: 3, pt: 1, pb: 0,
+          px: 3,
+          pt: 1,
+          pb: 0,
           "&::-webkit-scrollbar": { width: "0.4em" },
           "&::-webkit-scrollbar-track": { background: "transparent" },
-          "&::-webkit-scrollbar-thumb": { backgroundColor: "rgba(0,0,0,.15)", borderRadius: "20px" },
-          "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "rgba(0,0,0,.3)" },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(0,0,0,.15)",
+            borderRadius: "20px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "rgba(0,0,0,.3)",
+          },
         }}
       >
         {error && (
-          <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
+          <Typography
+            color="error"
+            variant="body2"
+            mb={1}
+            textAlign="center"
+            fontWeight="bold"
+          >
             {errorMessage}
           </Typography>
         )}
-        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}>
-
-          <Typography variant="subtitle1" sx={{ fontWeight: "bold", mt: 1 }}>Informações Pessoais:</Typography>
-
+        <Box
+          component="form"
+          sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}
+        >
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", mt: 1 }}>
+            Informações Pessoais:
+          </Typography>
 
           <TextField
-            required label="Nome Completo" size="small"
-            value={nome} onChange={handleChangeGeneric(setNome, 'nome')}
-            error={!!fieldErrors.nome} sx={getSx('nome')}
+            required
+            label="Nome Completo"
+            size="small"
+            value={nome}
+            onChange={handleChangeGeneric(setNome, "nome")}
+            error={!!fieldErrors.nome}
+            sx={getSx("nome")}
           />
 
           <ThemeProvider theme={blackTheme}>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              adapterLocale={ptBR}
+            >
               <DatePicker
                 label="Data de Nascimento *"
                 value={dataNascimento}
@@ -271,7 +323,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                   textField: {
                     size: "small",
                     error: !!fieldErrors.dataNascimento,
-                    sx: fieldErrors.dataNascimento ? errorTextFieldStyle : {}
+                    sx: fieldErrors.dataNascimento ? errorTextFieldStyle : {},
                   },
                 }}
                 disableFuture
@@ -280,52 +332,81 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
           </ThemeProvider>
 
           <TextField
-            required label="E-mail" size="small" placeholder="email@exemplo.com"
-            value={email} onChange={handleChangeGeneric(setEmail, 'email')}
-            error={!!fieldErrors.email} sx={getSx('email')}
+            required
+            label="E-mail"
+            size="small"
+            placeholder="email@exemplo.com"
+            value={email}
+            onChange={handleChangeGeneric(setEmail, "email")}
+            error={!!fieldErrors.email}
+            sx={getSx("email")}
           />
 
           <TextField
-            required label="CPF" size="small" placeholder="000.000.000-00"
-            value={cpf} onChange={handleCpfChange}
+            required
+            label="CPF"
+            size="small"
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChange={handleCpfChange}
             inputProps={{ maxLength: 14 }}
-            error={!!fieldErrors.cpf} sx={getSx('cpf')}
+            error={!!fieldErrors.cpf}
+            sx={getSx("cpf")}
           />
 
           <TextField
-            label="Telefone" size="small" placeholder="(DDD) 9 9999-9999"
-            value={telefone} onChange={handleTelefoneChange}
+            label="Telefone"
+            size="small"
+            placeholder="(DDD) 9 9999-9999"
+            value={telefone}
+            onChange={handleTelefoneChange}
             inputProps={{ maxLength: 16 }}
-            error={!!fieldErrors.telefone} sx={getSx('telefone')}
+            error={!!fieldErrors.telefone}
+            sx={getSx("telefone")}
           />
-          <Typography
-            variant="subtitle1"
-            sx={{ fontWeight: "bold", pt: 1 }}
-          >
-            Endereço: <Typography component="span" color="text.secondary">(opcional)</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
+            Endereço:{" "}
+            <Typography component="span" color="text.secondary">
+              (opcional)
+            </Typography>
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 1 }}>
             <TextField
-              label="Logradouro" size="small" placeholder="Rua, Av..." fullWidth
-              value={logradouro} onChange={handleChangeGeneric(setLogradouro, 'logradouro')}
-              sx={getSx('logradouro')}
+              label="Logradouro"
+              size="small"
+              placeholder="Rua, Av..."
+              fullWidth
+              value={logradouro}
+              onChange={handleChangeGeneric(setLogradouro, "logradouro")}
+              sx={getSx("logradouro")}
             />
             <TextField
-              label="Nº" size="small" placeholder="123" sx={{ width: '80px', ...getSx('numero') }}
-              value={numero} onChange={handleChangeGeneric(setNumero, 'numero')}
+              label="Nº"
+              size="small"
+              placeholder="123"
+              sx={{ width: "80px", ...getSx("numero") }}
+              value={numero}
+              onChange={handleChangeGeneric(setNumero, "numero")}
             />
           </Box>
           <TextField
-            label="Bairro/Complemento" size="small"
-            value={enderecoAluno} onChange={handleChangeGeneric(setEnderecoAluno, 'enderecoAluno')}
-            sx={getSx('enderecoAluno')}
+            label="Bairro/Complemento"
+            size="small"
+            value={enderecoAluno}
+            onChange={handleChangeGeneric(setEnderecoAluno, "enderecoAluno")}
+            sx={getSx("enderecoAluno")}
           />
 
-          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>Informações Administrativas:</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
+            Informações Administrativas:
+          </Typography>
 
           <ThemeProvider theme={blackTheme}>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              adapterLocale={ptBR}
+            >
               <DatePicker
                 label="Data de início *"
                 value={dataInicio}
@@ -335,7 +416,7 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
                   textField: {
                     size: "small",
                     error: !!fieldErrors.dataInicio,
-                    sx: fieldErrors.dataInicio ? errorTextFieldStyle : {}
+                    sx: fieldErrors.dataInicio ? errorTextFieldStyle : {},
                   },
                 }}
                 disableFuture
@@ -343,16 +424,25 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
             </LocalizationProvider>
           </ThemeProvider>
 
-          <FormControl fullWidth size="small" required error={!!fieldErrors.plano}>
+          <FormControl
+            fullWidth
+            size="small"
+            required
+            error={!!fieldErrors.plano}
+          >
             <InputLabel
               id="plano-select-label"
-              sx={fieldErrors.plano ? {
-                color: 'red !important',
-                '&.Mui-focused': { color: 'red !important' }
-              } : {
-                color: 'rgba(0, 0, 0, 0.6)',
-                '&.Mui-focused': { color: 'black' }
-              }}
+              sx={
+                fieldErrors.plano
+                  ? {
+                      color: "red !important",
+                      "&.Mui-focused": { color: "red !important" },
+                    }
+                  : {
+                      color: "rgba(0, 0, 0, 0.6)",
+                      "&.Mui-focused": { color: "black" },
+                    }
+              }
             >
               Plano
             </InputLabel>
@@ -361,12 +451,22 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
               value={plano}
               label="Plano"
               onChange={(e) => setPlano(e.target.value)}
-              sx={fieldErrors.plano ? {
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' }
-              } : {
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'black' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#343a40' }
-              }}
+              sx={
+                fieldErrors.plano
+                  ? {
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "red !important",
+                      },
+                    }
+                  : {
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "black",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#343a40",
+                      },
+                    }
+              }
             >
               {listaPlanos.map((p) => (
                 <MenuItem key={p.cod_plano} value={p.cod_plano}>
@@ -377,19 +477,78 @@ export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos
           </FormControl>
 
           <FormControl sx={{ pt: 1, pb: 1 }}>
-            <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }}>Gênero:</FormLabel>
-            <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
-              <FormControlLabel value="masculino" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label={<Typography variant="body2">Masculino</Typography>} />
-              <FormControlLabel value="feminino" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label={<Typography variant="body2">Feminino</Typography>} />
-              <FormControlLabel value="prefiro" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label={<Typography variant="body2">Prefiro não informar</Typography>} />
+            <FormLabel
+              sx={{ color: "#23272b", "&.Mui-focused": { color: "#23272b" } }}
+            >
+              Gênero:
+            </FormLabel>
+            <RadioGroup
+              row
+              value={genero}
+              onChange={(e) => setGenero(e.target.value)}
+            >
+              <FormControlLabel
+                value="masculino"
+                control={
+                  <Radio
+                    size="small"
+                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
+                  />
+                }
+                label={<Typography variant="body2">Masculino</Typography>}
+              />
+              <FormControlLabel
+                value="feminino"
+                control={
+                  <Radio
+                    size="small"
+                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
+                  />
+                }
+                label={<Typography variant="body2">Feminino</Typography>}
+              />
+              <FormControlLabel
+                value="prefiro"
+                control={
+                  <Radio
+                    size="small"
+                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
+                  />
+                }
+                label={
+                  <Typography variant="body2">Prefiro não informar</Typography>
+                }
+              />
             </RadioGroup>
           </FormControl>
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
-        <Button onClick={handleCancel} variant="contained" sx={{ backgroundColor: "#343a40", color: "white", "&:hover": { backgroundColor: "#23272b" }, fontWeight: "normal" }}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: "#F2D95C", color: "black", "&:hover": { backgroundColor: "#e0c850" }, fontWeight: "normal" }}>Cadastrar aluno</Button>
+        <Button
+          onClick={handleCancel}
+          variant="contained"
+          sx={{
+            backgroundColor: "#343a40",
+            color: "white",
+            "&:hover": { backgroundColor: "#23272b" },
+            fontWeight: "normal",
+          }}
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          sx={{
+            backgroundColor: "#F2D95C",
+            color: "black",
+            "&:hover": { backgroundColor: "#e0c850" },
+            fontWeight: "normal",
+          }}
+        >
+          Cadastrar aluno
+        </Button>
       </DialogActions>
     </Dialog>
   );

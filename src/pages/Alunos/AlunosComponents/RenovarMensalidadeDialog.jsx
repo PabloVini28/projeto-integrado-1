@@ -23,7 +23,7 @@ export default function RenovarMensalidadeDialog({
   onRenovar,
   studentList = [],
 }) {
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);

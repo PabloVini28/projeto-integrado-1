@@ -67,7 +67,6 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const isEditMode = !!planToEdit;
 
   useEffect(() => {
-    
     if (planToEdit) {
       setNome(planToEdit.nome || "");
       setCodigo(planToEdit.codigo || "");
@@ -149,7 +148,6 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
 
   const isNomeError = !!fieldErrors.nome;
   const isValorError = !!fieldErrors.valor;
-
 
   const getSx = (isFieldInError) => ({
     ...blackFocusedStyle,
@@ -238,7 +236,7 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
 
           <FormControl sx={{ pt: 1 }}>
             <FormLabel
-              sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }}
+              sx={{ color: "#23272b", "&.Mui-focused": { color: "#23272b" } }}
             >
               Status:
             </FormLabel>

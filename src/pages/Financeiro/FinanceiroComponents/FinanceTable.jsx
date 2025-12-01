@@ -59,43 +59,54 @@ function RowItem({ row, isRecipe, onEdit, onDelete, isAdmin, columns }) {
           "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
         }}
       >
-        {columns.map((column) => { 
+        {columns.map((column) => {
           const value = row[column.id];
 
           return (
             <TableCell
               key={column.id}
-              align={column.align || "left"} 
-              padding="none" 
+              align={column.align || "left"}
+              padding="none"
               sx={{
                 py: 1.5,
                 borderBottom: "1px solid #eee",
-                px: column.id === 'expand' ? 1 : 2, 
+                px: column.id === "expand" ? 1 : 2,
                 width: column.width,
               }}
             >
               {column.id === "expand" ? (
-                <Box sx={{ textAlign: 'center' }}> 
-                  <IconButton size="small" onClick={() => setOpen(!open)} sx={{ p: 0.5 }}>
+                <Box sx={{ textAlign: "center" }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpen(!open)}
+                    sx={{ p: 0.5 }}
+                  >
                     {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                   </IconButton>
                 </Box>
               ) : column.id === "valor" ? (
                 `R$ ${value.toFixed(2).replace(".", ",")}`
               ) : column.id === "acao" ? (
-                <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center", minHeight: '34px' }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 0.5,
+                    justifyContent: "center",
+                    minHeight: "34px",
+                  }}
+                >
                   {isAdmin && (
                     <>
                       <IconButton
                         size="small"
-                        sx={{color: '#6f7174ff'}}
+                        sx={{ color: "#6f7174ff" }}
                         onClick={() => onEdit(row, isRecipe)}
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton
                         size="small"
-                        sx={{color: '#6f7174ff'}}
+                        sx={{ color: "#6f7174ff" }}
                         onClick={() => onDelete(row.id, isRecipe)}
                       >
                         <DeleteIcon fontSize="small" />
@@ -113,10 +124,10 @@ function RowItem({ row, isRecipe, onEdit, onDelete, isAdmin, columns }) {
 
       <TableRow>
         <TableCell
-          colSpan={columns.length} 
+          colSpan={columns.length}
           sx={{
             py: 0,
-            px: 0, 
+            px: 0,
             borderBottom: "1px solid #eee",
           }}
         >
@@ -140,9 +151,8 @@ export default function FinanceTable({
   onRowsPerPageChange,
   onEdit,
   onDelete,
-  isAdmin 
+  isAdmin,
 }) {
-
   const columns = useMemo(() => {
     const baseColumns = [
       { id: "expand", label: "", width: "5%" },
@@ -150,7 +160,7 @@ export default function FinanceTable({
       { id: "nome", label: "Nome", width: "25%" },
       { id: "categoria", label: "Categoria", width: "20%" },
       { id: "data", label: "Data", width: "15%", align: "left" },
-      { id: "valor", label: "Valor", width: "15%" }, 
+      { id: "valor", label: "Valor", width: "15%" },
     ];
 
     if (isAdmin) {
@@ -165,7 +175,7 @@ export default function FinanceTable({
   return (
     <Box
       sx={{
-        flexGrow: 1, 
+        flexGrow: 1,
         display: "flex",
         flexDirection: "column",
       }}
@@ -186,19 +196,19 @@ export default function FinanceTable({
         }}
       >
         <TableContainer sx={{ flexGrow: 1, overflowY: "auto" }}>
-          <Table stickyHeader sx={{ tableLayout: 'fixed' }}>
+          <Table stickyHeader sx={{ tableLayout: "fixed" }}>
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
-                    align={column.align || "left"} 
-                    padding="none" 
+                    align={column.align || "left"}
+                    padding="none"
                     sx={{
                       fontWeight: "bold",
                       backgroundColor: "#fff",
                       py: 1.5,
-                      px: column.id === 'expand' ? 1 : 2, 
+                      px: column.id === "expand" ? 1 : 2,
                       width: column.width,
                       borderBottom: "1px solid #eee",
                     }}
