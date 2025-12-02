@@ -139,7 +139,7 @@ export default function ConfigPage() {
     setSelectedUser(null);
   };
 
-  const handleAddUser = async (userData) => {
+    const handleAddUser = async (userData) => {
     const token = localStorage.getItem('authToken');
     const payload = {
         nome_funcionario: userData.nome,
@@ -148,33 +148,33 @@ export default function ConfigPage() {
         senha: userData.senha,
         nivel_acesso: userData.role === 'ADMINISTRADOR' ? 'Administrador' : 'Funcionário' 
     };
-
     try {
-        const response = await fetch('http://localhost:4000/api/funcionario', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(payload)
-        });
+      const response = await fetch('http://localhost:4000/api/funcionario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
 
-        if (response.ok) {
-            const novo = await response.json();
-            const novoTela = {
-                id: novo.id_funcionario,
-                nome: novo.nome_funcionario,
-                cpf: novo.cpf_funcionario,
-                matricula: novo.id_funcionario.toString(),
-                email: novo.email_funcionario,
-                role: novo.nivel_acesso ? novo.nivel_acesso.toUpperCase() : 'FUNCIONARIO'
-            };
-            setFuncionarios([...funcionarios, novoTela]);
-            alert("Usuário cadastrado com sucesso!");
-            handleCloseModal();
-        } else {
-            const err = await response.json();
-            alert("Erro ao cadastrar: " + (err.error || response.statusText));
-        }
+      if (response.ok) {
+        const novo = await response.json();
+        const novoTela = {
+          id: novo.id_funcionario,
+          nome: novo.nome_funcionario,
+          cpf: novo.cpf_funcionario,
+          matricula: novo.id_funcionario.toString(),
+          email: novo.email_funcionario,
+          role: novo.nivel_acesso ? novo.nivel_acesso.toUpperCase() : 'FUNCIONARIO'
+        };
+        setFuncionarios([...funcionarios, novoTela]);
+        // retorna o usuário criado para o chamador (diálogo) controlar o fluxo de verificação
+        return novo;
+      } else {
+        const err = await response.json();
+        throw new Error(err.error || response.statusText || 'Erro ao cadastrar');
+      }
     } catch (error) {
-        alert("Erro de conexão.");
+      // repassa o erro para o chamador
+      throw error;
     }
   };
 

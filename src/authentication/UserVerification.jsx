@@ -38,7 +38,7 @@ const customTheme = createTheme({
     },
 });
 
-export default function UserVerification({ onVerificationSuccess, onClose }) {
+export default function UserVerification({ onVerificationSuccess, onClose, cpf }) {
     const [step, setStep] = useState(0);
     const [code, setCode] = useState(['', '', '', '', '', '']);
     const [loading, setLoading] = useState(false);
@@ -79,7 +79,7 @@ export default function UserVerification({ onVerificationSuccess, onClose }) {
         }
     };
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         const fullCode = code.join('');
         setError('');
 
@@ -88,11 +88,31 @@ export default function UserVerification({ onVerificationSuccess, onClose }) {
             return;
         }
 
+        if (!cpf) {
+            setError('Identificador do usuário ausente para verificação.');
+            return;
+        }
+
         setLoading(true);
-        setTimeout(() => {
+        try {
+            const resp = await fetch('http://localhost:4000/api/funcionario/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cpf_funcionario: cpf, code: fullCode })
+            });
+
+            const data = await resp.json();
+            if (resp.ok) {
+                setStep(1);
+            } else {
+                setError(data.error || data.message || 'Código inválido');
+            }
+        } catch (err) {
+            console.error('Erro ao verificar código:', err);
+            setError('Erro ao verificar código. Tente novamente.');
+        } finally {
             setLoading(false);
-            setStep(1);
-        }, 1500);
+        }
     };
 
     const handleResendCode = () => {

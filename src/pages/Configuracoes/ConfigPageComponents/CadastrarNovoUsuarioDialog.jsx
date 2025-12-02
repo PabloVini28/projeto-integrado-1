@@ -53,6 +53,8 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
   const [error, setError] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [createdUser, setCreatedUser] = useState(null);
 
   useEffect(() => {
     if (open) {
@@ -80,52 +82,69 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
   };
 
   const handleCadastrar = () => {
-    const { nome, email, senha, confirmarSenha, cpf } = formData;
-    let errors = {};
+    (async function() {
+      const { nome, email, senha, confirmarSenha, cpf } = formData;
+      let errors = {};
 
-    const hasEmpty = !nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim() || !cpf.trim();
+      const hasEmpty = !nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim() || !cpf.trim();
 
-    if (hasEmpty) {
-      if (!nome.trim()) errors.nome = true;
-      if (!email.trim()) errors.email = true;
-      if (!senha.trim()) errors.senha = true;
-      if (!confirmarSenha.trim()) errors.confirmarSenha = true;
-      if (!cpf.trim()) errors.cpf = true;
+      if (hasEmpty) {
+        if (!nome.trim()) errors.nome = true;
+        if (!email.trim()) errors.email = true;
+        if (!senha.trim()) errors.senha = true;
+        if (!confirmarSenha.trim()) errors.confirmarSenha = true;
+        if (!cpf.trim()) errors.cpf = true;
 
-      setFieldErrors(errors);
-      setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
-      setError(true);
-      return;
-    }
+        setFieldErrors(errors);
+        setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
+        setError(true);
+        return;
+      }
 
-    const specificErrors = {};
-    if (!isValidEmail(email)) specificErrors.email = "Formato de e-mail inválido.";
-    if (!isValidCPFFormat(cpf)) specificErrors.cpf = "Formato de CPF inválido.";
-    const senhaMismatch = (senha !== confirmarSenha);
-    if (senhaMismatch) {
-      specificErrors.senha = "As senhas não coincidem.";
-      specificErrors.confirmarSenha = "As senhas não coincidem.";
-    }
-    
-    if (senha.length < 6) {
-        specificErrors.senha = "A senha deve ter no mínimo 6 dígitos.";
-    }
+      const specificErrors = {};
+      if (!isValidEmail(email)) specificErrors.email = "Formato de e-mail inválido.";
+      if (!isValidCPFFormat(cpf)) specificErrors.cpf = "Formato de CPF inválido.";
+      const senhaMismatch = (senha !== confirmarSenha);
+      if (senhaMismatch) {
+        specificErrors.senha = "As senhas não coincidem.";
+        specificErrors.confirmarSenha = "As senhas não coincidem.";
+      }
+      if (senha.length < 6) {
+          specificErrors.senha = "A senha deve ter no mínimo 6 dígitos.";
+      }
 
-    if (Object.keys(specificErrors).length > 0) {
-      setFieldErrors(specificErrors);
-      setErrorMessage("Corrija os campos em erro.");
-      setError(true);
-      return;
-    }
+      if (Object.keys(specificErrors).length > 0) {
+        setFieldErrors(specificErrors);
+        setErrorMessage("Corrija os campos em erro.");
+        setError(true);
+        return;
+      }
 
-    setError(false);
-    setFieldErrors({});
-    setErrorMessage("");
-    setOpenVerification(true);
+      setError(false);
+      setFieldErrors({});
+      setErrorMessage("");
+
+      try {
+        setCreating(true);
+        const created = await onSave(formData);
+        if (created) {
+          setCreatedUser(created);
+          setOpenVerification(true);
+        } else {
+          setError(true);
+          setErrorMessage('Erro ao cadastrar usuário.');
+        }
+      } catch (err) {
+        console.error('Erro ao criar usuário:', err);
+        setError(true);
+        setErrorMessage(err.message || 'Erro ao cadastrar usuário.');
+      } finally {
+        setCreating(false);
+      }
+    })();
   };
 
   const handleVerificationSuccess = () => {
-    onSave(formData);
     setOpenVerification(false);
     onClose();
   };
@@ -191,7 +210,9 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
         </FormControl>
         <DialogActions sx={{ p: 3, justifyContent: 'flex-end', gap: 1.5 }}>
           <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
-          <Button onClick={handleCadastrar} variant="contained" sx={yellowButtonSx}>CADASTRAR USUÁRIO</Button>
+          <Button onClick={handleCadastrar} variant="contained" sx={yellowButtonSx} disabled={creating}>
+            {creating ? 'Criando...' : 'CADASTRAR USUÁRIO'}
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -204,10 +225,11 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
       >
         <DialogContent sx={{ p: 0 }}>
             {UserVerification ? (
-                <UserVerification 
-                    onVerificationSuccess={handleVerificationSuccess}
-                    onClose={() => setOpenVerification(false)}
-                />
+            <UserVerification 
+              cpf={createdUser && createdUser.cpf_funcionario}
+              onVerificationSuccess={handleVerificationSuccess}
+              onClose={() => setOpenVerification(false)}
+            />
             ) : (
                 <Typography sx={{p:4, color: 'red'}}>Erro: Componente UserVerification não encontrado.</Typography>
             )}

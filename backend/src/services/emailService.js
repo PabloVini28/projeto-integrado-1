@@ -219,28 +219,28 @@ async function verifyEmail(cpf_funcionario, code) {
 
   const now = new Date();
 
-  if (funcionario.isEnabled) {
+  if (funcionario.isenabled) {
     const err = new Error('Email já verificado');
     err.status = 400;
     throw err;
   }
 
-  if (funcionario.verificationCode !== code) {
+  if (funcionario.verificationcode !== code) {
     const err = new Error('Código de verificação inválido');
     err.status = 400;
     throw err;
   }
 
-  if (now > new Date(funcionario.verificationCodeExpiry)) {
+  if (now > new Date(funcionario.verificationcodeexpiry)) {
     const err = new Error('Código de verificação expirado');
     err.status = 400;
     throw err;
   }
 
   await repo.update(cpf_funcionario, {
-    isEnabled: true,
-    verificationCode: null,
-    verificationCodeExpiry: null,
+    isenabled: true,
+    verificationcode: null,
+    verificationcodeexpiry: null,
   });
 
   return { message: 'Email verificado com sucesso. Conta ativada.' };

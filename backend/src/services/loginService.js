@@ -26,6 +26,12 @@ async function authenticate(email, password) {
         throw err;
     }
 
+    if (!user.isenabled) {
+        const err = new Error('Conta não verificada');
+        err.status = 403;
+        throw err;
+    }
+
     const payload = {
         id: user.id_funcionario,
         nome: user.nome_funcionario, 
