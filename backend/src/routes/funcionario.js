@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const service = require('../services/funcionarioService'); 
-const verificationRouter = require('./verification');
 
 router.get('/', async (req, res) => {
   try {
@@ -40,6 +39,7 @@ router.get('/:cpf_funcionario', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const created = await service.create(req.body);
+    // Do not expose the password hash in the API response
     const { senha, ...safe } = created || {};
     res.status(201).json(safe);
   } catch (err) {
@@ -49,6 +49,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+// --- ROTA NOVA DE ALTERAR SENHA ---
 router.put('/alterar-senha/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -59,6 +60,7 @@ router.put('/alterar-senha/:id', async (req, res) => {
     res.status(200).json({ message: 'Senha alterada com sucesso' });
   } catch (err) {
     console.error('Erro rota senha:', err);
+    // Retorna erro específico (ex: 401 Senha incorreta) ou 500 genérico
     const status = err.status || 500;
     res.status(status).json({ error: err.message || 'Falhou ao alterar senha' });
   }
@@ -90,7 +92,5 @@ router.delete('/:cpf_funcionario', async (req, res) => {
     res.status(500).json({ error: 'Falhou ao deletar funcionario' });
   }
 });
-
-router.use('/', verificationRouter);
 
 module.exports = router;
