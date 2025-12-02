@@ -19529,17 +19529,46 @@ async function drawPageHeader(page, logoImage, fonts, title) {
   const y = height - margin;
   page.drawImage(logoImage, { x: margin, y: y - 40, width: 40, height: 40 });
   let textY = y - 10;
-  page.drawText("Corpo em Forma", { x: margin + 50, y: textY, size: 16, font: fonts.bold });
+  page.drawText("Corpo em Forma", {
+    x: margin + 50,
+    y: textY,
+    size: 16,
+    font: fonts.bold
+  });
   textY -= 15;
-  page.drawText("Rua Tabelião Eneas, 60, Centro, Quixadá, Ceará", { x: margin + 50, y: textY, size: 9, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
+  page.drawText("Rua Tabelião Eneas, 60, Centro, Quixadá, Ceará", {
+    x: margin + 50,
+    y: textY,
+    size: 9,
+    font: fonts.normal,
+    color: rgb(0.3, 0.3, 0.3)
+  });
   textY -= 12;
-  page.drawText("CNPJ: 40.522.014/0001-90 | Tel: (88) 996106590", { x: margin + 50, y: textY, size: 9, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
+  page.drawText("CNPJ: 40.522.014/0001-90 | Tel: (88) 996106590", {
+    x: margin + 50,
+    y: textY,
+    size: 9,
+    font: fonts.normal,
+    color: rgb(0.3, 0.3, 0.3)
+  });
   const emissionDate = (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR");
   const emissionText = `Emitido em: ${emissionDate}`;
   const titleWidth = fonts.bold.widthOfTextAtSize(title, 14);
   const dateWidth = fonts.normal.widthOfTextAtSize(emissionText, 10);
-  page.drawText(title, { x: width - margin - titleWidth, y: y - 10, size: 14, font: fonts.bold, color: rgb(0, 0, 0) });
-  page.drawText(emissionText, { x: width - margin - dateWidth, y: y - 28, size: 10, font: fonts.normal, color: rgb(0.3, 0.3, 0.3) });
+  page.drawText(title, {
+    x: width - margin - titleWidth,
+    y: y - 10,
+    size: 14,
+    font: fonts.bold,
+    color: rgb(0, 0, 0)
+  });
+  page.drawText(emissionText, {
+    x: width - margin - dateWidth,
+    y: y - 28,
+    size: 10,
+    font: fonts.normal,
+    color: rgb(0.3, 0.3, 0.3)
+  });
   return height - margin - 80;
 }
 function drawPageFooter(page, pageNum, totalPages, font) {
@@ -19547,7 +19576,13 @@ function drawPageFooter(page, pageNum, totalPages, font) {
   const margin = 50;
   const footerText = `Página ${pageNum} de ${totalPages}`;
   const textWidth = font.widthOfTextAtSize(footerText, 9);
-  page.drawText(footerText, { x: width - margin - textWidth, y: margin / 2, size: 9, font, color: rgb(0.3, 0.3, 0.3) });
+  page.drawText(footerText, {
+    x: width - margin - textWidth,
+    y: margin / 2,
+    size: 9,
+    font,
+    color: rgb(0.3, 0.3, 0.3)
+  });
 }
 async function createPdf(options) {
   const { title, headers, columnWidths, data, defaultFileName } = options;
@@ -19556,15 +19591,21 @@ async function createPdf(options) {
     defaultPath: defaultFileName || `relatorio_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.pdf`,
     filters: [{ name: "Arquivos PDF", extensions: ["pdf"] }]
   });
-  if (canceled || !filePath) return { success: false, error: "Save dialog canceled" };
+  if (canceled || !filePath)
+    return { success: false, error: "Save dialog canceled" };
   try {
     const pdfDoc = await PDFDocument.create();
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const helveticaBoldFont = await pdfDoc.embedFont(
+      StandardFonts.HelveticaBold
+    );
     const fonts = { normal: helveticaFont, bold: helveticaBoldFont };
     let logoPath;
     if (require$$3$1.app.isPackaged) {
-      logoPath = path$1.join(__dirname$1, `../renderer/${"main_window"}/assets/logo/icon.png`);
+      logoPath = path$1.join(
+        __dirname$1,
+        `../renderer/${"main_window"}/assets/logo/icon.png`
+      );
     } else {
       logoPath = path$1.join(process.cwd(), "src/assets/logo/icon.png");
     }
@@ -19577,12 +19618,22 @@ async function createPdf(options) {
     const rowHeight = 20;
     const drawTableHeader = (currentPage, yPos) => {
       const tableRowHeight = 25;
-      currentPage.drawRectangle({ x: margin, y: yPos - tableRowHeight, width: width - margin * 2, height: tableRowHeight, color: rgb(0.9, 0.9, 0.9) });
+      currentPage.drawRectangle({
+        x: margin,
+        y: yPos - tableRowHeight,
+        width: width - margin * 2,
+        height: tableRowHeight,
+        color: rgb(0.9, 0.9, 0.9)
+      });
       let currentX = margin + 5;
       currentPage.setFont(helveticaBoldFont);
       currentPage.setFontSize(10);
       headers.forEach((header, i) => {
-        currentPage.drawText(header, { x: currentX, y: yPos - 17, color: rgb(0, 0, 0) });
+        currentPage.drawText(header, {
+          x: currentX,
+          y: yPos - 17,
+          color: rgb(0, 0, 0)
+        });
         currentX += columnWidths[i];
       });
       return yPos - tableRowHeight;
@@ -19598,16 +19649,27 @@ async function createPdf(options) {
         y = drawTableHeader(page, y);
       }
       if (index % 2 === 0) {
-        page.drawRectangle({ x: margin, y: y - rowHeight, width: width - margin * 2, height: rowHeight, color: rgb(0.97, 0.97, 0.97) });
+        page.drawRectangle({
+          x: margin,
+          y: y - rowHeight,
+          width: width - margin * 2,
+          height: rowHeight,
+          color: rgb(0.97, 0.97, 0.97)
+        });
       }
       let currentX = margin + 5;
       row.forEach((text, i) => {
         let textColor = rgb(0, 0, 0);
         if (isPortrait) {
           if (String(text).includes("(")) textColor = rgb(0.7, 0, 0);
-          if (String(text).includes("RESULTADO") && !String(row[1]).includes("(")) textColor = rgb(0, 0.5, 0);
+          if (String(text).includes("RESULTADO") && !String(row[1]).includes("("))
+            textColor = rgb(0, 0.5, 0);
         }
-        page.drawText(text || "-", { x: currentX, y: y - 14, color: textColor });
+        page.drawText(text || "-", {
+          x: currentX,
+          y: y - 14,
+          color: textColor
+        });
         currentX += columnWidths[i];
       });
       y -= rowHeight;
@@ -19639,11 +19701,16 @@ require$$3$1.ipcMain.handle("generate-detailed-student-report", async (event, da
   try {
     const pdfDoc = await PDFDocument.create();
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const helveticaBoldFont = await pdfDoc.embedFont(
+      StandardFonts.HelveticaBold
+    );
     const fonts = { normal: helveticaFont, bold: helveticaBoldFont };
     let logoPath;
     if (require$$3$1.app.isPackaged) {
-      logoPath = path$1.join(__dirname$1, `../renderer/${"main_window"}/assets/logo/icon.png`);
+      logoPath = path$1.join(
+        __dirname$1,
+        `../renderer/${"main_window"}/assets/logo/icon.png`
+      );
     } else {
       logoPath = path$1.join(process.cwd(), "src/assets/logo/icon.png");
     }
@@ -19655,7 +19722,12 @@ require$$3$1.ipcMain.handle("generate-detailed-student-report", async (event, da
     const lineGap = 13;
     const sectionGap = 18;
     const blockHeight = 100;
-    let y = await drawPageHeader(page, logoImage, fonts, "Relatório Detalhado de Alunos");
+    let y = await drawPageHeader(
+      page,
+      logoImage,
+      fonts,
+      "Relatório Detalhado de Alunos"
+    );
     const col1_x = margin;
     const col2_x = margin + 250;
     const col3_x = margin + 500;
@@ -19681,7 +19753,12 @@ require$$3$1.ipcMain.handle("generate-detailed-student-report", async (event, da
     for (const [index, student] of data.entries()) {
       if (y < margin + blockHeight) {
         page = pdfDoc.addPage([841.89, 595.28]);
-        y = await drawPageHeader(page, logoImage, fonts, "Relatório Detalhado de Alunos");
+        y = await drawPageHeader(
+          page,
+          logoImage,
+          fonts,
+          "Relatório Detalhado de Alunos"
+        );
       }
       let y_col1 = y;
       let y_col2 = y;
@@ -19689,11 +19766,21 @@ require$$3$1.ipcMain.handle("generate-detailed-student-report", async (event, da
       y_col1 = drawField("Nome:", student.nome, col1_x, y_col1);
       y_col1 = drawField("Matrícula:", student.matricula, col1_x, y_col1);
       y_col1 = drawField("Plano:", student.plano, col1_x, y_col1);
-      y_col1 = drawField("Matrícula em:", student.data_matricula, col1_x, y_col1);
+      y_col1 = drawField(
+        "Matrícula em:",
+        student.data_matricula,
+        col1_x,
+        y_col1
+      );
       y_col1 = drawField("Expiração:", student.data_expiracao, col1_x, y_col1);
       y_col1 = drawField("Status:", student.status, col1_x, y_col1);
       y_col2 = drawField("CPF:", student.cpf, col2_x, y_col2);
-      y_col2 = drawField("Data de Nasc.:", student.dataNascimento, col2_x, y_col2);
+      y_col2 = drawField(
+        "Data de Nasc.:",
+        student.dataNascimento,
+        col2_x,
+        y_col2
+      );
       y_col2 = drawField("Gênero:", student.genero, col2_x, y_col2);
       y_col3 = drawField("Email:", student.email, col3_x, y_col3);
       y_col3 = drawField("Telefone:", student.telefone, col3_x, y_col3);

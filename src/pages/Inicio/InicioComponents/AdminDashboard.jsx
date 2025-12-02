@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Box, Paper, Stack, Button, Grid } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import { Typography, Box, Paper, Stack, Button, Grid } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import * as alunosApi from "../../../services/alunosApiService";
 import * as planosApi from "../../../services/planosApiService";
 
 import CadastroAlunoDialog from "../../Alunos/AlunosComponents/CadastroAlunoDialog";
-import ItemDialog from '../../Financeiro/FinanceiroComponents/ItemDialog';
+import ItemDialog from "../../Financeiro/FinanceiroComponents/ItemDialog";
 
 const StatCard = ({ title, value, color }) => (
   <Paper
@@ -14,11 +14,11 @@ const StatCard = ({ title, value, color }) => (
     sx={{
       p: 3,
       borderRadius: 3,
-      textAlign: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+      textAlign: "center",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
     }}
   >
     <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
@@ -29,7 +29,7 @@ const StatCard = ({ title, value, color }) => (
         component="span"
         variant="h6"
         fontWeight="bold"
-        sx={{ color: 'black', mr: 0.5 }}
+        sx={{ color: "black", mr: 0.5 }}
       >
         R$
       </Typography>
@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   const [isAlunoDialogOpen, setIsAlunoDialogOpen] = useState(false);
   const [isReceitaDialogOpen, setIsReceitaDialogOpen] = useState(false);
   const [isDespesaDialogOpen, setIsDespesaDialogOpen] = useState(false);
-  
+
   const [listaPlanos, setListaPlanos] = useState([]);
 
   useEffect(() => {
@@ -66,14 +66,14 @@ export default function AdminDashboard() {
 
   const shortcutButtonStyle = {
     borderRadius: 50,
-    bgcolor: '#F2D95C',
-    color: '#111',
-    fontWeight: 'normal',
-    padding: '8px 20px',
-    '&:hover': { bgcolor: '#e0c850' },
-    whiteSpace: 'nowrap',
+    bgcolor: "#F2D95C",
+    color: "#111",
+    fontWeight: "normal",
+    padding: "8px 20px",
+    "&:hover": { bgcolor: "#e0c850" },
+    whiteSpace: "nowrap",
     flexGrow: 1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   };
 
   const handleSaveAluno = async (novoAluno) => {
@@ -116,15 +116,32 @@ export default function AdminDashboard() {
         sx={{
           padding: 3,
           borderRadius: 4,
-          marginTop: 2
+          marginTop: 2,
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ width: 12, height: 12, bgcolor: 'success.main', borderRadius: '50%' }} />
-            <Typography variant="h6" color="text.secondary">Alunos Ativos</Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 12,
+                height: 12,
+                bgcolor: "success.main",
+                borderRadius: "50%",
+              }}
+            />
+            <Typography variant="h6" color="text.secondary">
+              Alunos Ativos
+            </Typography>
           </Box>
-          <Typography variant="h2" fontWeight="bold">297</Typography> 
+          <Typography variant="h2" fontWeight="bold">
+            297
+          </Typography>
         </Box>
       </Paper>
 
@@ -149,10 +166,10 @@ export default function AdminDashboard() {
         sx={{
           padding: 3,
           borderRadius: 4,
-          marginTop: 2
+          marginTop: 2,
         }}
       >
-        <Stack direction={{ xs: 'column', sm: 'row', }} spacing={2}>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <Button
             variant="contained"
             endIcon={<AddIcon />}
