@@ -95,13 +95,22 @@ export default function UserVerification({ onVerificationSuccess, onClose, cpf }
 
         setLoading(true);
         try {
-            const resp = await fetch('http://localhost:4000/api/funcionario/verify', {
+            const resp = await fetch('http://localhost:4000/api/verification/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cpf_funcionario: cpf, code: fullCode })
             });
 
-            const data = await resp.json();
+            const textData = await resp.text();
+
+            let data;
+            try {
+                data = JSON.parse(textData);
+            } catch (e) {
+                console.error('Resposta não é JSON:', textData);
+                throw new Error('O servidor retornou uma resposta inválida (HTML em vez de JSON). Verifique a URL da API.');
+            }
+
             if (resp.ok) {
                 setStep(1);
             } else {
@@ -109,7 +118,11 @@ export default function UserVerification({ onVerificationSuccess, onClose, cpf }
             }
         } catch (err) {
             console.error('Erro ao verificar código:', err);
-            setError('Erro ao verificar código. Tente novamente.');
+            if (err.message.includes('HTML')) {
+                setError('Erro de conexão com o servidor (Rota não encontrada ou erro interno).');
+            } else {
+                setError('Erro ao verificar código. Tente novamente.');
+            }
         } finally {
             setLoading(false);
         }

@@ -4,9 +4,9 @@ const emailService = require('../services/emailService');
 
 router.post('/verify', async (req, res) => {
   try {
-    console.log('[verify route] headers:', req.headers && req.headers['content-type']);
     console.log('[verify route] body:', req.body);
     const { cpf_funcionario, code } = req.body;
+    
     if (!cpf_funcionario || !code) {
       return res.status(400).json({ error: 'cpf_funcionario e code são obrigatórios' });
     }
@@ -17,6 +17,22 @@ router.post('/verify', async (req, res) => {
     console.error('Erro na verificação de email:', err);
     const status = err.status || 500;
     res.status(status).json({ error: err.message });
+  }
+});
+
+router.post('/resend-code', async (req, res) => {
+  try {
+    const { cpf_funcionario } = req.body;
+    if (!cpf_funcionario) {
+        return res.status(400).json({ error: 'CPF é obrigatório.' });
+    }
+    
+    await emailService.sendVerificationCode(cpf_funcionario);
+    
+    res.json({ message: 'Código reenviado com sucesso.' });
+  } catch (err) {
+    console.error('Erro ao reenviar código:', err);
+    res.status(500).json({ error: 'Erro ao reenviar código.' });
   }
 });
 
