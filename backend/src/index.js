@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config({ path: process.env.DOTENV_PATH || undefined });
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config({ path: process.env.DOTENV_PATH || undefined });
 
 const { init } = require('./db');
 const patrimonioRouter = require('./routes/patrimonio');
@@ -15,7 +15,7 @@ const verificationRouter = require('./routes/verification');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
@@ -33,7 +33,7 @@ async function start() {
     await init();
     app.listen(PORT, () => console.log(`Server escutando na porta: ${PORT}`));
   } catch (err) {
-    console.error('Falha ao iniciar o servidor', err);
+    console.error("Falha ao iniciar o servidor", err);
     process.exit(1);
   }
 }

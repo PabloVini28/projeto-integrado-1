@@ -12,16 +12,31 @@ import {
   Radio,
   FormLabel,
   FormControl,
-  InputAdornment,
   Typography,
 } from "@mui/material";
 
-const cleanCurrency = (formattedValue) => {
-  if (!formattedValue) return "";
-  return formattedValue
-    .toString()
-    .replace(/[R$\s]/g, "")
-    .replace(".", ",");
+const blackFocusedStyle = {
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "black",
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: "black",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#343a40",
+  },
+};
+
+const formatCurrency = (value) => {
+  if (!value) return "";
+
+  const numeric = value.replace(/\D/g, ""); // só números
+  const number = Number(numeric) / 100;
+
+  return number.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 };
 
 const errorTextFieldStyle = {
@@ -39,7 +54,9 @@ const errorTextFieldStyle = {
 export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
+
   const [valor, setValor] = useState("");
+  const [valorFormatado, setValorFormatado] = useState("");
 
   const [status, setStatus] = useState("Ativo");
 
@@ -53,13 +70,16 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
     if (planToEdit) {
       setNome(planToEdit.nome || "");
       setCodigo(planToEdit.codigo || "");
-      setValor(cleanCurrency(planToEdit.valor));
+      const raw = String(Math.round(parseFloat(planToEdit.valor) * 100));
+      setValor(raw);
+      setValorFormatado(formatCurrency(raw));
 
       setStatus(planToEdit.status || "Ativo");
     } else {
       setNome("");
       setCodigo("");
       setValor("");
+      setValorFormatado("");
       setStatus("Ativo");
     }
     setError(false);
@@ -68,8 +88,12 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   }, [planToEdit, open]);
 
   const handleValueChange = (e) => {
-    const rawValue = e.target.value.replace(/[^0-9,.]/g, "");
-    setValor(rawValue);
+    let raw = e.target.value.replace(/\D/g, "");
+
+    if (raw.length > 12) raw = raw.slice(0, 12);
+
+    setValor(raw);
+    setValorFormatado(formatCurrency(raw));
     resetFieldError("valor");
   };
 
@@ -100,17 +124,12 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
       return;
     }
 
-    const valorLimpo = valor
-      .toString()
-      .replace("R$", "")
-      .trim()
-      .replace(/\./g, "")
-      .replace(",", ".");
-    const valorNumerico = parseFloat(valorLimpo) || 0;
+    const valorNumerico = Number(valor) / 100;
 
     if (valorNumerico <= 0) {
-      errors.valor = "O valor deve ser maior que zero.";
+      errors.valor = true;
       setFieldErrors(errors);
+      setErrorMessage("O valor deve ser maior que zero.");
       setError(true);
       return;
     }
@@ -122,24 +141,13 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
       valor: valorNumerico,
       status,
     };
+
     onSave(planoData);
     onClose();
   };
 
   const isNomeError = !!fieldErrors.nome;
   const isValorError = !!fieldErrors.valor;
-
-  const blackFocusedStyle = {
-    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: "black",
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "black",
-    },
-    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#343a40",
-    },
-  };
 
   const getSx = (isFieldInError) => ({
     ...blackFocusedStyle,
@@ -219,24 +227,16 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
             label="Valor"
             fullWidth
             size="small"
-            value={valor}
+            value={valorFormatado}
             onChange={handleValueChange}
             error={isValorError}
             helperText={error && isValorError ? fieldErrors.valor : ""}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">R$</InputAdornment>
-              ),
-            }}
             sx={getSx(isValorError)}
           />
 
           <FormControl sx={{ pt: 1 }}>
             <FormLabel
-              sx={{
-                color: "rgba(0, 0, 0, 0.6)",
-                "&.Mui-focused": { color: "rgba(0, 0, 0, 0.6)" },
-              }}
+              sx={{ color: "#23272b", "&.Mui-focused": { color: "#23272b" } }}
             >
               Status:
             </FormLabel>

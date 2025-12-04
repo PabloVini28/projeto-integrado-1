@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const service = require('../services/financeiroService');
 const emailService = require('../services/emailService');
@@ -37,47 +37,55 @@ router.post('/resend-code', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const rows = await service.listAll();
     res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Falha ao listar financeiro' });
+    res.status(500).json({ error: "Falha ao listar financeiro" });
   }
 });
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const created = await service.create(req.body);
     res.status(201).json(created);
   } catch (err) {
     console.error(err);
-    if (err.status) return res.status(err.status).json({ error: err.message, details: err.details });
-    res.status(500).json({ error: 'Falha ao criar registro financeiro' });
+    if (err.status)
+      return res
+        .status(err.status)
+        .json({ error: err.message, details: err.details });
+    res.status(500).json({ error: "Falha ao criar registro financeiro" });
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const updated = await service.update(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ error: 'Registro não encontrado' });
+    if (!updated)
+      return res.status(404).json({ error: "Registro não encontrado" });
     res.json(updated);
   } catch (err) {
     console.error(err);
-    if (err.status) return res.status(err.status).json({ error: err.message, details: err.details });
-    res.status(500).json({ error: 'Falha ao atualizar registro' });
+    if (err.status)
+      return res
+        .status(err.status)
+        .json({ error: err.message, details: err.details });
+    res.status(500).json({ error: "Falha ao atualizar registro" });
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const removed = await service.remove(req.params.id);
-    if (!removed) return res.status(404).json({ error: 'Registro não encontrado' });
+    if (!removed)
+      return res.status(404).json({ error: "Registro não encontrado" });
     res.json({ removed: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Falha ao deletar registro' });
+    res.status(500).json({ error: "Falha ao deletar registro" });
   }
 });
 

@@ -1,5 +1,5 @@
-const repo = require('../repositories/financeiroRepository');
-const { validateFinanceiro } = require('../models/financeiro.model');
+const repo = require("../repositories/financeiroRepository");
+const { validateFinanceiro } = require("../models/financeiro.model");
 
 async function listAll() {
   return await repo.findAll();
@@ -12,7 +12,7 @@ async function getById(id) {
 async function create(payload) {
   const { valid, errors } = validateFinanceiro(payload);
   if (!valid) {
-    const err = new Error('Validação falhou');
+    const err = new Error("Validação falhou");
     err.status = 400;
     err.details = errors;
     throw err;
@@ -24,7 +24,7 @@ async function create(payload) {
 async function update(id, payload) {
   const { valid, errors } = validateFinanceiro(payload);
   if (!valid) {
-    const err = new Error('Validação falhou');
+    const err = new Error("Validação falhou");
     err.status = 400;
     err.details = errors;
     throw err;
