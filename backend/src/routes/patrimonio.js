@@ -1,64 +1,65 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const service = require('../services/patrimonioService');
+const service = require("../services/patrimonioService");
 
-// GET /api/patrimonio
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const rows = await service.listAll();
     res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Falhou ao listar patrimônio' });
+    res.status(500).json({ error: "Falhou ao listar patrimônio" });
   }
 });
 
-// GET /api/patrimonio/:id
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const row = await service.getById(req.params.id);
-    if (!row) return res.status(404).json({ error: 'Não encontrado' });
+    if (!row) return res.status(404).json({ error: "Não encontrado" });
     res.json(row);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Falhou ao obter patrimônio' });
+    res.status(500).json({ error: "Falhou ao obter patrimônio" });
   }
 });
 
-// POST /api/patrimonio
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const created = await service.create(req.body);
     res.status(201).json(created);
   } catch (err) {
     console.error(err);
-    if (err.status) return res.status(err.status).json({ error: err.message, details: err.details });
-    res.status(500).json({ error: 'Falhou ao criar patrimônio' });
+    if (err.status)
+      return res
+        .status(err.status)
+        .json({ error: err.message, details: err.details });
+    res.status(500).json({ error: "Falhou ao criar patrimônio" });
   }
 });
 
-// PUT /api/patrimonio/:id
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const updated = await service.update(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ error: 'Não encontrado' });
+    if (!updated) return res.status(404).json({ error: "Não encontrado" });
     res.json(updated);
   } catch (err) {
     console.error(err);
-    if (err.status) return res.status(err.status).json({ error: err.message, details: err.details });
-    res.status(500).json({ error: 'Falhou ao atualizar patrimônio' });
+    if (err.status)
+      return res
+        .status(err.status)
+        .json({ error: err.message, details: err.details });
+    res.status(500).json({ error: "Falhou ao atualizar patrimônio" });
   }
 });
 
-// DELETE /api/patrimonio/:id
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const removed = await service.remove(req.params.id);
-    if (!removed) return res.status(404).json({ error: 'Não encontrado' });
+    if (!removed) return res.status(404).json({ error: "Não encontrado" });
     res.json({ removed: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Falhou ao deletar patrimônio' });
+    res.status(500).json({ error: "Falhou ao deletar patrimônio" });
   }
 });
 

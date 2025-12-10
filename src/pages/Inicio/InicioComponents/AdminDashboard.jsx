@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Box, Paper, Stack, Button, Grid } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import { Typography, Box, Paper, Stack, Button, Grid } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-// Imports dos Services
 import * as alunosApi from "../../../services/alunosApiService";
 import * as planosApi from "../../../services/planosApiService";
 import * as financeiroApi from "../../../services/financeiroApiService";
@@ -10,7 +9,6 @@ import * as financeiroApi from "../../../services/financeiroApiService";
 import CadastroAlunoDialog from "../../Alunos/AlunosComponents/CadastroAlunoDialog";
 import ItemDialog from '../../Financeiro/FinanceiroComponents/ItemDialog';
 
-// Função auxiliar para formatar data (Igual usamos no Financeiro)
 const formatDateForAPI = (dateStr) => {
     const [day, month, year] = dateStr.split('/').map(Number);
     const dateObj = new Date(year, month - 1, day);
@@ -26,18 +24,17 @@ const StatCard = ({ title, value, color }) => (
     sx={{
       p: 3,
       borderRadius: 3,
-      textAlign: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+      textAlign: "center",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
     }}
   >
     <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
       {title}
     </Typography>
     <Typography variant="h5" fontWeight="bold">
-      {/* Se o valor for numérico/string simples, renderiza direto. Se for formatado, ajusta */}
       <Typography
         component="span"
         variant="h5"
@@ -55,7 +52,6 @@ export default function AdminDashboard() {
   const [isReceitaDialogOpen, setIsReceitaDialogOpen] = useState(false);
   const [isDespesaDialogOpen, setIsDespesaDialogOpen] = useState(false);
   
-  // Estados de Dados
   const [listaPlanos, setListaPlanos] = useState([]);
   const [totalAlunosAtivos, setTotalAlunosAtivos] = useState(0);
   const [resumoFinanceiro, setResumoFinanceiro] = useState({
@@ -64,23 +60,16 @@ export default function AdminDashboard() {
     saldo: '0,00'
   });
 
-  // --- CARREGAR DADOS DO BACKEND ---
   const fetchDashboardData = async () => {
     try {
-      // 1. Buscar Planos (para o cadastro de aluno)
       const planosRes = await planosApi.getPlanos();
       setListaPlanos(planosRes.data);
 
-      // 2. Buscar Alunos e contar Ativos
       const alunosRes = await alunosApi.getAlunos();
       const alunos = alunosRes.data || [];
       const ativos = alunos.filter(a => a.status_aluno === 'Ativo').length;
       setTotalAlunosAtivos(ativos);
 
-      // 3. Buscar Resumo Financeiro (Se existir a função no service, senão calculamos na mão)
-      // Como criamos o getLancamentos no service, vamos usar ele e calcular aqui rapidinho
-      // ou usar getResumoFinanceiro se você implementou no backend. 
-      // Vou assumir cálculo local para garantir que funcione agora:
       const finRes = await financeiroApi.getLancamentos();
       const lancamentos = finRes.data || [];
       
@@ -89,9 +78,7 @@ export default function AdminDashboard() {
       const anoAtual = hoje.getFullYear();
 
       const doMes = lancamentos.filter(l => {
-        // Ajuste conforme seu banco retorna a data
         const dataL = new Date(l.data); 
-        // Compensação de fuso simples se necessário, ou usar string split se vier YYYY-MM-DD
         return dataL.getMonth() === mesAtual && dataL.getFullYear() === anoAtual;
       });
 
@@ -116,17 +103,16 @@ export default function AdminDashboard() {
 
   const shortcutButtonStyle = {
     borderRadius: 50,
-    bgcolor: '#F2D95C',
-    color: '#111',
-    fontWeight: 'normal',
-    padding: '8px 20px',
-    '&:hover': { bgcolor: '#e0c850' },
-    whiteSpace: 'nowrap',
+    bgcolor: "#F2D95C",
+    color: "#111",
+    fontWeight: "normal",
+    padding: "8px 20px",
+    "&:hover": { bgcolor: "#e0c850" },
+    whiteSpace: "nowrap",
     flexGrow: 1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   };
 
-  // --- SALVAR ALUNO ---
   const handleSaveAluno = async (novoAluno) => {
     try {
       const payload = {
@@ -146,20 +132,17 @@ export default function AdminDashboard() {
       await alunosApi.createAluno(payload);
       alert("Aluno cadastrado com sucesso!");
       setIsAlunoDialogOpen(false);
-      fetchDashboardData(); // Atualiza contador
+      fetchDashboardData(); 
     } catch (err) {
       console.error(err);
       alert("Erro ao cadastrar aluno.");
     }
   };
 
-  // --- SALVAR RECEITA/DESPESA ---
   const handleSaveLancamento = async (data, isRecipe) => {
     try {
-      // Formata a data dd/mm/yyyy -> yyyy-mm-dd
       const apiDate = formatDateForAPI(data.data);
       
-      // Lógica para pegar nome (mesma do FinanceiroPage)
       const nomeFinal = (isRecipe && data.categoria === 'Alunos' && data.nome_aluno) 
         ? data.nome_aluno 
         : data.nome;
@@ -179,7 +162,7 @@ export default function AdminDashboard() {
       if (isRecipe) setIsReceitaDialogOpen(false);
       else setIsDespesaDialogOpen(false);
 
-      fetchDashboardData(); // Atualiza os cards
+      fetchDashboardData(); 
     } catch (error) {
       console.error(error);
       alert("Erro ao salvar lançamento.");
@@ -197,13 +180,28 @@ export default function AdminDashboard() {
         sx={{
           padding: 3,
           borderRadius: 4,
-          marginTop: 2
+          marginTop: 2,
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ width: 12, height: 12, bgcolor: 'success.main', borderRadius: '50%' }} />
-            <Typography variant="h6" color="text.secondary">Alunos Ativos</Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 12,
+                height: 12,
+                bgcolor: "success.main",
+                borderRadius: "50%",
+              }}
+            />
+            <Typography variant="h6" color="text.secondary">
+              Alunos Ativos
+            </Typography>
           </Box>
           <Typography variant="h2" fontWeight="bold">{totalAlunosAtivos}</Typography> 
         </Box>
@@ -230,10 +228,10 @@ export default function AdminDashboard() {
         sx={{
           padding: 3,
           borderRadius: 4,
-          marginTop: 2
+          marginTop: 2,
         }}
       >
-        <Stack direction={{ xs: 'column', sm: 'row', }} spacing={2}>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <Button
             variant="contained"
             endIcon={<AddIcon />}
@@ -269,7 +267,6 @@ export default function AdminDashboard() {
         listaPlanos={listaPlanos}
       />
       
-      {/* Diálogo de Receita */}
       <ItemDialog
         open={isReceitaDialogOpen}
         onClose={() => setIsReceitaDialogOpen(false)}
@@ -278,7 +275,6 @@ export default function AdminDashboard() {
         title="Registrar Receita"
       />
       
-      {/* Diálogo de Despesa */}
       <ItemDialog
         open={isDespesaDialogOpen}
         onClose={() => setIsDespesaDialogOpen(false)}

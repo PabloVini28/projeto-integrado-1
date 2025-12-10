@@ -1,44 +1,45 @@
-const nodemailer = require('nodemailer'); 
-const repo = require('../repositories/funcionarioRepository'); 
+const nodemailer = require("nodemailer");
+const repo = require("../repositories/funcionarioRepository");
 
 const CODE_EXPIRY_MINUTES = 15;
 const CODE_EXPIRY_MS = CODE_EXPIRY_MINUTES * 60 * 1000;
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    pass: process.env.SMTP_PASS,
+  },
 });
 
-const generate6Digit = () => String(Math.floor(100000 + Math.random() * 900000));
+const generate6Digit = () =>
+  String(Math.floor(100000 + Math.random() * 900000));
 
 async function requestPasswordReset(email) {
-    const user = await repo.findByEmail(email);
+  const user = await repo.findByEmail(email);
 
-    if (!user) {
-      const error = new Error('Email não encontrado na base de dados.');
-      error.status = 404; 
-      throw error;
-    }
-    const code = generate6Digit();
-    const expiration = new Date(Date.now() + CODE_EXPIRY_MS);
+  if (!user) {
+    const error = new Error("Email não encontrado na base de dados.");
+    error.status = 404;
+    throw error;
+  }
+  const code = generate6Digit();
+  const expiration = new Date(Date.now() + CODE_EXPIRY_MS);
 
-    await repo.update(user.cpf_funcionario, {
-      passwordresetcode: code,
-      passwordresetexpiry: expiration
-    });
-    await sendPasswordResetEmail(email, code);
+  await repo.update(user.cpf_funcionario, {
+    passwordresetcode: code,
+    passwordresetexpiry: expiration,
+  });
+  await sendPasswordResetEmail(email, code);
 
-    return { message: 'Código de redefinição enviado.' };
+  return { message: "Código de redefinição enviado." };
 }
 
 async function sendVerificationEmail(email, code) {
   const mailOptions = {
     from: `Corpo em Forma - <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Verificação de Email - Boas-Vindas à Corpo em Forma!',
+    subject: "Verificação de Email - Boas-Vindas à Corpo em Forma!",
     html: `
         <div>
             <div>
@@ -77,15 +78,20 @@ async function sendVerificationEmail(email, code) {
                 </p>
             </div>
         </div>
-    `
+    `,
   };
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email de verificação enviado para ${email}: ${info.messageId}`);
+    console.log(
+      `Email de verificação enviado para ${email}: ${info.messageId}`
+    );
     return info;
   } catch (error) {
-    console.error(`Falha ao enviar email de verificação para ${email}. Erro:`, error);
+    console.error(
+      `Falha ao enviar email de verificação para ${email}. Erro:`,
+      error
+    );
     throw error;
   }
 }
@@ -94,7 +100,7 @@ async function sendPasswordResetEmail(email, code) {
   const mailOptions = {
     from: `Corpo em Forma -<${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Redefinição de Senha - Seu Código Único',
+    subject: "Redefinição de Senha - Seu Código Único",
     html: `
         <div>
             <div>
@@ -134,7 +140,7 @@ async function sendPasswordResetEmail(email, code) {
                 </p>
             </div>
         </div>
-    `
+    `,
   };
 
   try {
@@ -151,7 +157,7 @@ async function sendPasswordResetEmail(email, code) {
   const mailOptions = {
     from: `Corpo em Forma <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Redefinição de Senha - Seu Código Único',
+    subject: "Redefinição de Senha - Seu Código Único",
     html: `
         <div>
             <div>
@@ -191,17 +197,19 @@ async function sendPasswordResetEmail(email, code) {
                 </p>
             </div>
         </div>
-    `
+    `,
   };
-  
+
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log(`Email de reset enviado para ${email}: ${info.messageId}`);
     return info;
   } catch (error) {
     console.error(`Falha ao enviar email de reset para ${email}. Erro:`, error);
-    
-    const err = new Error('Falha no serviço de envio de email. Tente novamente mais tarde.');
+
+    const err = new Error(
+      "Falha no serviço de envio de email. Tente novamente mais tarde."
+    );
     err.status = 500;
     err.originalError = error;
     throw err;
@@ -212,7 +220,7 @@ async function verifyEmail(cpf_funcionario, code) {
   const funcionario = await repo.findByCpf(cpf_funcionario);
 
   if (!funcionario) {
-    const err = new Error('Funcionário não encontrado');
+    const err = new Error("Funcionário não encontrado");
     err.status = 404;
     throw err;
   }
@@ -220,40 +228,44 @@ async function verifyEmail(cpf_funcionario, code) {
   const now = new Date();
 
   if (funcionario.isEnabled) {
-    const err = new Error('Email já verificado');
+    const err = new Error("Email já verificado");
     err.status = 400;
     throw err;
   }
 
   if (funcionario.verificationCode !== code) {
-    const err = new Error('Código de verificação inválido');
+    const err = new Error("Código de verificação inválido");
     err.status = 400;
     throw err;
   }
 
   if (now > new Date(funcionario.verificationCodeExpiry)) {
-    const err = new Error('Código de verificação expirado');
+    const err = new Error("Código de verificação expirado");
     err.status = 400;
     throw err;
   }
 
   await repo.update(cpf_funcionario, {
-    isEnabled: true,
-    verificationCode: null,
-    verificationCodeExpiry: null,
+    isenabled: true,
+    verificationcode: null,
+    verificationcodeexpiry: null,
   });
 
-  return { message: 'Email verificado com sucesso. Conta ativada.' };
+  return { message: "Email verificado com sucesso. Conta ativada." };
 }
 
 async function verifyTransporter() {
   try {
     await transporter.verify();
-    console.log('Conexão SMTP verificada com sucesso. Pronto para enviar e-mails.');
+    console.log(
+      "Conexão SMTP verificada com sucesso. Pronto para enviar e-mails."
+    );
     return { ok: true };
   } catch (err) {
-    console.error('Erro na verificação do SMTP. Verifique as variáveis SMTP_USER e SMTP_PASS no seu arquivo .env');
-    console.error('Detalhes do erro:', err.message);
+    console.error(
+      "Erro na verificação do SMTP. Verifique as variáveis SMTP_USER e SMTP_PASS no seu arquivo .env"
+    );
+    console.error("Detalhes do erro:", err.message);
     return { ok: false, error: err.message };
   }
 }
@@ -266,5 +278,5 @@ module.exports = {
   verifyTransporter,
   generate6Digit,
   CODE_EXPIRY_MINUTES,
-  CODE_EXPIRY_MS
+  CODE_EXPIRY_MS,
 };

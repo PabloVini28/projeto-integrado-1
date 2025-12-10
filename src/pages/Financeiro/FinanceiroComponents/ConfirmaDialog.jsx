@@ -27,9 +27,7 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
         {title || "Tem certeza que deseja excluir?"}
       </DialogTitle>
 
-      <DialogActions
-        sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}
-      >
+      <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
         <Button
           onClick={onClose}
           variant="contained"
