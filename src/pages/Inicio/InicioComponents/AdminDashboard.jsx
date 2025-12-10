@@ -285,3 +285,5 @@ export default function AdminDashboard() {
     </Box>
   );
 }
+
+//integrada!
