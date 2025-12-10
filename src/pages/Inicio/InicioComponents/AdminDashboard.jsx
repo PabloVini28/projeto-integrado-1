@@ -2,11 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Box, Paper, Stack, Button, Grid } from '@mui/material';
 import AddIcon from "@mui/icons-material/Add";
 
+// Imports dos Services
 import * as alunosApi from "../../../services/alunosApiService";
 import * as planosApi from "../../../services/planosApiService";
+import * as financeiroApi from "../../../services/financeiroApiService";
 
 import CadastroAlunoDialog from "../../Alunos/AlunosComponents/CadastroAlunoDialog";
 import ItemDialog from '../../Financeiro/FinanceiroComponents/ItemDialog';
+
+// Função auxiliar para formatar data (Igual usamos no Financeiro)
+const formatDateForAPI = (dateStr) => {
+    const [day, month, year] = dateStr.split('/').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
 
 const StatCard = ({ title, value, color }) => (
   <Paper
@@ -25,14 +37,7 @@ const StatCard = ({ title, value, color }) => (
       {title}
     </Typography>
     <Typography variant="h5" fontWeight="bold">
-      <Typography
-        component="span"
-        variant="h6"
-        fontWeight="bold"
-        sx={{ color: 'black', mr: 0.5 }}
-      >
-        R$
-      </Typography>
+      {/* Se o valor for numérico/string simples, renderiza direto. Se for formatado, ajusta */}
       <Typography
         component="span"
         variant="h5"
@@ -50,18 +55,63 @@ export default function AdminDashboard() {
   const [isReceitaDialogOpen, setIsReceitaDialogOpen] = useState(false);
   const [isDespesaDialogOpen, setIsDespesaDialogOpen] = useState(false);
   
+  // Estados de Dados
   const [listaPlanos, setListaPlanos] = useState([]);
+  const [totalAlunosAtivos, setTotalAlunosAtivos] = useState(0);
+  const [resumoFinanceiro, setResumoFinanceiro] = useState({
+    receitas: '0,00',
+    despesas: '0,00',
+    saldo: '0,00'
+  });
+
+  // --- CARREGAR DADOS DO BACKEND ---
+  const fetchDashboardData = async () => {
+    try {
+      // 1. Buscar Planos (para o cadastro de aluno)
+      const planosRes = await planosApi.getPlanos();
+      setListaPlanos(planosRes.data);
+
+      // 2. Buscar Alunos e contar Ativos
+      const alunosRes = await alunosApi.getAlunos();
+      const alunos = alunosRes.data || [];
+      const ativos = alunos.filter(a => a.status_aluno === 'Ativo').length;
+      setTotalAlunosAtivos(ativos);
+
+      // 3. Buscar Resumo Financeiro (Se existir a função no service, senão calculamos na mão)
+      // Como criamos o getLancamentos no service, vamos usar ele e calcular aqui rapidinho
+      // ou usar getResumoFinanceiro se você implementou no backend. 
+      // Vou assumir cálculo local para garantir que funcione agora:
+      const finRes = await financeiroApi.getLancamentos();
+      const lancamentos = finRes.data || [];
+      
+      const hoje = new Date();
+      const mesAtual = hoje.getMonth();
+      const anoAtual = hoje.getFullYear();
+
+      const doMes = lancamentos.filter(l => {
+        // Ajuste conforme seu banco retorna a data
+        const dataL = new Date(l.data); 
+        // Compensação de fuso simples se necessário, ou usar string split se vier YYYY-MM-DD
+        return dataL.getMonth() === mesAtual && dataL.getFullYear() === anoAtual;
+      });
+
+      const receitas = doMes.filter(l => l.tipo === 'Receita').reduce((acc, curr) => acc + Number(curr.valor), 0);
+      const despesas = doMes.filter(l => l.tipo === 'Despesa').reduce((acc, curr) => acc + Number(curr.valor), 0);
+      const saldo = receitas - despesas;
+
+      setResumoFinanceiro({
+        receitas: `R$ ${receitas.toFixed(2).replace('.', ',')}`,
+        despesas: `R$ ${despesas.toFixed(2).replace('.', ',')}`,
+        saldo: `R$ ${saldo.toFixed(2).replace('.', ',')}`
+      });
+
+    } catch (error) {
+      console.error("Erro ao carregar dashboard:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchPlanos = async () => {
-      try {
-        const response = await planosApi.getPlanos();
-        setListaPlanos(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar planos para o dashboard:", error);
-      }
-    };
-    fetchPlanos();
+    fetchDashboardData();
   }, []);
 
   const shortcutButtonStyle = {
@@ -76,6 +126,7 @@ export default function AdminDashboard() {
     textTransform: 'uppercase',
   };
 
+  // --- SALVAR ALUNO ---
   const handleSaveAluno = async (novoAluno) => {
     try {
       const payload = {
@@ -93,15 +144,45 @@ export default function AdminDashboard() {
       };
 
       await alunosApi.createAluno(payload);
-      alert("Aluno cadastrado com sucesso via Dashboard!");
+      alert("Aluno cadastrado com sucesso!");
       setIsAlunoDialogOpen(false);
+      fetchDashboardData(); // Atualiza contador
     } catch (err) {
       console.error(err);
-      const msg =
-        err.response?.data?.details?.join("\n") ||
-        err.response?.data?.message ||
-        "Erro ao cadastrar aluno.";
-      alert(`Erro: ${msg}`);
+      alert("Erro ao cadastrar aluno.");
+    }
+  };
+
+  // --- SALVAR RECEITA/DESPESA ---
+  const handleSaveLancamento = async (data, isRecipe) => {
+    try {
+      // Formata a data dd/mm/yyyy -> yyyy-mm-dd
+      const apiDate = formatDateForAPI(data.data);
+      
+      // Lógica para pegar nome (mesma do FinanceiroPage)
+      const nomeFinal = (isRecipe && data.categoria === 'Alunos' && data.nome_aluno) 
+        ? data.nome_aluno 
+        : data.nome;
+
+      const payload = {
+        tipo: isRecipe ? 'Receita' : 'Despesa',
+        nome: nomeFinal,
+        data: apiDate,
+        categoria: data.categoria,
+        valor: parseFloat(data.valor),
+        descricao: data.descricao
+      };
+
+      await financeiroApi.createLancamento(payload);
+      alert(`${isRecipe ? "Receita" : "Despesa"} registrada com sucesso!`);
+      
+      if (isRecipe) setIsReceitaDialogOpen(false);
+      else setIsDespesaDialogOpen(false);
+
+      fetchDashboardData(); // Atualiza os cards
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao salvar lançamento.");
     }
   };
 
@@ -124,19 +205,19 @@ export default function AdminDashboard() {
             <Box sx={{ width: 12, height: 12, bgcolor: 'success.main', borderRadius: '50%' }} />
             <Typography variant="h6" color="text.secondary">Alunos Ativos</Typography>
           </Box>
-          <Typography variant="h2" fontWeight="bold">297</Typography> 
+          <Typography variant="h2" fontWeight="bold">{totalAlunosAtivos}</Typography> 
         </Box>
       </Paper>
 
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item xs={12} sm={4}>
-          <StatCard title="Receitas esse mês" value="297" color="green" />
+          <StatCard title="Receitas esse mês" value={resumoFinanceiro.receitas} color="green" />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <StatCard title="Despesas esse mês" value="297" color="#ff0000ff" />
+          <StatCard title="Despesas esse mês" value={resumoFinanceiro.despesas} color="#d32f2f" />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <StatCard title="Resultado no mês" value="297" color="black" />
+          <StatCard title="Resultado no mês" value={resumoFinanceiro.saldo} color="black" />
         </Grid>
       </Grid>
 
@@ -187,15 +268,21 @@ export default function AdminDashboard() {
         onSave={handleSaveAluno}
         listaPlanos={listaPlanos}
       />
+      
+      {/* Diálogo de Receita */}
       <ItemDialog
         open={isReceitaDialogOpen}
         onClose={() => setIsReceitaDialogOpen(false)}
+        onSave={(data) => handleSaveLancamento(data, true)}
         isRecipe={true}
         title="Registrar Receita"
       />
+      
+      {/* Diálogo de Despesa */}
       <ItemDialog
         open={isDespesaDialogOpen}
         onClose={() => setIsDespesaDialogOpen(false)}
+        onSave={(data) => handleSaveLancamento(data, false)}
         isRecipe={false}
         title="Registrar Despesa"
       />
