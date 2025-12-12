@@ -116,7 +116,7 @@ export default function EditarAlunoDialog({
   const [email, setEmail] = useState("");
 
   const [logradouro, setLogradouro] = useState("");
-  const [enderecoAluno, setEnderecoAluno] = useState("");
+  const [bairroComplemento, setBairroComplemento] = useState("");
   const [numero, setNumero] = useState("");
 
   const [telefone, setTelefone] = useState("");
@@ -136,9 +136,22 @@ export default function EditarAlunoDialog({
       setGenero(alunoParaEditar.genero || "prefiro");
       setEmail(alunoParaEditar.email || "");
 
-      setLogradouro(alunoParaEditar.logradouro || "");
-      setEnderecoAluno(alunoParaEditar.endereco_aluno || "");
-      setNumero(alunoParaEditar.numero || "");
+      const logradouroBD = alunoParaEditar.endereco?.logradouro || "";
+      const partes = logradouroBD.split(",").map(s => s.trim()).filter(Boolean);
+
+      let logradouroInicial = "";
+      let bairroComplementoInicial = "";
+
+      if (partes.length >= 2) {
+          logradouroInicial = partes[0];
+          bairroComplementoInicial = partes[1];
+      } else if (partes.length === 1) {
+          bairroComplementoInicial = partes[0];
+      }
+
+      setLogradouro(logradouroInicial);
+      setBairroComplemento(bairroComplementoInicial);
+      setNumero(alunoParaEditar.endereco?.numero || "");
 
       setTelefone(alunoParaEditar.telefone || "");
       setCpf(alunoParaEditar.cpf || "");
@@ -167,7 +180,7 @@ export default function EditarAlunoDialog({
       setDataNascimento(null);
       setEmail("");
       setLogradouro("");
-      setEnderecoAluno("");
+      setBairroComplemento("");
       setNumero("");
       setTelefone("");
       setCpf("");
@@ -229,6 +242,18 @@ export default function EditarAlunoDialog({
       return;
     }
 
+    let logradouroFinal = null;
+    const logradouroClean = logradouro.trim();
+    const bairroComplementoClean = bairroComplemento.trim();
+
+    if (logradouroClean && bairroComplementoClean) {
+        logradouroFinal = `${logradouroClean}, ${bairroComplementoClean}`;
+    } else if (logradouroClean) {
+        logradouroFinal = logradouroClean;
+    } else if (bairroComplementoClean) {
+        logradouroFinal = bairroComplementoClean;
+    }
+
     const alunoEditado = {
       id: alunoParaEditar.id,
       matricula: alunoParaEditar.matricula,
@@ -240,8 +265,7 @@ export default function EditarAlunoDialog({
       dataNascimento,
       dataInicio,
 
-      logradouro,
-      endereco_aluno: enderecoAluno,
+      logradouro: logradouroFinal,
       numero,
       cod_plano: plano,
       genero,
@@ -386,7 +410,7 @@ export default function EditarAlunoDialog({
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             <TextField
-              label="Logradouro"
+              label="Endereço"
               size="small"
               placeholder="Rua, Av..."
               fullWidth
@@ -404,11 +428,11 @@ export default function EditarAlunoDialog({
             />
           </Box>
           <TextField
-            label="Bairro/Complemento"
+            label="Bairro"
             size="small"
-            value={enderecoAluno}
-            onChange={handleChangeGeneric(setEnderecoAluno, "enderecoAluno")}
-            sx={getSx("enderecoAluno")}
+            value={bairroComplemento}
+            onChange={handleChangeGeneric(setBairroComplemento, "bairroComplemento")}
+            sx={getSx("bairroComplemento")}
           />
 
           <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
