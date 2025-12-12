@@ -88,9 +88,19 @@ const DetailItem = ({ title, value }) => (
 );
 
 function RowDetails({ row }) {
-  const address = row.endereco
-    ? `${row.endereco.logradouro || ""}, ${row.endereco.numero || ""}`
-    : "Não informado";
+  const logradouroBD = row.endereco?.logradouro || "";
+  const partes = logradouroBD.split(",").map(s => s.trim()).filter(Boolean);
+  
+  let logradouroDisplay = "Não informado";
+  let bairroDisplay = "Não informado";
+
+  if (partes.length === 2) {
+      logradouroDisplay = partes[0];
+      bairroDisplay = partes[1];
+  } else if (partes.length === 1) {
+      bairroDisplay = partes[0];
+  }
+
   return (
     <Box
       sx={{
@@ -115,18 +125,13 @@ function RowDetails({ row }) {
         <DetailItem title="Data de Nasc." value={row.dataNascimento} />
         <DetailItem title="Email" value={row.email} />
         <DetailItem title="Telefone" value={row.telefone} />
-        <Grid item xs={12} sm={6} md={4}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "block", textTransform: "uppercase" }}
-          >
-            Endereço
-          </Typography>
-          <Typography variant="body1" fontWeight="medium">
-            {address}
-          </Typography>
-        </Grid>
+        
+        {/* NOVOS CAMPOS DE ENDEREÇO */}
+        <DetailItem title="Logradouro" value={logradouroDisplay} />
+        <DetailItem title="Bairro/Complemento" value={bairroDisplay} />
+        <DetailItem title="Número" value={row.endereco?.numero} />
+        {/* FIM NOVOS CAMPOS DE ENDEREÇO */}
+        
         <DetailItem title="Data de Registro" value={row.data_matricula} />
       </Grid>
     </Box>
@@ -263,8 +268,8 @@ export default function AlunosPage() {
         cod_plano: novoAluno.cod_plano,
         data_nascimento: novoAluno.dataNascimento,
         telefone: novoAluno.telefone,
-        logradouro: novoAluno.endereco,
-        numero: "S/N",
+        logradouro: novoAluno.logradouro,
+        numero: novoAluno.numero || "S/N",
         status_aluno: "Ativo",
         genero: novoAluno.genero,
       };
@@ -293,7 +298,8 @@ export default function AlunosPage() {
         cod_plano: alunoEditado.cod_plano,
         data_nascimento: alunoEditado.dataNascimento,
         telefone: alunoEditado.telefone,
-        logradouro: alunoEditado.endereco,
+        logradouro: alunoEditado.logradouro,
+        numero: alunoEditado.numero || "S/N",
         genero: alunoEditado.genero,
         status_aluno: alunoEditado.status || "Ativo",
       };

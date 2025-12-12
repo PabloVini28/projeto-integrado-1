@@ -10,7 +10,6 @@ const SELECT_QUERY = `
         a.telefone, 
         a.data_nascimento, 
         a.logradouro, 
-        a.endereco_aluno, 
         a.numero, 
         a.status_aluno, 
         a.genero,
@@ -36,10 +35,10 @@ async function create(alunos) {
   const q = ` 
       INSERT INTO alunos (
           matricula, cod_plano, nome_aluno, email_aluno, cpf_aluno, 
-          telefone, data_nascimento, logradouro, endereco_aluno, numero, 
+          telefone, data_nascimento, logradouro, numero, 
           status_aluno, genero
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING * `;
 
   const vals = [
@@ -51,7 +50,6 @@ async function create(alunos) {
     alunos.telefone,
     alunos.data_nascimento,
     alunos.logradouro,
-    alunos.endereco_aluno,
     alunos.numero,
     alunos.status_aluno || "Ativo",
     alunos.genero,
@@ -80,11 +78,10 @@ async function update(matricula, alunos) {
           telefone=$5, 
           data_nascimento=$6, 
           logradouro=$7, 
-          endereco_aluno=$8, 
-          numero=$9, 
-          status_aluno=$10,
-          genero=$11
-      WHERE matricula = $12 
+          numero=$8, 
+          status_aluno=$9,
+          genero=$10
+      WHERE matricula = $11 
       RETURNING * `;
 
   const vals = [
@@ -95,7 +92,6 @@ async function update(matricula, alunos) {
     alunos.telefone,
     alunos.data_nascimento,
     alunos.logradouro,
-    alunos.endereco_aluno,
     alunos.numero,
     alunos.status_aluno,
     alunos.genero,
