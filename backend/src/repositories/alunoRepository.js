@@ -51,7 +51,7 @@ async function create(alunos) {
     alunos.data_nascimento,
     alunos.logradouro,
     alunos.numero,
-    alunos.status_aluno || "Ativo",
+    "Inativo", 
     alunos.genero,
   ];
 
@@ -117,4 +117,15 @@ async function remove(matricula) {
   return r.rows[0] || null;
 }
 
-module.exports = { findAll, findByMatricula, create, update, remove };
+async function updateStatus(matricula, status) {
+    const q = ` 
+        UPDATE alunos SET 
+            status_aluno=$1
+        WHERE matricula = $2 
+        RETURNING * `;
+    const vals = [status, matricula];
+    const r = await pool.query(q, vals);
+    return r.rows[0] || null;
+}
+
+module.exports = { findAll, findByMatricula, create, update, remove, updateStatus };

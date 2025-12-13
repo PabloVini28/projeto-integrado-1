@@ -68,7 +68,7 @@ const studentColumns = [
   { id: "matricula", label: "Matrícula" },
   { id: "plano", label: "Plano" },
   { id: "status", label: "Status", align: "left" },
-  { id: "data_expiracao", label: "Data de Expiração", align: "center" },
+  { id: "data_expiracao", label: "Data de Expiração", align: "center" }, 
   { id: "actions", label: "Ação", align: "center" },
 ];
 
@@ -94,13 +94,14 @@ function RowDetails({ row }) {
   let logradouroDisplay = "Não informado";
   let bairroDisplay = "Não informado";
 
-  if (partes.length === 2) {
+  if (partes.length >= 2) {
       logradouroDisplay = partes[0];
       bairroDisplay = partes[1];
   } else if (partes.length === 1) {
+      logradouroDisplay = "Não informado";
       bairroDisplay = partes[0];
   }
-
+  
   return (
     <Box
       sx={{
@@ -126,11 +127,9 @@ function RowDetails({ row }) {
         <DetailItem title="Email" value={row.email} />
         <DetailItem title="Telefone" value={row.telefone} />
         
-        {/* NOVOS CAMPOS DE ENDEREÇO */}
-        <DetailItem title="Logradouro" value={logradouroDisplay} />
-        <DetailItem title="Bairro/Complemento" value={bairroDisplay} />
+        <DetailItem title="Endereço" value={logradouroDisplay} />
+        <DetailItem title="Bairro" value={bairroDisplay} />
         <DetailItem title="Número" value={row.endereco?.numero} />
-        {/* FIM NOVOS CAMPOS DE ENDEREÇO */}
         
         <DetailItem title="Data de Registro" value={row.data_matricula} />
       </Grid>
@@ -181,6 +180,9 @@ export default function AlunosPage() {
         const dataMatr = a.created_at
           ? new Date(a.created_at).toLocaleDateString("pt-BR")
           : "-";
+        
+        // A data de expiração e o status vêm do Service, já formatados ou calculados.
+        const dataExpiracao = a.data_expiracao || "-";
 
         return createStudentData(
           a.matricula,
@@ -189,7 +191,7 @@ export default function AlunosPage() {
           a.nome_plano || "Plano não encontrado",
           a.cod_plano,
           dataMatr,
-          "-",
+          dataExpiracao,
           a.status_aluno,
           {
             email: a.email_aluno,
@@ -270,7 +272,6 @@ export default function AlunosPage() {
         telefone: novoAluno.telefone,
         logradouro: novoAluno.logradouro,
         numero: novoAluno.numero || "S/N",
-        status_aluno: "Ativo",
         genero: novoAluno.genero,
       };
 
@@ -456,7 +457,7 @@ export default function AlunosPage() {
           </FormControl>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2}}>
           <Button
             variant="outlined"
             onClick={handleReportMenuClick}
@@ -466,6 +467,7 @@ export default function AlunosPage() {
               borderColor: "grey.400",
               fontWeight: "normal",
               borderRadius: "25px",
+              "&:hover": { backgroundColor: "#f5f5f5", borderColor: "black" },
             }}
           >
             Relatórios
