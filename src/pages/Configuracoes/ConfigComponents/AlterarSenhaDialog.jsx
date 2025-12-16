@@ -138,7 +138,8 @@ export default function AlterarSenhaDialog({ open, onClose }) {
   const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 0;
 
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+    <Dialog open={open} onClose={onClose} disableEnforceFocus={true} 
+      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
       <DialogTitle fontWeight="bold" textAlign="center">Alterar Senha</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
         {error && (

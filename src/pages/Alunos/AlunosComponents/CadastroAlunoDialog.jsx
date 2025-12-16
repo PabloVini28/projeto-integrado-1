@@ -264,6 +264,8 @@ export default function CadastroAlunoDialog({
       onClose={handleCancel}
       maxWidth="xs"
       fullWidth
+	  disableEnforceFocus={true} 
+      keepMounted={false}
       PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
     >
       <DialogTitle

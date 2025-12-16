@@ -160,7 +160,8 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '500px' } }}>
+      <Dialog open={open} onClose={onClose} disableEnforceFocus={true} 
+      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '500px' } }}>
         <DialogTitle fontWeight="bold" textAlign="center">Cadastrar um novo Usuário</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
           {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}

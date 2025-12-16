@@ -1,4 +1,5 @@
-const STATUSES = ['Ativo', 'Inativo', 'Promocional'];
+const STATUSES = ['Ativo', 'Inativo'];
+const DURACOES_PERMITIDAS = ['Diário', 'Mensal', 'Anual']; 
 
 function validatePlano(payload) {
   const errors = [];
@@ -18,6 +19,10 @@ function validatePlano(payload) {
 
   if (payload.status_plano && !STATUSES.includes(payload.status_plano)) {
     errors.push(`Status do Plano inválido! Valores permitidos: ${STATUSES.join(', ')}`);
+  }
+  
+  if (!payload.duracao_unidade || !DURACOES_PERMITIDAS.includes(payload.duracao_unidade)) {
+      errors.push(`Duração inválida! Valores permitidos: ${DURACOES_PERMITIDAS.join(', ')}`);
   }
 
   return { valid: errors.length === 0, errors };
