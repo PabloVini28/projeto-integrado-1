@@ -6,31 +6,33 @@ const FIELDS = [
   "valor_plano",
   "status_plano",
   "created_at",
+  "duracao_unidade", 
 ];
 
 async function findAll() {
-  const q = `SELECT ${FIELDS} FROM planos ORDER BY cod_plano`;
+  const q = `SELECT ${FIELDS.join(", ")} FROM planos ORDER BY cod_plano`;
   const r = await pool.query(q);
   return r.rows;
 }
 
 async function findByCod(cod_plano) {
-  const q = `SELECT ${FIELDS} FROM planos WHERE cod_plano = $1`;
+  const q = `SELECT ${FIELDS.join(", ")} FROM planos WHERE cod_plano = $1`;
   const r = await pool.query(q, [cod_plano]);
   return r.rows[0] || null;
 }
 
 async function create(plano) {
   const q = `
-        INSERT INTO planos (nome_plano, valor_plano, status_plano)
-        VALUES ($1, $2, $3)
-        RETURNING ${FIELDS}
+        INSERT INTO planos (nome_plano, valor_plano, status_plano, duracao_unidade)
+        VALUES ($1, $2, $3, $4)
+        RETURNING ${FIELDS.join(", ")}
     `;
 
   const vals = [
     plano.nome_plano,
     plano.valor_plano,
     plano.status_plano || "Ativo",
+    plano.duracao_unidade, 
   ];
 
   try {
@@ -42,6 +44,7 @@ async function create(plano) {
       err.status = 409;
       throw err;
     }
+    console.error("Erro no DB Create Plano:", error);
     throw error;
   }
 }
@@ -49,15 +52,16 @@ async function create(plano) {
 async function update(cod_plano, plano) {
   const q = `
         UPDATE planos 
-        SET nome_plano = $1, valor_plano = $2, status_plano = $3
-        WHERE cod_plano = $4 
-        RETURNING ${FIELDS}
+        SET nome_plano = $1, valor_plano = $2, status_plano = $3, duracao_unidade = $4
+        WHERE cod_plano = $5 
+        RETURNING ${FIELDS.join(", ")}
     `;
 
   const vals = [
     plano.nome_plano,
     plano.valor_plano,
     plano.status_plano,
+    plano.duracao_unidade,
     cod_plano,
   ];
 

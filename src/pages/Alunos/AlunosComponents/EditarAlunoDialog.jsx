@@ -287,6 +287,8 @@ export default function EditarAlunoDialog({
       onClose={onClose}
       maxWidth="xs"
       fullWidth
+	  disableEnforceFocus={true} 
+      keepMounted={false}
       PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
     >
       <DialogTitle

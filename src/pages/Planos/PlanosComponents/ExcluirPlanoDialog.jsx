@@ -8,6 +8,8 @@ export function ExcluirPlanoDialog({ open, onClose, onConfirm, planToDelete }) {
     <Dialog
       open={open}
       onClose={onClose}
+	  disableEnforceFocus={true} 
+      keepMounted={false}
       PaperProps={{
         sx: {
           borderRadius: 2,
