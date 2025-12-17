@@ -53,6 +53,23 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.post('/verify-account', async (req, res) => {
+  try {
+    const { id, code } = req.body;
+    
+    if (!id || !code) {
+      return res.status(400).json({ error: 'ID e Código são obrigatórios' });
+    }
+
+    const result = await service.verifyAccountCreation(id, code);
+    res.json(result);
+  } catch (err) {
+    console.error('Erro na verificação de conta:', err);
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message });
+  }
+});
+
 router.put("/alterar-senha/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -76,6 +93,7 @@ router.put("/:cpf_funcionario", async (req, res) => {
 
     if (!updated)
       return res.status(404).json({ error: "Funcionario não encontrado" });
+    
     const { senha, ...safe } = updated || {};
     res.json(safe);
   } catch (err) {
@@ -84,7 +102,7 @@ router.put("/:cpf_funcionario", async (req, res) => {
       return res
         .status(err.status)
         .json({ error: err.message, details: err.details });
-    res.status(500).json({ error: "Falhou ao atualizar aluno" });
+    res.status(500).json({ error: "Falhou ao atualizar funcionário" });
   }
 });
 
@@ -99,6 +117,55 @@ router.delete("/:cpf_funcionario", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Falhou ao deletar funcionario" });
+  }
+});
+
+router.post('/email/change/initiate', async (req, res) => {
+  try {
+    const { id, currentPassword, newEmail } = req.body;
+    if (!id || !currentPassword || !newEmail) {
+      return res.status(400).json({ error: 'id, currentPassword e newEmail são obrigatórios' });
+    }
+
+    const result = await service.initiateEmailChange(id, currentPassword, newEmail);
+    res.json(result);
+  } catch (err) {
+    console.error('Erro ao iniciar alteração de email:', err);
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message });
+  }
+});
+
+router.post('/email/change/verify', async (req, res) => {
+  try {
+    const { id, code } = req.body;
+    if (!id || !code) {
+      return res.status(400).json({ error: 'id e code são obrigatórios' });
+    }
+
+    const result = await service.verifyEmailChange(id, code);
+    res.json(result);
+  } catch (err) {
+    console.error('Erro ao verificar alteração de email:', err);
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message });
+  }
+});
+
+router.post('/admin/delete', async (req, res) => {
+  try {
+    const { requesterId, targetCpf, adminPassword, reason } = req.body;
+    
+    if (!requesterId || !targetCpf || !adminPassword) {
+      return res.status(400).json({ error: 'requesterId, targetCpf e adminPassword são obrigatórios' });
+    }
+
+    const result = await service.deleteAdmin(requesterId, targetCpf, adminPassword, reason);
+    res.json(result);
+  } catch (err) {
+    console.error('Erro ao demitir admin:', err);
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message });
   }
 });
 

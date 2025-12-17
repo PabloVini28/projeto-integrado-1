@@ -20,6 +20,7 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
+  Chip, 
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -38,7 +39,7 @@ const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-const createData = (nome, codigo, valor, status) => {
+const createData = (nome, codigo, valor, status, duracaoUnidade) => {
   return {
     cod_plano: codigo,
     nome,
@@ -46,14 +47,16 @@ const createData = (nome, codigo, valor, status) => {
     valor: formatCurrency(valor),
     valorOriginal: valor,
     status,
+    duracaoUnidade, 
   };
 };
 
 const columns = [
-  { id: "nome", label: "Nome do Item" },
-  { id: "codigo", label: "Código do Plano" },
+  { id: "nome", label: "Nome do Plano" },
+  { id: "codigo", label: "Código" },
   { id: "valor", label: "Valor" },
-  { id: "status", label: "Status" },
+  { id: "duracaoUnidade", label: "Duração" }, 
+  { id: "status", label: "Status", align: "center" },
   { id: "actions", label: "Ação", align: "center" },
 ];
 
@@ -85,12 +88,16 @@ export default function PlanosPage() {
   const loadPlanos = async () => {
     try {
       const response = await planosApi.getPlanos();
+      
+      console.log("Dados recebidos da API:", response.data);
+
       const dadosFormatados = response.data.map((p) =>
         createData(
           p.nome_plano,
           p.cod_plano,
           parseFloat(p.valor_plano),
-          p.status_plano
+          p.status_plano,
+          p.duracao_unidade 
         )
       );
       setRows(dadosFormatados);
@@ -126,7 +133,8 @@ export default function PlanosPage() {
       tempRows = tempRows.filter(
         (row) =>
           row.nome.toLowerCase().includes(lowerCaseSearchTerm) ||
-          row.codigo.toString().includes(lowerCaseSearchTerm)
+          row.codigo.toString().includes(lowerCaseSearchTerm) ||
+          (row.duracaoUnidade && row.duracaoUnidade.toLowerCase().includes(lowerCaseSearchTerm))
       );
     }
     return tempRows;
@@ -143,6 +151,7 @@ export default function PlanosPage() {
       ...plan,
       valor: plan.valorOriginal,
       id: plan.cod_plano,
+      duracaoUnidade: plan.duracaoUnidade,
     });
     setIsFormOpen(true);
   };
@@ -161,6 +170,7 @@ export default function PlanosPage() {
         nome_plano: payload.nome,
         valor_plano: payload.valor,
         status_plano: payload.status,
+        duracao_unidade: payload.duracaoUnidade,
       };
 
       if (isEdit) {
@@ -202,6 +212,34 @@ export default function PlanosPage() {
   const handleReportMenuClose = () => setAnchorElReport(null);
   const handleDownloadReport = async () => {
     handleReportMenuClose();
+
+    const reportOptions = {
+      title: "Relatório de Planos",
+      defaultFileName: `relatorio_planos_${new Date().toISOString().split("T")[0]}.pdf`,
+      headers: ["Nome do Plano", "Código", "Valor", "Duração", "Status"],
+      columnWidths: [180, 70, 90, 110, 90],
+      
+      data: filteredRows.map((row) => [
+        String(row.nome || ""),
+        String(row.codigo || ""), 
+        String(row.valor || ""),
+        String(row.duracaoUnidade || "-"),
+        String(row.status || ""),
+      ]),
+    };
+
+    try {
+      const result = await window.electronAPI.generateReport(reportOptions);
+
+      if (result.success) {
+        alert(`Relatório salvo com sucesso em:\n${result.path}`);
+      } else if (result.error !== "Save dialog canceled") {
+        alert(`Falha ao salvar relatório: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Erro na geração do relatório:", error);
+      alert(`Erro ao gerar relatório: ${error.message}`);
+    }
   };
 
   return (
@@ -236,7 +274,7 @@ export default function PlanosPage() {
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <TextField
             size="small"
-            placeholder="Pesquisa por Nome ou Código do Plano"
+            placeholder="Pesquisa por Nome, Código ou Duração"
             variant="outlined"
             value={searchTerm}
             onChange={handleSearchChange}
@@ -364,6 +402,17 @@ export default function PlanosPage() {
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </Box>
+                          ) : column.id === "status" ? (
+                             <Chip 
+                                label={value} 
+                                size="small"
+                                sx={{ 
+                                  backgroundColor: value === "Ativo" ? "#e8f5e9" : "#ffebee", 
+                                  color: value === "Ativo" ? "#2e7d32" : "#c62828",
+                                  fontWeight: "bold",
+                                  border: `1px solid ${value === "Ativo" ? "#a5d6a7" : "#ef9a9a"}`
+                                }} 
+                              />
                           ) : (
                             value
                           )}
@@ -418,7 +467,7 @@ export default function PlanosPage() {
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Relatório de Planos (PDF)
+          Relatório de Planos
         </MenuItem>
       </Menu>
     </Paper>

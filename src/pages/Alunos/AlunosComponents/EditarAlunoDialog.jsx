@@ -99,7 +99,7 @@ export default function EditarAlunoDialog({
   const [dataNascimento, setDataNascimento] = useState(null);
   const [email, setEmail] = useState("");
   const [logradouro, setLogradouro] = useState("");
-  const [enderecoAluno, setEnderecoAluno] = useState("");
+  const [bairroComplemento, setBairroComplemento] = useState("");
   const [numero, setNumero] = useState("");
   const [telefone, setTelefone] = useState("");
   const [cpf, setCpf] = useState("");
@@ -114,12 +114,29 @@ export default function EditarAlunoDialog({
   useEffect(() => {
     if (alunoParaEditar && open) {
       setNome(alunoParaEditar.nome || "");
-      setPlano(alunoParaEditar.cod_plano || "");
+
+      const p = alunoParaEditar.cod_plano || "";
+      setPlano(p);
+
       setGenero(alunoParaEditar.genero || "prefiro");
       setEmail(alunoParaEditar.email || "");
-      setLogradouro(alunoParaEditar.logradouro || "");
-      setEnderecoAluno(alunoParaEditar.endereco_aluno || "");
-      setNumero(alunoParaEditar.numero || "");
+
+      const logradouroBD = alunoParaEditar.endereco?.logradouro || "";
+      const partes = logradouroBD
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      let logradouroInicial = "";
+      let bairroComplementoInicial = "";
+      if (partes.length >= 2) {
+        logradouroInicial = partes[0];
+        bairroComplementoInicial = partes[1];
+      } else if (partes.length === 1) {
+        bairroComplementoInicial = partes[0];
+      }
+      setLogradouro(logradouroInicial);
+      setBairroComplemento(bairroComplementoInicial);
+      setNumero(alunoParaEditar.endereco?.numero || "");
       setTelefone(alunoParaEditar.telefone || "");
       setCpf(alunoParaEditar.cpf || "");
 
@@ -136,10 +153,21 @@ export default function EditarAlunoDialog({
       };
 
       setDataNascimento(parseDate(alunoParaEditar.dataNascimento));
-      setDataInicio(parseDate(alunoParaEditar.data_matricula || alunoParaEditar.dataInicio));
-    } else if (open) {
-      setNome(""); setDataNascimento(null); setEmail(""); setLogradouro(""); setEnderecoAluno("");
-      setNumero(""); setTelefone(""); setCpf(""); setDataInicio(null); setPlano(""); setGenero("prefiro");
+      setDataInicio(
+        parseDate(alunoParaEditar.data_matricula || alunoParaEditar.dataInicio)
+      );
+    } else {
+      setNome("");
+      setDataNascimento(null);
+      setEmail("");
+      setLogradouro("");
+      setBairroComplemento("");
+      setNumero("");
+      setTelefone("");
+      setCpf("");
+      setDataInicio(null);
+      setPlano("");
+      setGenero("prefiro");
     }
     setError(false); setErrorMessage(""); setFieldErrors({});
   }, [alunoParaEditar, open]);
@@ -148,12 +176,10 @@ export default function EditarAlunoDialog({
     setCpf(formatCPF(e.target.value));
     if (fieldErrors.cpf) setFieldErrors((prev) => ({ ...prev, cpf: false }));
   };
-
   const handleTelefoneChange = (e) => {
     setTelefone(formatTelefone(e.target.value));
     if (fieldErrors.telefone) setFieldErrors((prev) => ({ ...prev, telefone: false }));
   };
-
   const handleChangeGeneric = (setter, field) => (e) => {
     setter(e.target.value);
     if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: false }));
@@ -165,7 +191,6 @@ export default function EditarAlunoDialog({
     if (!nome.trim()) errors.nome = true;
     if (!email.trim()) errors.email = true;
     if (!cpf.trim()) errors.cpf = true;
-    if (!plano) errors.plano = true;
     if (!dataNascimento) errors.dataNascimento = true;
     if (!dataInicio) errors.dataInicio = true;
 
@@ -184,11 +209,34 @@ export default function EditarAlunoDialog({
       setError(true); return;
     }
 
-    onSave({
-      id: alunoParaEditar.id, matricula: alunoParaEditar.matricula,
-      nome, email, cpf, telefone, dataNascimento, dataInicio,
-      logradouro, endereco_aluno: enderecoAluno, numero, cod_plano: plano, genero,
-    });
+    let logradouroFinal = null;
+    const logradouroClean = logradouro.trim();
+    const bairroComplementoClean = bairroComplemento.trim();
+
+    if (logradouroClean && bairroComplementoClean) {
+      logradouroFinal = `${logradouroClean}, ${bairroComplementoClean}`;
+    } else if (logradouroClean) {
+      logradouroFinal = logradouroClean;
+    } else if (bairroComplementoClean) {
+      logradouroFinal = bairroComplementoClean;
+    }
+
+    const alunoEditado = {
+      id: alunoParaEditar.id,
+      matricula: alunoParaEditar.matricula,
+      nome,
+      email,
+      cpf,
+      telefone,
+      dataNascimento,
+      dataInicio,
+      logradouro: logradouroFinal,
+      numero,
+      cod_plano: plano,
+      genero,
+    };
+
+    onSave(alunoEditado);
     onClose();
   };
 
@@ -198,49 +246,157 @@ export default function EditarAlunoDialog({
   });
 
   return (
-    <ModalBase open={open} onClose={onClose} title="Editar Aluno">
-      <DialogContent sx={{ px: 3, pt: 1, maxHeight: "500px", overflowY: "auto" }}>
+    <ModalBase 
+      open={open} 
+      onClose={onClose} 
+      title="Editar Aluno"
+    >
+      <DialogContent
+        sx={{
+          px: 3,
+          pt: 1,
+          pb: 0,
+          "&::-webkit-scrollbar": { width: "0.4em" },
+          "&::-webkit-scrollbar-track": { background: "transparent" },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(0,0,0,.15)",
+            borderRadius: "20px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "rgba(0,0,0,.3)",
+          },
+        }}
+      >
         {error && (
           <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
             {errorMessage}
           </Typography>
         )}
-        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>Informações Pessoais:</Typography>
-          
-          <TextField required label="Nome Completo" size="small" value={nome} onChange={handleChangeGeneric(setNome, "nome")} error={!!fieldErrors.nome} sx={getSx("nome")} />
-
+        <Box
+          component="form"
+          sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}
+        >
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", mt: 1 }}>
+            Informações Pessoais:
+          </Typography>
+          <TextField
+            required
+            label="Nome Completo"
+            size="small"
+            value={nome}
+            onChange={handleChangeGeneric(setNome, "nome")}
+            error={!!fieldErrors.nome}
+            sx={getSx("nome")}
+          />
           <ThemeProvider theme={blackTheme}>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
               <DatePicker label="Data de Nascimento *" value={dataNascimento} onChange={setDataNascimento} format="dd/MM/yyyy" slotProps={{ textField: { size: "small", fullWidth: true, error: !!fieldErrors.dataNascimento, sx: fieldErrors.dataNascimento ? errorTextFieldStyle : {} } }} disableFuture />
             </LocalizationProvider>
           </ThemeProvider>
+          <TextField
+            required
+            label="E-mail"
+            size="small"
+            placeholder="email@exemplo.com"
+            value={email}
+            onChange={handleChangeGeneric(setEmail, "email")}
+            error={!!fieldErrors.email}
+            sx={getSx("email")}
+          />
+          <TextField
+            required
+            label="CPF"
+            size="small"
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChange={handleCpfChange}
+            inputProps={{ maxLength: 14 }}
+            error={!!fieldErrors.cpf}
+            sx={getSx("cpf")}
+          />
+          <TextField
+            label="Telefone"
+            size="small"
+            placeholder="(DDD) 9 9999-9999"
+            value={telefone}
+            onChange={handleTelefoneChange}
+            inputProps={{ maxLength: 16 }}
+            error={!!fieldErrors.telefone}
+            sx={getSx("telefone")}
+          />
 
-          <TextField required label="E-mail" size="small" value={email} onChange={handleChangeGeneric(setEmail, "email")} error={!!fieldErrors.email} sx={getSx("email")} />
-          <TextField required label="CPF" size="small" value={cpf} onChange={handleCpfChange} inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf} sx={getSx("cpf")} />
-          <TextField label="Telefone" size="small" value={telefone} onChange={handleTelefoneChange} inputProps={{ maxLength: 16 }} error={!!fieldErrors.telefone} sx={getSx("telefone")} />
-
-          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>Endereço <Typography component="span" color="text.secondary">(opcional)</Typography></Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
+            Endereço:{" "}
+            <Typography component="span" color="text.secondary">
+              (opcional)
+            </Typography>
+          </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
-            <TextField label="Logradouro" size="small" fullWidth value={logradouro} onChange={handleChangeGeneric(setLogradouro, "logradouro")} sx={getSx("logradouro")} />
-            <TextField label="Nº" size="small" sx={{ width: "80px", ...getSx("numero") }} value={numero} onChange={handleChangeGeneric(setNumero, "numero")} />
+            <TextField
+              label="Endereço"
+              size="small"
+              placeholder="Rua, Av..."
+              fullWidth
+              value={logradouro}
+              onChange={handleChangeGeneric(setLogradouro, "logradouro")}
+              sx={getSx("logradouro")}
+            />
+            <TextField
+              label="Nº"
+              size="small"
+              placeholder="123"
+              sx={{ width: "80px", ...getSx("numero") }}
+              value={numero}
+              onChange={handleChangeGeneric(setNumero, "numero")}
+            />
           </Box>
-          <TextField label="Bairro/Complemento" size="small" value={enderecoAluno} onChange={handleChangeGeneric(setEnderecoAluno, "enderecoAluno")} sx={getSx("enderecoAluno")} />
+          <TextField
+            label="Bairro"
+            size="small"
+            value={bairroComplemento}
+            onChange={handleChangeGeneric(
+              setBairroComplemento,
+              "bairroComplemento"
+            )}
+            sx={getSx("bairroComplemento")}
+          />
 
-          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>Informações Administrativas:</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
+            Informações Administrativas:
+          </Typography>
           <ThemeProvider theme={blackTheme}>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
               <DatePicker label="Data de início *" value={dataInicio} onChange={setDataInicio} format="dd/MM/yyyy" slotProps={{ textField: { size: "small", fullWidth: true, error: !!fieldErrors.dataInicio, sx: fieldErrors.dataInicio ? errorTextFieldStyle : {} } }} disabled={true} disableFuture />
             </LocalizationProvider>
           </ThemeProvider>
 
-          <FormControl fullWidth size="small" required error={!!fieldErrors.plano}>
-            <InputLabel sx={{ color: fieldErrors.plano ? "red !important" : "rgba(0, 0, 0, 0.6)", "&.Mui-focused": { color: fieldErrors.plano ? "red !important" : "black" } }}>Plano</InputLabel>
-            <Select value={plano} label="Plano" onChange={(e) => setPlano(e.target.value)} sx={{ "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: fieldErrors.plano ? "red" : "black" } }}>
+          <FormControl fullWidth size="small" disabled>
+            <InputLabel
+              id="edit-plano-select-label"
+              sx={{ color: "rgba(0, 0, 0, 0.6) !important" }}
+            >
+              Plano
+            </InputLabel>
+            <Select
+              labelId="edit-plano-select-label"
+              value={plano}
+              label="Plano"
+              onChange={(e) => setPlano(e.target.value)}
+              displayEmpty
+            >
+              <MenuItem value="">
+                <em>Sem Plano</em>
+              </MenuItem>
               {listaPlanos.map((p) => (
                 <MenuItem key={p.cod_plano} value={p.cod_plano}>{p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}</MenuItem>
               ))}
             </Select>
+            <Typography
+              variant="caption"
+              sx={{ mt: 0.5, color: "text.secondary", fontSize: "0.7rem" }}
+            >
+              Para alterar o plano, utilize a opção "Renovar" na tabela.
+            </Typography>
           </FormControl>
 
           <FormControl>

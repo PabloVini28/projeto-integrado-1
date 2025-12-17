@@ -74,7 +74,7 @@ function CodigoInput({ code, setCode, isError, setError }) {
   );
 }
 
-export default function AlterarEmailDialog({ open, onClose }) {
+export default function AlterarEmailDialog({ open, onClose, onSuccess }) {
   const [step, setStep] = useState(1);
   const [password, setPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -107,13 +107,47 @@ export default function AlterarEmailDialog({ open, onClose }) {
         setError(true);
         return;
       }
-      if (!isValidEmail(newEmail)) {
-        setFieldErrors({ newEmail: true });
-        setErrorMessage("Formato de e-mail inválido.");
+      
+      let errors = {};
+      if (!isValidEmail(newEmail)) errors.newEmail = "Formato de e-mail inválido.";
+      if (!password) errors.password = "Senha atual obrigatória.";
+
+      const errorCount = Object.keys(errors).length;
+      if (errorCount > 0) {
         setError(true);
         return;
       }
-      setStep(2);
+
+      (async () => {
+        try {
+          const token = localStorage.getItem('authToken');
+          const userDataString = localStorage.getItem('userData');
+          if (!userDataString) throw new Error('Sessão inválida. Faça login novamente.');
+          const userData = JSON.parse(userDataString);
+          const id = userData.id_funcionario || userData.id;
+
+          const resp = await fetch('http://localhost:4000/api/funcionario/email/change/initiate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ id, currentPassword: password, newEmail }),
+          });
+
+          if (resp.ok) {
+            setStep(2);
+          } else {
+            const data = await resp.json().catch(() => ({}));
+            setError(true);
+            setErrorMessage(data.error || 'Falha ao iniciar alteração de email.');
+          }
+        } catch (err) {
+          setError(true);
+          setErrorMessage(err.message || 'Erro de conexão.');
+        }
+      })();
+
     } else if (step === 2) {
       const enteredCode = code.join('');
       if (enteredCode.length < 6) {
@@ -121,7 +155,36 @@ export default function AlterarEmailDialog({ open, onClose }) {
         setError(true);
         return;
       }
-      setStep(3);
+      (async () => {
+        try {
+          const token = localStorage.getItem('authToken');
+          const userDataString = localStorage.getItem('userData');
+          if (!userDataString) throw new Error('Sessão inválida. Faça login novamente.');
+          const userData = JSON.parse(userDataString);
+          const id = userData.id_funcionario || userData.id;
+
+          const resp = await fetch('http://localhost:4000/api/funcionario/email/change/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ id, code: enteredCode }),
+          });
+
+          if (resp.ok) {
+            setStep(3);
+            if (typeof onSuccess === 'function') onSuccess();
+          } else {
+            const data = await resp.json().catch(() => ({}));
+            setError(true);
+            setErrorMessage(data.error || 'Código de verificação incorreto.');
+          }
+        } catch (err) {
+          setError(true);
+          setErrorMessage(err.message || 'Erro de conexão.');
+        }
+      })();
     }
   };
 

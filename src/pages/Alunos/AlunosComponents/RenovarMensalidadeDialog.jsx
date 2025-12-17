@@ -128,6 +128,7 @@ export default function RenovarMensalidadeDialog({
                 color: "white",
                 "&:hover": { backgroundColor: "#23272b" },
                 fontWeight: "normal",
+                textTransform: "none"
               }}
             >
               Cancelar
@@ -178,6 +179,7 @@ export default function RenovarMensalidadeDialog({
                 color: "white",
                 "&:hover": { backgroundColor: "#23272b" },
                 fontWeight: "normal",
+                textTransform: "none"
               }}
             >
               Voltar
@@ -190,6 +192,7 @@ export default function RenovarMensalidadeDialog({
                 color: "black",
                 "&:hover": { backgroundColor: "#e0c850" },
                 fontWeight: "normal",
+                textTransform: "none"
               }}
             >
               Renovar + 30 dias

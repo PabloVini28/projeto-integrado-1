@@ -7,7 +7,7 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
     <ModalBase 
       open={open} 
       onClose={onClose} 
-      title={title || "Tem certeza que deseja excluir?"}
+      title={title || "Confirmação"}
     >
       <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
         <Button
@@ -17,6 +17,7 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
             backgroundColor: "#343a40",
             color: "#ffffff",
             fontWeight: "normal",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#23272b" },
           }}
         >
@@ -29,10 +30,11 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
             backgroundColor: "#F2D95C",
             color: "black",
             fontWeight: "normal",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#e0c850" },
           }}
         >
-          Excluir
+          Confirmar
         </Button>
       </DialogActions>
     </ModalBase>

@@ -504,8 +504,12 @@ export default function ItemDialog({
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-      <ModalBase open={open} onClose={onClose} title={title}>
-        <DialogContent>
+      <ModalBase 
+        open={open} 
+        onClose={onClose} 
+        title={title}
+      >
+        <DialogContent sx={{ pt: 1 }}>
           {showErrorText && (
             <Typography
               color="error"

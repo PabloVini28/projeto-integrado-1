@@ -16,20 +16,9 @@ import AlterarEmailDialog from "./ConfigComponents/AlterarEmailDialog";
 import CadastrarNovoUsuarioDialog from "./ConfigComponents/CadastrarNovoUsuarioDialog";
 import EditarUsuarioDialog from "./ConfigComponents/EditarUsuarioDialog";
 import ExcluirUsuarioDialog from "./ConfigComponents/ExcluirUsuarioDialog";
+import VerificarCodigoDialog from "./ConfigComponents/VerificarCodigoDialog";
 
 function InfoItem({ icon, title, value }) {
-  const capitalizeRole = (val) => {
-    if (!val || val === "---") return val;
-    if (
-      typeof val === "string" &&
-      (val.toUpperCase() === "ADMINISTRADOR" ||
-        val.toUpperCase() === "FUNCIONARIO")
-    ) {
-      return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
-    }
-    return val;
-  };
-
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
       {React.cloneElement(icon, {
@@ -40,12 +29,27 @@ function InfoItem({ icon, title, value }) {
           {title}
         </Typography>
         <Typography variant="body1" fontWeight="Semi bold">
-          {capitalizeRole(value)}
+          {value}
         </Typography>
       </Box>
     </Box>
   );
 }
+
+const formatRole = (val) => {
+  if (!val || val === "---") return val;
+
+  const roleMap = {
+    'ADMINISTRADOR': 'Administrador',
+    'SUPER_ADMIN': 'Super Admin',
+    'FUNCIONARIO': 'Funcionário',
+    'FUNCION_RIO': 'Funcionário',
+    'FUNCIONÁRIO': 'Funcionário'
+  };
+
+  const upperVal = String(val).toUpperCase();
+  return roleMap[upperVal] || val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+};
 
 export default function ConfigPage() {
   const [user, setUser] = useState({
@@ -58,8 +62,45 @@ export default function ConfigPage() {
   });
 
   const [funcionarios, setFuncionarios] = useState([]);
-  const [modalOpen, setModalOpen] = useState(null);
+  const [modalOpen, setModalOpen] = useState(null); 
   const [selectedUser, setSelectedUser] = useState(null);
+  
+  const [newlyCreatedUserId, setNewlyCreatedUserId] = useState(null);
+
+  const fetchFuncionarios = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    try {
+      const response = await fetch("http://localhost:4000/api/funcionario", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const normalizeRole = (r) =>
+          String(r || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").toUpperCase();
+
+        const listaFormatada = data.map((f) => ({
+          id: f.id_funcionario,
+          nome: f.nome_funcionario,
+          cpf: f.cpf_funcionario,
+          matricula: f.id_funcionario.toString(),
+          email: f.email_funcionario,
+          role: f.nivel_acesso ? normalizeRole(f.nivel_acesso) : "FUNCIONARIO",
+          rawRole: f.nivel_acesso || null,
+          isEnabled: f.isenabled 
+        }));
+        setFuncionarios(listaFormatada);
+      }
+    } catch (error) {
+      console.error("Erro de conexão com a API:", error);
+    }
+  };
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -78,7 +119,7 @@ export default function ConfigPage() {
             cpf: parsedUser.cpf_funcionario || parsedUser.cpf || "---",
             email: parsedUser.email_funcionario || parsedUser.email || "---",
             role: parsedUser.nivel_acesso
-              ? parsedUser.nivel_acesso.toUpperCase()
+              ? String(parsedUser.nivel_acesso).toLowerCase().replace(/[^a-z0-9]+/g, "_").toUpperCase()
               : "FUNCIONARIO",
           });
 
@@ -98,7 +139,7 @@ export default function ConfigPage() {
                   cpf: fullData.cpf_funcionario,
                   email: fullData.email_funcionario,
                   role: fullData.nivel_acesso
-                    ? fullData.nivel_acesso.toUpperCase()
+                    ? String(fullData.nivel_acesso).toLowerCase().replace(/[^a-z0-9]+/g, "_").toUpperCase()
                     : prev.role,
                 }));
               }
@@ -111,45 +152,48 @@ export default function ConfigPage() {
         console.error("Erro ao ler dados do usuário:", error);
       }
     };
-
     loadUserData();
   }, []);
 
   useEffect(() => {
-    const fetchFuncionarios = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
-
-      try {
-        const response = await fetch("http://localhost:4000/api/funcionario", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const listaFormatada = data.map((f) => ({
-            id: f.id_funcionario,
-            nome: f.nome_funcionario,
-            cpf: f.cpf_funcionario,
-            matricula: f.id_funcionario.toString(),
-            email: f.email_funcionario,
-            role: f.nivel_acesso ? f.nivel_acesso.toUpperCase() : "FUNCIONARIO",
-          }));
-          setFuncionarios(listaFormatada);
-        }
-      } catch (error) {
-        console.error("Erro de conexão com a API:", error);
-      }
-    };
-
-    if (user.role === "ADMINISTRADOR") {
+    if (user.role === "ADMINISTRADOR" || user.role === "SUPER_ADMIN") {
       fetchFuncionarios();
     }
   }, [user.role]);
+
+  const handleEmailChanged = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const userDataString = localStorage.getItem("userData");
+      if (!userDataString) return;
+      const parsedUser = JSON.parse(userDataString);
+      const id = parsedUser.id_funcionario || parsedUser.id;
+      if (!id) return;
+
+      const resp = await fetch(`http://localhost:4000/api/funcionario/id/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (resp.ok) {
+        const fullData = await resp.json();
+        const updatedStored = {
+          ...parsedUser,
+          email_funcionario: fullData.email_funcionario,
+          email: fullData.email_funcionario,
+        };
+        localStorage.setItem("userData", JSON.stringify(updatedStored));
+        setUser((prev) => ({
+          ...prev,
+          email: fullData.email_funcionario,
+        }));
+      }
+
+      if (user.role === "ADMINISTRADOR" || user.role === "SUPER_ADMIN") {
+        await fetchFuncionarios();
+      }
+    } catch (err) {
+      console.error("Erro ao atualizar email localmente:", err);
+    }
+  };
 
   const handleOpenModal = (modalName, userToEdit = null) => {
     setSelectedUser(userToEdit);
@@ -168,41 +212,35 @@ export default function ConfigPage() {
       email_funcionario: userData.email,
       cpf_funcionario: userData.cpf,
       senha: userData.senha,
-      nivel_acesso:
-        userData.role === "ADMINISTRADOR" ? "Administrador" : "Funcionário",
+      nivel_acesso: userData.role === "ADMINISTRADOR" ? "Administrador" : "Funcionário",
     };
-    try {
-      const response = await fetch("http://localhost:4000/api/funcionario", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+    
+    const response = await fetch("http://localhost:4000/api/funcionario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-      if (response.ok) {
-        const novo = await response.json();
-        const novoTela = {
-          id: novo.id_funcionario,
-          nome: novo.nome_funcionario,
-          cpf: novo.cpf_funcionario,
-          matricula: novo.id_funcionario.toString(),
-          email: novo.email_funcionario,
-          role: novo.nivel_acesso
-            ? novo.nivel_acesso.toUpperCase()
-            : "FUNCIONARIO",
-        };
-        setFuncionarios([...funcionarios, novoTela]);
-        alert("Usuário cadastrado com sucesso!");
-        handleCloseModal();
-      } else {
-        const err = await response.json();
-        alert("Erro ao cadastrar: " + (err.error || response.statusText));
-      }
-    } catch (error) {
-      alert("Erro de conexão.");
+    if (response.ok) {
+      const novo = await response.json();
+      
+      await fetchFuncionarios();
+    
+      setNewlyCreatedUserId(novo.id_funcionario);
+      setModalOpen("verificarEmail");
+      
+    } else {
+      const err = await response.json();
+      throw new Error(err.error || response.statusText);
     }
+  };
+
+  const handleVerificationSuccess = () => {
+    fetchFuncionarios(); 
+    setNewlyCreatedUserId(null);
   };
 
   const handleEditUser = async (updatedData) => {
@@ -213,8 +251,7 @@ export default function ConfigPage() {
       cpf_funcionario: updatedData.cpf,
       nivel_acesso:
         updatedData.role === "ADMINISTRADOR" ? "Administrador" : "Funcionário",
-
-      senha: updatedData.senha,
+      senha: updatedData.senha, 
       adminId: user.id,
     };
 
@@ -232,23 +269,7 @@ export default function ConfigPage() {
       );
 
       if (response.ok) {
-        const atualizado = await response.json();
-
-        const novaLista = funcionarios.map((f) => {
-          if (f.id === selectedUser.id) {
-            return {
-              ...f,
-              nome: atualizado.nome_funcionario,
-              cpf: atualizado.cpf_funcionario,
-              role: atualizado.nivel_acesso
-                ? atualizado.nivel_acesso.toUpperCase()
-                : "FUNCIONARIO",
-            };
-          }
-          return f;
-        });
-
-        setFuncionarios(novaLista);
+        await fetchFuncionarios();
         alert("Usuário atualizado com sucesso!");
         handleCloseModal();
       } else {
@@ -261,25 +282,71 @@ export default function ConfigPage() {
     }
   };
 
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = async (opts) => {
+    if (!selectedUser) return;
     const token = localStorage.getItem("authToken");
 
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/funcionario/${selectedUser.cpf}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const requesterRole = (user.role || "").toUpperCase();
 
-      if (response.ok) {
-        setFuncionarios(funcionarios.filter((f) => f.id !== selectedUser.id));
-        alert("Usuário removido com sucesso!");
-        handleCloseModal();
-      } else {
-        alert("Erro ao excluir usuário.");
+      if (selectedUser.id === user.id && requesterRole !== "ADMINISTRADOR" && requesterRole !== "SUPER_ADMIN") {
+        const response = await fetch(
+          `http://localhost:4000/api/funcionario/${selectedUser.cpf}`,
+          {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (response.ok) {
+          setFuncionarios(funcionarios.filter((f) => f.id !== selectedUser.id));
+          alert("Sua conta foi removida.");
+          handleCloseModal();
+        } else {
+          alert("Erro ao excluir usuário.");
+        }
+        return;
       }
+
+      if (requesterRole === "ADMINISTRADOR" || requesterRole === "SUPER_ADMIN") {
+        const adminPassword = opts?.adminPassword;
+        const reason = opts?.reason;
+
+        if (!adminPassword) {
+          alert('Senha do administrador é obrigatória para confirmar a exclusão.');
+          return;
+        }
+
+        if ((selectedUser.role || "").toUpperCase() === 'SUPER_ADMIN') {
+          alert('Não é possível excluir um Super-Admin.');
+          return;
+        }
+
+        const payload = {
+          requesterId: parseInt(user.id, 10), 
+          targetCpf: selectedUser.cpf,
+          adminPassword,
+          reason
+        };
+
+        const resp = await fetch('http://localhost:4000/api/funcionario/admin/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (resp.ok) {
+          await fetchFuncionarios();
+          alert('Usuário removido com sucesso.');
+          handleCloseModal();
+        } else {
+          const data = await resp.json().catch(() => ({}));
+          alert('Erro ao excluir usuário: ' + (data.error || resp.statusText));
+        }
+      } 
     } catch (error) {
       console.error("Erro:", error);
       alert("Erro de conexão.");
@@ -318,14 +385,14 @@ export default function ConfigPage() {
             <InfoItem
               icon={<MailOutline />}
               title="E-mail:"
-              value={user.email}
+              value={user.email} 
             />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <InfoItem
               icon={<AdminPanelSettingsOutlined />}
               title="Nível:"
-              value={user.role}
+              value={formatRole(user.role)} 
             />
           </Grid>
         </Grid>
@@ -345,44 +412,16 @@ export default function ConfigPage() {
             gap: 2,
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              maxWidth: 400,
-              width: "100%",
-            }}
-          >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, maxWidth: 400, width: "100%" }}>
             <Button
               variant="contained"
               onClick={() => handleOpenModal("senha")}
               endIcon={
-                <Box
-                  sx={{
-                    bgcolor: "#F2D95C",
-                    width: 36,
-                    height: 36,
-                    borderRadius: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <Box sx={{ bgcolor: "#F2D95C", width: 36, height: 36, borderRadius: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <ChevronRight sx={{ color: "#1F2937", fontSize: 20 }} />
                 </Box>
               }
-              sx={{
-                bgcolor: "white",
-                color: "black",
-                boxShadow: "none",
-                border: "1px solid #e0e0e0",
-                justifyContent: "space-between",
-                p: 2,
-                "&:hover": { bgcolor: "#f9f9f9" },
-                fontWeight: "bold",
-                textTransform: "none",
-              }}
+              sx={{ bgcolor: "white", color: "black", boxShadow: "none", border: "1px solid #e0e0e0", justifyContent: "space-between", p: 2, "&:hover": { bgcolor: "#f9f9f9" }, fontWeight: "bold", textTransform: "none" }}
             >
               Alterar Senha
             </Button>
@@ -390,31 +429,11 @@ export default function ConfigPage() {
               variant="contained"
               onClick={() => handleOpenModal("email")}
               endIcon={
-                <Box
-                  sx={{
-                    bgcolor: "#F2D95C",
-                    width: 36,
-                    height: 36,
-                    borderRadius: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <Box sx={{ bgcolor: "#F2D95C", width: 36, height: 36, borderRadius: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <ChevronRight sx={{ color: "#1F2937", fontSize: 20 }} />
                 </Box>
               }
-              sx={{
-                bgcolor: "white",
-                color: "black",
-                boxShadow: "none",
-                border: "1px solid #e0e0e0",
-                justifyContent: "space-between",
-                p: 2,
-                "&:hover": { bgcolor: "#f9f9f9" },
-                fontWeight: "bold",
-                textTransform: "none",
-              }}
+              sx={{ bgcolor: "white", color: "black", boxShadow: "none", border: "1px solid #e0e0e0", justifyContent: "space-between", p: 2, "&:hover": { bgcolor: "#f9f9f9" }, fontWeight: "bold", textTransform: "none" }}
             >
               Alterar Email
             </Button>
@@ -422,13 +441,15 @@ export default function ConfigPage() {
         </Paper>
       </Box>
 
-      {user.role === "ADMINISTRADOR" && (
+      {(user.role === "ADMINISTRADOR" || user.role === "SUPER_ADMIN") && (
         <Box>
           <AdminArea
             funcionarios={funcionarios}
             onAddUser={() => handleOpenModal("cadastrar")}
             onEditUser={(user) => handleOpenModal("editar", user)}
             onDeleteUser={(user) => handleOpenModal("excluir", user)}
+            currentUserId={user.id}
+            currentUserRole={user.role}
           />
         </Box>
       )}
@@ -437,25 +458,38 @@ export default function ConfigPage() {
         open={modalOpen === "senha"}
         onClose={handleCloseModal}
       />
+      
       <AlterarEmailDialog
         open={modalOpen === "email"}
         onClose={handleCloseModal}
+        onSuccess={handleEmailChanged}
       />
+      
       <CadastrarNovoUsuarioDialog
         open={modalOpen === "cadastrar"}
         onClose={handleCloseModal}
         onSave={handleAddUser}
       />
+
+      <VerificarCodigoDialog
+        open={modalOpen === "verificarEmail"}
+        onClose={handleCloseModal}
+        userId={newlyCreatedUserId}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
+
       <EditarUsuarioDialog
         open={modalOpen === "editar"}
         onClose={handleCloseModal}
         user={selectedUser}
         onSave={handleEditUser}
       />
+      
       <ExcluirUsuarioDialog
         open={modalOpen === "excluir"}
         onClose={handleCloseModal}
         user={selectedUser}
+        currentUser={user}
         onConfirm={handleDeleteUser}
       />
     </Box>

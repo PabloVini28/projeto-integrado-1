@@ -154,9 +154,9 @@ export default function ItemDialog({
     <ModalBase 
       open={open} 
       onClose={onClose} 
-      title={title || (isEditMode ? "Editar Item" : "Cadastre um Novo Item")}
+      title={title}
     >
-      <DialogContent>
+      <DialogContent sx={{ pt: 1 }}>
         {error && (
           <Typography
             color="error"
@@ -205,6 +205,7 @@ export default function ItemDialog({
                   textField: {
                     size: "small",
                     fullWidth: true,
+                    required: true,
                     error: error && dataAquisicao === null,
                   },
                 }}
@@ -265,7 +266,7 @@ export default function ItemDialog({
       </DialogContent>
 
       <DialogActions
-        sx={{ p: "16px 24px", justifyContent: "flex-end", gap: 1 }}
+        sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}
       >
         <Button
           onClick={onClose}
@@ -274,7 +275,7 @@ export default function ItemDialog({
             backgroundColor: "#343a40",
             color: "white",
             fontWeight: "normal",
-            textTransform: "uppercase",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#23272b" },
           }}
         >
@@ -287,7 +288,7 @@ export default function ItemDialog({
             backgroundColor: "#F2D95C",
             color: "black",
             fontWeight: "normal",
-            textTransform: "uppercase",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#e0c850" },
           }}
         >

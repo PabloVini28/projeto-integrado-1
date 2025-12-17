@@ -1,5 +1,5 @@
 import React from "react";
-import { DialogActions, Button } from "@mui/material";
+import { DialogActions, Button, DialogContent, Typography } from "@mui/material";
 import { ModalBase } from "../../../components/ModalBase";
 
 export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
@@ -7,8 +7,14 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
     <ModalBase 
       open={open} 
       onClose={onClose} 
-      title={title || "Tem certeza que deseja excluir?"}
+      title={title || "Confirmação"}
     >
+      <DialogContent sx={{ pt: 1 }}>
+        <Typography variant="body1">
+          Tem certeza que deseja realizar esta ação? Esta operação não poderá ser desfeita.
+        </Typography>
+      </DialogContent>
+      
       <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
         <Button
           onClick={onClose}
@@ -17,6 +23,7 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
             backgroundColor: "#343a40",
             color: "#ffffff",
             fontWeight: "normal",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#23272b" },
           }}
         >
@@ -29,10 +36,11 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
             backgroundColor: "#F2D95C",
             color: "black",
             fontWeight: "normal",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#e0c850" },
           }}
         >
-          Excluir
+          Confirmar
         </Button>
       </DialogActions>
     </ModalBase>

@@ -3,8 +3,6 @@ import {
   Typography, Button, DialogContent,
   DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Box
 } from '@mui/material';
-
-import UserVerification from '../../../authentication/UserVerification'; 
 import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
@@ -50,12 +48,10 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
     nome: '', email: '', senha: '', confirmarSenha: '', cpf: '', role: 'FUNCIONARIO'
   });
   
-  const [openVerification, setOpenVerification] = useState(false);
   const [error, setError] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [creating, setCreating] = useState(false);
-  const [createdUser, setCreatedUser] = useState(null);
 
   useEffect(() => {
     if (open) {
@@ -63,7 +59,6 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
       setError(false);
       setFieldErrors({});
       setErrorMessage("");
-      setOpenVerification(false);
     }
   }, [open]);
 
@@ -83,134 +78,124 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
   };
 
   const handleCadastrar = async () => {
-      const { nome, email, senha, confirmarSenha, cpf } = formData;
-      let errors = {};
+    const { nome, email, senha, confirmarSenha, cpf } = formData;
+    let errors = {};
 
-      if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim() || !cpf.trim()) {
-        if (!nome.trim()) errors.nome = true;
-        if (!email.trim()) errors.email = true;
-        if (!senha.trim()) errors.senha = true;
-        if (!confirmarSenha.trim()) errors.confirmarSenha = true;
-        if (!cpf.trim()) errors.cpf = true;
+    const hasEmpty = !nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim() || !cpf.trim();
 
-        setFieldErrors(errors);
-        setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
-        setError(true);
-        return;
-      }
+    if (hasEmpty) {
+      if (!nome.trim()) errors.nome = true;
+      if (!email.trim()) errors.email = true;
+      if (!senha.trim()) errors.senha = true;
+      if (!confirmarSenha.trim()) errors.confirmarSenha = true;
+      if (!cpf.trim()) errors.cpf = true;
 
-      const specificErrors = {};
-      if (!isValidEmail(email)) specificErrors.email = "Formato de e-mail inválido.";
-      if (!isValidCPFFormat(cpf)) specificErrors.cpf = "Formato de CPF inválido.";
-      if (senha !== confirmarSenha) {
-        specificErrors.senha = "As senhas não coincidem.";
-        specificErrors.confirmarSenha = "As senhas não coincidem.";
-      }
-      if (senha.length < 6) {
-          specificErrors.senha = "A senha deve ter no mínimo 6 dígitos.";
-      }
+      setFieldErrors(errors);
+      setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
+      setError(true);
+      return;
+    }
 
-      if (Object.keys(specificErrors).length > 0) {
-        setFieldErrors(specificErrors);
-        setErrorMessage("Corrija os campos em erro.");
-        setError(true);
-        return;
-      }
+    const specificErrors = {};
+    if (!isValidEmail(email)) specificErrors.email = "Formato de e-mail inválido.";
+    if (!isValidCPFFormat(cpf)) specificErrors.cpf = "Formato de CPF inválido.";
+    if (senha !== confirmarSenha) {
+      specificErrors.senha = "As senhas não coincidem.";
+      specificErrors.confirmarSenha = "As senhas não coincidem.";
+    }
+    if (senha.length < 6) {
+        specificErrors.senha = "A senha deve ter no mínimo 6 dígitos.";
+    }
 
-      try {
-        setCreating(true);
-        const created = await onSave(formData);
-        if (created) {
-          setCreatedUser(created);
-          setOpenVerification(true);
-        } else {
-          setError(true);
-          setErrorMessage('Erro ao cadastrar usuário.');
-        }
-      } catch (err) {
-        setError(true);
-        setErrorMessage(err.message || 'Erro ao cadastrar usuário.');
-      } finally {
-        setCreating(false);
-      }
+    if (Object.keys(specificErrors).length > 0) {
+      setFieldErrors(specificErrors);
+      setErrorMessage("Corrija os campos em erro.");
+      setError(true);
+      return;
+    }
+
+    setError(false);
+    setFieldErrors({});
+    setErrorMessage("");
+
+    try {
+      setCreating(true);
+      await onSave(formData);
+    } catch (err) {
+      console.error('Erro ao criar usuário:', err);
+      setError(true);
+      setErrorMessage(err.message || 'Erro ao cadastrar usuário.');
+    } finally {
+      setCreating(false);
+    }
   };
 
-  const handleVerificationSuccess = () => {
-    setOpenVerification(false);
-    onClose();
+  const resetFieldError = (name) => {
+    setError(false);
+    setFieldErrors(prev => ({ ...prev, [name]: false }));
+    setErrorMessage("");
   };
+
+  const showHelperText = (name) => error && fieldErrors[name];
 
   return (
-    <>
-      <ModalBase open={open} onClose={onClose} title="Cadastrar um novo Usuário">
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
-          {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
-          
-          <TextField 
-            autoFocus label="Nome Completo*" name="nome" value={formData.nome}
-            onChange={handleChange}
-            error={!!fieldErrors.nome} 
-            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle) }}
-          />
-          <TextField 
-            label="E-mail*" type="email" name="email" value={formData.email}
-            onChange={handleChange}
-            error={!!fieldErrors.email} 
-            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.email && errorTextFieldStyle) }}
-          />
-          <TextField 
-            label="Senha*" type="password" name="senha" value={formData.senha}
-            onChange={handleChange}
-            error={!!fieldErrors.senha} 
-            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle) }}
-          />
-          <TextField 
-            label="Confirmar Senha*" type="password" name="confirmarSenha" value={formData.confirmarSenha}
-            onChange={handleChange}
-            error={!!fieldErrors.confirmarSenha} 
-            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarSenha && errorTextFieldStyle) }}
-          />
-          <TextField 
-            label="CPF*" name="cpf" value={formData.cpf}
-            onChange={handleChange}
-            inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf}
-            sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle) }}
-          />
-
-          <FormControl component="fieldset" sx={{ mt: 1 }}>
-            <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' }, fontSize: '0.9rem' }} component="legend">Nível de Acesso:</FormLabel>
-            <RadioGroup row name="role" value={formData.role} onChange={handleChange}>
-              <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
-              <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
-            </RadioGroup>
-          </FormControl>
-        </DialogContent>
+    <ModalBase open={open} onClose={onClose} title="Cadastrar um novo Usuário">
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
+        {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
         
-        <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end', gap: 1.5 }}>
-          <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
-          <Button onClick={handleCadastrar} variant="contained" sx={yellowButtonSx} disabled={creating}>
-            {creating ? 'Criando...' : 'CADASTRAR USUÁRIO'}
-          </Button>
-        </DialogActions>
-      </ModalBase>
-
-      <ModalBase 
-        open={openVerification} 
-        onClose={() => setOpenVerification(false)}
-        title="Verificação de Usuário"
-      >
-        <DialogContent sx={{ p: 0 }}>
-            {UserVerification ? (
-            <UserVerification 
-              cpf={createdUser && createdUser.cpf_funcionario}
-              onVerificationSuccess={handleVerificationSuccess}
-              onClose={() => setOpenVerification(false)}
+        <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField 
+              autoFocus label="Nome Completo*" name="nome" value={formData.nome}
+              onChange={(e) => { handleChange(e); resetFieldError('nome'); }}
+              error={!!fieldErrors.nome} 
+              helperText={showHelperText('nome') ? "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle) }}
             />
-            ) : (
-              <Typography sx={{p:4, color: 'red'}}>Erro: Componente de verificação não encontrado.</Typography>
-            )}
-        </DialogContent>
-      </ModalBase>
-    </>
+            <TextField 
+              label="E-mail*" type="email" name="email" value={formData.email}
+              onChange={(e) => { handleChange(e); resetFieldError('email'); }}
+              error={!!fieldErrors.email} 
+              helperText={showHelperText('email') ? fieldErrors.email || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.email && errorTextFieldStyle) }}
+            />
+            <TextField 
+              label="Senha*" type="password" name="senha" value={formData.senha}
+              onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
+              error={!!fieldErrors.senha} 
+              helperText={showHelperText('senha') ? fieldErrors.senha || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle) }}
+            />
+            <TextField 
+              label="Confirmar Senha*" type="password" name="confirmarSenha" value={formData.confirmarSenha}
+              onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
+              error={!!fieldErrors.confirmarSenha} 
+              helperText={showHelperText('confirmarSenha') ? fieldErrors.confirmarSenha || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarSenha && errorTextFieldStyle) }}
+            />
+            <TextField 
+              label="CPF*" name="cpf" value={formData.cpf}
+              onChange={(e) => { handleChange(e); resetFieldError('cpf'); }}
+              inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf}
+              helperText={showHelperText('cpf') ? fieldErrors.cpf || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle) }}
+            />
+
+            <FormControl component="fieldset" sx={{ mt: 1 }}>
+              <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
+              <RadioGroup row name="role" value={formData.role} onChange={handleChange}>
+                <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
+                <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+              </RadioGroup>
+            </FormControl>
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1.5 }}>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
+        <Button onClick={handleCadastrar} variant="contained" sx={yellowButtonSx} disabled={creating}>
+          {creating ? 'Criando...' : 'CADASTRAR USUÁRIO'}
+        </Button>
+      </DialogActions>
+    </ModalBase>
   );
 }
