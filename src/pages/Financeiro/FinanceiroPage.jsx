@@ -95,7 +95,7 @@ const formatDateForAPI = (dateObj) => {
 };
 
 export default function FinanceiroPage() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
   const [transacoes, setTransacoes] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -120,8 +120,14 @@ export default function FinanceiroPage() {
       const storedData = localStorage.getItem("userData");
       if (storedData) {
         const parsedUser = JSON.parse(storedData);
-        if (parsedUser?.nivel_acesso?.toUpperCase() === "ADMINISTRADOR")
-          setIsAdmin(true);
+        const normalizeRole = (r) =>
+          String(r || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").toUpperCase();
+
+        const nivel = normalizeRole(parsedUser?.nivel_acesso);
+
+        if (nivel === "ADMINISTRADOR" || nivel === "SUPER_ADMIN") {
+          setHasAccess(true);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -484,7 +490,7 @@ export default function FinanceiroPage() {
               />
             </LocalizationProvider>
           </ThemeProvider>
-          {isAdmin && (
+          {hasAccess && (
             <MenuRelatorios
               onDownloadBalancete={() => handleDownloadReport("balancete_mes")}
               onDownloadReceitasAlunos={() =>
@@ -529,7 +535,7 @@ export default function FinanceiroPage() {
         </Box>
 
         <TabPanel value={tabValue} index={0}>
-          {isAdmin ? (
+          {hasAccess ? (
             <VisaoGeralPainel
               receitasAlunos={receitasAlunos}
               outrasReceitas={outrasReceitas}
@@ -611,7 +617,7 @@ export default function FinanceiroPage() {
               onRowsPerPageChange={handleRowsPerPageChange}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              isAdmin={isAdmin}
+              isAdmin={hasAccess}
             />
           </Box>
         </TabPanel>
@@ -691,7 +697,7 @@ export default function FinanceiroPage() {
               onRowsPerPageChange={handleRowsPerPageChange}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              isAdmin={isAdmin}
+              isAdmin={hasAccess}
             />
           </Box>
         </TabPanel>
