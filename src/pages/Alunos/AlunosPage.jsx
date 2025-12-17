@@ -395,7 +395,7 @@ export default function AlunosPage() {
       defaultFileName: `lista_alunos_${new Date().toISOString().split("T")[0]}.pdf`,
       headers: ["Nome", "Matrícula", "Plano", "Status", "Vencimento"],
       columnWidths: [180, 80, 120, 70, 90],
-      
+
       data: filteredRows.map((row) => [
         String(row.nome || ""),
         String(row.matricula || ""),
@@ -439,7 +439,8 @@ export default function AlunosPage() {
     }));
 
     try {
-      const result = await window.electronAPI.generateDetailedStudentReport(dataToSend);
+      const result =
+        await window.electronAPI.generateDetailedStudentReport(dataToSend);
       if (result.success) {
         alert(`Relatório detalhado salvo com sucesso!`);
       } else if (result.error !== "Save dialog canceled") {
@@ -528,13 +529,13 @@ export default function AlunosPage() {
           {selectedIds.length > 0 && (
             <Button
               variant="contained"
-              startIcon={<AutorenewIcon />}
-              onClick={handleRenovarClick}
+              endIcon={<AddIcon />}
+              onClick={handleAddAlunoClick}
               sx={{
-                bgcolor: "#000",
-                color: "#fff",
+                backgroundColor: "#F2D95C",
+                color: "black",
                 borderRadius: "25px",
-                "&:hover": { bgcolor: "#333" },
+                "&:hover": { backgroundColor: "#e0c850" },
               }}
             >
               Renovar ({selectedIds.length})
@@ -792,7 +793,7 @@ export default function AlunosPage() {
           </ListItemIcon>
           Relatório de alunos (Simples)
         </MenuItem>
-        
+
         <MenuItem onClick={handleDownloadDetailedReport}>
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
