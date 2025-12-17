@@ -132,7 +132,7 @@ export default function CadastroAlunoDialog({
   const [email, setEmail] = useState("");
 
   const [logradouro, setLogradouro] = useState("");
-  const [enderecoAluno, setEnderecoAluno] = useState("");
+  const [bairroComplemento, setBairroComplemento] = useState("");
   const [numero, setNumero] = useState("");
 
   const [telefone, setTelefone] = useState("");
@@ -150,7 +150,7 @@ export default function CadastroAlunoDialog({
     setDataNascimento(null);
     setEmail("");
     setLogradouro("");
-    setEnderecoAluno("");
+    setBairroComplemento("");
     setNumero("");
     setTelefone("");
     setCpf("");
@@ -215,6 +215,22 @@ export default function CadastroAlunoDialog({
       setError(true);
       return;
     }
+
+    let logradouroFinal = "";
+    const logradouroClean = logradouro.trim();
+    const bairroComplementoClean = bairroComplemento.trim();
+
+    if (logradouroClean && bairroComplementoClean) {
+        logradouroFinal = `${logradouroClean}, ${bairroComplementoClean}`;
+    } else if (logradouroClean) {
+        logradouroFinal = logradouroClean;
+    } else if (bairroComplementoClean) {
+        logradouroFinal = bairroComplementoClean;
+    } else {
+        logradouroFinal = null;
+    }
+
+
     const novoAluno = {
       matricula: gerarMatricula(),
       nome,
@@ -224,8 +240,7 @@ export default function CadastroAlunoDialog({
       dataNascimento,
       dataInicio,
 	  
-      logradouro,
-      endereco_aluno: enderecoAluno,
+      logradouro: logradouroFinal,
       numero,
 
       cod_plano: plano,
@@ -249,6 +264,8 @@ export default function CadastroAlunoDialog({
       onClose={handleCancel}
       maxWidth="xs"
       fullWidth
+	  disableEnforceFocus={true} 
+      keepMounted={false}
       PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
     >
       <DialogTitle
@@ -373,7 +390,7 @@ export default function CadastroAlunoDialog({
 
           <Box sx={{ display: "flex", gap: 1 }}>
             <TextField
-              label="Logradouro"
+              label="Endereço"
               size="small"
               placeholder="Rua, Av..."
               fullWidth
@@ -391,11 +408,11 @@ export default function CadastroAlunoDialog({
             />
           </Box>
           <TextField
-            label="Bairro/Complemento"
+            label="Bairro"
             size="small"
-            value={enderecoAluno}
-            onChange={handleChangeGeneric(setEnderecoAluno, "enderecoAluno")}
-            sx={getSx("enderecoAluno")}
+            value={bairroComplemento}
+            onChange={handleChangeGeneric(setBairroComplemento, "bairroComplemento")}
+            sx={getSx("bairroComplemento")}
           />
 
           <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>

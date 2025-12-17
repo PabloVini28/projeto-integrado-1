@@ -539,7 +539,7 @@ export default function PatrimonioPage() {
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Relatório de Patrimônio (PDF)
+          Relatório de Patrimônio
         </MenuItem>
       </Menu>
     </Paper>

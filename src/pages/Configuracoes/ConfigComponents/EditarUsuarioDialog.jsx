@@ -141,7 +141,8 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 1;
 
     return (
-        <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+        <Dialog open={open} onClose={onClose} disableEnforceFocus={true} 
+      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
             <DialogTitle fontWeight="bold" textAlign="center">Editar Usuário</DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
                 {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}

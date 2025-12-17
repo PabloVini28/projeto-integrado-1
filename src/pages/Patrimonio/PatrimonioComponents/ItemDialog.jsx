@@ -155,6 +155,8 @@ export default function ItemDialog({
       open={open}
       onClose={onClose}
       maxWidth="xs"
+	  disableEnforceFocus={true} 
+      keepMounted={false}
       fullWidth
       PaperProps={{ sx: { borderRadius: 2, p: 2 } }}
     >
