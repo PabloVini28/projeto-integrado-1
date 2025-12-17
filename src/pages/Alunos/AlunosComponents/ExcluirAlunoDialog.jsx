@@ -22,6 +22,8 @@ export default function ExcluirAlunoDialog({
     <Dialog
       open={open}
       onClose={onClose}
+	  disableEnforceFocus={true} 
+      keepMounted={false}
       PaperProps={{
         sx: {
           borderRadius: 2,

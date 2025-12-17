@@ -1,64 +1,33 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  FormLabel,
-  FormControl,
-  Typography,
+  Box, Dialog, DialogTitle, DialogContent, DialogActions, Button,
+  TextField, RadioGroup, FormControlLabel, Radio, FormLabel, FormControl,
+  Select, MenuItem, InputLabel, Typography
 } from "@mui/material";
 
 const blackFocusedStyle = {
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "black",
-  },
-  "& .MuiInputLabel-root.Mui-focused": {
-    color: "black",
-  },
-  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#343a40",
-  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "black" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "black" },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#343a40" },
 };
-
 const formatCurrency = (value) => {
   if (!value) return "";
-
-  const numeric = value.replace(/\D/g, ""); // só números
-  const number = Number(numeric) / 100;
-
-  return number.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
+  const numeric = value.replace(/\D/g, "");
+  return (Number(numeric) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 };
-
 const errorTextFieldStyle = {
-  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": {
-    borderColor: "red !important",
-  },
-  "& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "darkred !important",
-  },
-  "& .MuiInputLabel-root.Mui-error": {
-    color: "red !important",
-  },
+  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: "red !important" },
+  "& .MuiInputLabel-root.Mui-error": { color: "red !important" },
 };
 
 export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
-
   const [valor, setValor] = useState("");
   const [valorFormatado, setValorFormatado] = useState("");
-
   const [status, setStatus] = useState("Ativo");
+  
+  const [duracaoUnidade, setDuracaoUnidade] = useState("Mensal");
 
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -73,232 +42,83 @@ export function PlanoFormDialog({ open, onClose, onSave, title, planToEdit }) {
       const raw = String(Math.round(parseFloat(planToEdit.valor) * 100));
       setValor(raw);
       setValorFormatado(formatCurrency(raw));
-
       setStatus(planToEdit.status || "Ativo");
+      
+      setDuracaoUnidade(planToEdit.duracaoUnidade || planToEdit.duracao_unidade || "Mensal"); 
     } else {
-      setNome("");
-      setCodigo("");
-      setValor("");
-      setValorFormatado("");
-      setStatus("Ativo");
+      setNome(""); setCodigo(""); setValor(""); setValorFormatado("");
+      setStatus("Ativo"); setDuracaoUnidade("Mensal");
     }
-    setError(false);
-    setErrorMessage("");
-    setFieldErrors({});
+    setError(false); setErrorMessage(""); setFieldErrors({});
   }, [planToEdit, open]);
 
   const handleValueChange = (e) => {
     let raw = e.target.value.replace(/\D/g, "");
-
     if (raw.length > 12) raw = raw.slice(0, 12);
-
-    setValor(raw);
-    setValorFormatado(formatCurrency(raw));
-    resetFieldError("valor");
-  };
-
-  const handleNomeChange = (e) => {
-    setNome(e.target.value);
-    resetFieldError("nome");
-  };
-
-  const resetFieldError = (name) => {
-    setError(false);
-    setFieldErrors((prev) => ({ ...prev, [name]: false }));
-    setErrorMessage("");
+    setValor(raw); setValorFormatado(formatCurrency(raw)); setError(false);
   };
 
   const handleSave = () => {
     let errors = {};
+    if (!nome.trim()) errors.nome = true;
+    if (!valor.toString().trim()) errors.valor = true;
 
-    const isNomeEmpty = nome.trim() === "";
-    const isValorEmpty = valor.toString().trim() === "";
-
-    if (isNomeEmpty || isValorEmpty) {
-      if (isNomeEmpty) errors.nome = true;
-      if (isValorEmpty) errors.valor = true;
-
-      setFieldErrors(errors);
-      setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
-      setError(true);
-      return;
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors); setErrorMessage("Preencha todos os campos."); setError(true); return;
     }
 
     const valorNumerico = Number(valor) / 100;
-
-    if (valorNumerico <= 0) {
-      errors.valor = true;
-      setFieldErrors(errors);
-      setErrorMessage("O valor deve ser maior que zero.");
-      setError(true);
-      return;
-    }
+    if (valorNumerico <= 0) { setErrorMessage("Valor deve ser positivo."); setError(true); return; }
 
     const planoData = {
       id: planToEdit ? planToEdit.id : undefined,
       nome,
       codigo: isEditMode ? codigo : undefined,
       valor: valorNumerico,
-      status,
+      status: status, 
+      duracaoUnidade: duracaoUnidade, 
     };
 
     onSave(planoData);
     onClose();
   };
 
-  const isNomeError = !!fieldErrors.nome;
-  const isValorError = !!fieldErrors.valor;
-
-  const getSx = (isFieldInError) => ({
-    ...blackFocusedStyle,
-    ...(isFieldInError && errorTextFieldStyle),
-  });
+  const getSx = (isError) => ({ ...blackFocusedStyle, ...(isError && errorTextFieldStyle) });
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      PaperProps={{ sx: { borderRadius: 2, maxWidth: "420px" } }}
-    >
-      <DialogTitle
-        sx={{
-          textAlign: "center",
-          fontWeight: "bold",
-          fontSize: "1.5rem",
-          pt: 2,
-          pb: 0.5,
-          px: 3,
-        }}
-      >
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth disableEnforceFocus={true} 
+      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, maxWidth: "420px" } }}>
+      <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem", pt: 2 }}>
         {title || (isEditMode ? "Editar Plano" : "Cadastrar Novo Plano")}
       </DialogTitle>
-      <DialogContent sx={{ px: 3, pt: 1, pb: 0 }}>
-        {error && (
-          <Typography
-            color="error"
-            variant="body2"
-            mb={1}
-            textAlign="center"
-            fontWeight="bold"
-          >
-            {errorMessage}
-          </Typography>
-        )}
-        <Box
-          component="form"
-          sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}
-        >
-          <TextField
-            required
-            id="nome"
-            label="Nome do Plano"
-            fullWidth
-            size="small"
-            value={nome}
-            onChange={handleNomeChange}
-            error={isNomeError}
-            helperText={error && isNomeError ? fieldErrors.nome : ""}
-            sx={getSx(isNomeError)}
-          />
+      <DialogContent sx={{ px: 3, pt: 1 }}>
+        {error && <Typography color="error" variant="body2" mb={1} textAlign="center">{errorMessage}</Typography>}
+        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}>
+          <TextField required label="Nome do Plano" fullWidth size="small" value={nome} onChange={(e) => setNome(e.target.value)} error={!!fieldErrors.nome} sx={getSx(!!fieldErrors.nome)} />
+          {isEditMode && <TextField label="Código" fullWidth size="small" value={codigo} disabled />}
+          <TextField required label="Valor" fullWidth size="small" value={valorFormatado} onChange={handleValueChange} error={!!fieldErrors.valor} sx={getSx(!!fieldErrors.valor)} />
 
-          {isEditMode && (
-            <TextField
-              id="codigo"
-              label="Código do Plano"
-              fullWidth
-              size="small"
-              value={codigo}
-              disabled={true}
-              sx={{
-                "& .MuiInputBase-input.Mui-disabled": {
-                  WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
-                  color: "rgba(0, 0, 0, 0.6)",
-                },
-                ...getSx(false),
-              }}
-            />
-          )}
+          <FormControl required size="small" fullWidth sx={blackFocusedStyle}>
+              <InputLabel>Duração</InputLabel>
+              <Select value={duracaoUnidade} label="Duração" onChange={(e) => setDuracaoUnidade(e.target.value)}>
+                  <MenuItem value="Diário">Diário</MenuItem>
+                  <MenuItem value="Mensal">Mensal</MenuItem>
+                  <MenuItem value="Anual">Anual</MenuItem>
+              </Select>
+          </FormControl>
 
-          <TextField
-            required
-            id="valor"
-            label="Valor"
-            fullWidth
-            size="small"
-            value={valorFormatado}
-            onChange={handleValueChange}
-            error={isValorError}
-            helperText={error && isValorError ? fieldErrors.valor : ""}
-            sx={getSx(isValorError)}
-          />
-
-          <FormControl sx={{ pt: 1 }}>
-            <FormLabel
-              sx={{ color: "#23272b", "&.Mui-focused": { color: "#23272b" } }}
-            >
-              Status:
-            </FormLabel>
-            <RadioGroup
-              row
-              name="status-group"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              <FormControlLabel
-                value="Ativo"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={<Typography variant="body2">Ativo</Typography>}
-              />
-              <FormControlLabel
-                value="Inativo"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={<Typography variant="body2">Inativo</Typography>}
-              />
+          <FormControl component="fieldset">
+            <FormLabel component="legend" sx={{ color: "#23272b", fontSize: '0.9rem' }}>Status:</FormLabel>
+            <RadioGroup row value={status} onChange={(e) => setStatus(e.target.value)}>
+              <FormControlLabel value="Ativo" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label="Ativo" />
+              <FormControlLabel value="Inativo" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label="Inativo" />
             </RadioGroup>
           </FormControl>
         </Box>
       </DialogContent>
-      <DialogActions
-        sx={{ p: "16px 24px", justifyContent: "flex-end", gap: 1 }}
-      >
-        <Button
-          onClick={onClose}
-          variant="contained"
-          sx={{
-            backgroundColor: "#343a40",
-            color: "white",
-            fontWeight: "normal",
-            textTransform: "uppercase",
-            "&:hover": { backgroundColor: "#23272b" },
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          sx={{
-            backgroundColor: "#F2D95C",
-            color: "black",
-            fontWeight: "normal",
-            textTransform: "uppercase",
-            "&:hover": { backgroundColor: "#e0c850" },
-          }}
-        >
-          {isEditMode ? "Salvar Plano" : "Salvar Plano"}
-        </Button>
+      <DialogActions sx={{ p: 2 }}>
+        <Button onClick={onClose} variant="contained" sx={{ bgcolor: "#343a40", color: "white" }}>Cancelar</Button>
+        <Button onClick={handleSave} variant="contained" sx={{ bgcolor: "#F2D95C", color: "black" }}>Salvar</Button>
       </DialogActions>
     </Dialog>
   );

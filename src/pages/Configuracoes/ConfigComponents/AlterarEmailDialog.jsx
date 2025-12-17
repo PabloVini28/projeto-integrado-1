@@ -266,7 +266,8 @@ export default function AlterarEmailDialog({ open, onClose, onSuccess }) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+    <Dialog open={open} onClose={handleClose} disableEnforceFocus={true} 
+      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
       {renderStep()}
     </Dialog>
   );

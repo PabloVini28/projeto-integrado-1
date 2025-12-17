@@ -1,5 +1,18 @@
 const repo = require("../repositories/financeiroRepository");
+const alunoService = require('./alunoService');
 const { validateFinanceiro } = require("../models/financeiro.model");
+
+async function handleAlunoPayment(payload) {
+    if (payload.tipo === 'Receita' && payload.categoria === 'Alunos') {
+        const match = payload.nome.match(/\((.*?)\)$/);
+        const matricula = match ? match[1] : null;
+
+        if (matricula) {
+            // Persistimos o status 'Ativo' imediatamente no BD após o pagamento.
+            await alunoService.updateStatusByPayment(matricula, "Ativo");
+        }
+    }
+}
 
 async function listAll() {
   return await repo.findAll();
@@ -17,8 +30,11 @@ async function create(payload) {
     err.details = errors;
     throw err;
   }
+  
+  const created = await repo.create(payload);
+  await handleAlunoPayment(payload);
 
-  return await repo.create(payload);
+  return created;
 }
 
 async function update(id, payload) {
@@ -29,8 +45,11 @@ async function update(id, payload) {
     err.details = errors;
     throw err;
   }
+  
+  const updated = await repo.update(id, payload);
+  await handleAlunoPayment(payload);
 
-  return await repo.update(id, payload);
+  return updated;
 }
 
 async function remove(id) {

@@ -507,6 +507,8 @@ export default function ItemDialog({
       <Dialog
         open={open}
         onClose={onClose}
+		disableEnforceFocus={true} 
+      	keepMounted={false}
         maxWidth="sm"
         fullWidth
         PaperProps={{ sx: { borderRadius: 2 } }}

@@ -6,6 +6,8 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
     <Dialog
       open={open}
       onClose={onClose}
+	  disableEnforceFocus={true} 
+      keepMounted={false}
       PaperProps={{
         sx: {
           borderRadius: 2,

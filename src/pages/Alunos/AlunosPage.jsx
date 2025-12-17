@@ -22,7 +22,7 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
-  Divider,
+  Chip, // <--- Componente visual para o Status
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -37,6 +37,13 @@ import * as planosApi from "../../services/planosApiService";
 import CadastroAlunoDialog from "./AlunosComponents/CadastroAlunoDialog.jsx";
 import EditarAlunoDialog from "./AlunosComponents/EditarAlunoDialog.jsx";
 import ExcluirAlunoDialog from "./AlunosComponents/ExcluirAlunoDialog.jsx";
+
+const formatarData = (dataString) => {
+  if (!dataString) return "-";
+  const data = new Date(dataString);
+  if (isNaN(data.getTime())) return "-";
+  return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
+};
 
 const createStudentData = (
   id,
@@ -67,8 +74,8 @@ const studentColumns = [
   { id: "nome", label: "Nome do Aluno" },
   { id: "matricula", label: "Matrícula" },
   { id: "plano", label: "Plano" },
-  { id: "status", label: "Status", align: "left" },
-  { id: "data_expiracao", label: "Data de Expiração", align: "center" },
+  { id: "status", label: "Status", align: "center" },
+  { id: "data_expiracao", label: "Vencimento", align: "center" },
   { id: "actions", label: "Ação", align: "center" },
 ];
 
@@ -88,9 +95,21 @@ const DetailItem = ({ title, value }) => (
 );
 
 function RowDetails({ row }) {
-  const address = row.endereco
-    ? `${row.endereco.logradouro || ""}, ${row.endereco.numero || ""}`
-    : "Não informado";
+  const logradouroBD = row.endereco?.logradouro || "";
+  const partes = logradouroBD
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  let logradouroDisplay = "Não informado";
+  let bairroDisplay = "Não informado";
+  if (partes.length >= 2) {
+    logradouroDisplay = partes[0];
+    bairroDisplay = partes[1];
+  } else if (partes.length === 1) {
+    logradouroDisplay = "Não informado";
+    bairroDisplay = partes[0];
+  }
+
   return (
     <Box
       sx={{
@@ -115,18 +134,9 @@ function RowDetails({ row }) {
         <DetailItem title="Data de Nasc." value={row.dataNascimento} />
         <DetailItem title="Email" value={row.email} />
         <DetailItem title="Telefone" value={row.telefone} />
-        <Grid item xs={12} sm={6} md={4}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "block", textTransform: "uppercase" }}
-          >
-            Endereço
-          </Typography>
-          <Typography variant="body1" fontWeight="medium">
-            {address}
-          </Typography>
-        </Grid>
+        <DetailItem title="Endereço" value={logradouroDisplay} />
+        <DetailItem title="Bairro" value={bairroDisplay} />
+        <DetailItem title="Número" value={row.endereco?.numero} />
         <DetailItem title="Data de Registro" value={row.data_matricula} />
       </Grid>
     </Box>
@@ -146,17 +156,14 @@ const blackFocusedStyle = {
 export default function AlunosPage() {
   const [rows, setRows] = useState([]);
   const [listaPlanos, setListaPlanos] = useState([]);
-
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [cadastroOpen, setCadastroOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
   const [openRowId, setOpenRowId] = useState(null);
-
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [anchorElReport, setAnchorElReport] = useState(null);
 
@@ -166,16 +173,13 @@ export default function AlunosPage() {
         planosApi.getPlanos(),
         alunosApi.getAlunos(),
       ]);
-
       setListaPlanos(resPlanos.data);
 
       const alunosFormatados = resAlunos.data.map((a) => {
-        const dataNasc = a.data_nascimento
-          ? new Date(a.data_nascimento).toLocaleDateString("pt-BR")
-          : "-";
-        const dataMatr = a.created_at
-          ? new Date(a.created_at).toLocaleDateString("pt-BR")
-          : "-";
+        const dataNasc = formatarData(a.data_nascimento);
+        const dataMatr = formatarData(a.created_at);
+        const dataExpiracao =
+          a.data_expiracao_formatada || formatarData(a.data_expiracao);
 
         return createStudentData(
           a.matricula,
@@ -184,7 +188,7 @@ export default function AlunosPage() {
           a.nome_plano || "Plano não encontrado",
           a.cod_plano,
           dataMatr,
-          "-",
+          dataExpiracao,
           a.status_aluno,
           {
             email: a.email_aluno,
@@ -192,10 +196,7 @@ export default function AlunosPage() {
             telefone: a.telefone,
             dataNascimento: dataNasc,
             genero: a.genero || "Não informado",
-            endereco: {
-              logradouro: a.logradouro,
-              numero: a.numero,
-            },
+            endereco: { logradouro: a.logradouro, numero: a.numero },
           }
         );
       });
@@ -221,14 +222,13 @@ export default function AlunosPage() {
 
   const filteredRows = useMemo(() => {
     let tempRows = rows;
-    if (statusFilter !== "Todos") {
+    if (statusFilter !== "Todos")
       tempRows = tempRows.filter((row) => row.status === statusFilter);
-    }
     if (searchTerm) {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      const lower = searchTerm.toLowerCase();
       tempRows = tempRows.filter(
         (row) =>
-          row.nome.toLowerCase().includes(lowerCaseSearchTerm) ||
+          row.nome.toLowerCase().includes(lower) ||
           row.matricula.includes(searchTerm)
       );
     }
@@ -237,13 +237,11 @@ export default function AlunosPage() {
 
   const handleAddAlunoClick = () => setCadastroOpen(true);
   const handleEdit = (id) => {
-    const aluno = rows.find((row) => row.id === id);
-    setAlunoSelecionado(aluno);
+    setAlunoSelecionado(rows.find((row) => row.id === id));
     setEditOpen(true);
   };
   const handleDelete = (id) => {
-    const aluno = rows.find((row) => row.id === id);
-    setAlunoSelecionado(aluno);
+    setAlunoSelecionado(rows.find((row) => row.id === id));
     setDeleteOpen(true);
   };
   const handleCloseDialogs = () => {
@@ -263,23 +261,16 @@ export default function AlunosPage() {
         cod_plano: novoAluno.cod_plano,
         data_nascimento: novoAluno.dataNascimento,
         telefone: novoAluno.telefone,
-        logradouro: novoAluno.endereco,
-        numero: "S/N",
-        status_aluno: "Ativo",
+        logradouro: novoAluno.logradouro,
+        numero: novoAluno.numero || "S/N",
         genero: novoAluno.genero,
       };
-
       await alunosApi.createAluno(payload);
       alert("Aluno cadastrado com sucesso!");
       loadData();
       setCadastroOpen(false);
     } catch (err) {
-      console.error(err);
-      const msg =
-        err.response?.data?.details?.join("\n") ||
-        err.response?.data?.message ||
-        "Erro ao cadastrar.";
-      alert(`Erro: ${msg}`);
+      alert(`Erro: ${err.response?.data?.message || "Erro ao cadastrar."}`);
     }
   };
 
@@ -293,24 +284,18 @@ export default function AlunosPage() {
         cod_plano: alunoEditado.cod_plano,
         data_nascimento: alunoEditado.dataNascimento,
         telefone: alunoEditado.telefone,
-        logradouro: alunoEditado.endereco,
+        logradouro: alunoEditado.logradouro,
+        numero: alunoEditado.numero || "S/N",
         genero: alunoEditado.genero,
-        status_aluno: alunoEditado.status || "Ativo",
+        status_aluno: alunoEditado.status,
       };
-
       await alunosApi.updateAluno(alunoEditado.id, payload);
-
-      alert("Aluno atualizado com sucesso!");
+      alert("Aluno atualizado!");
       loadData();
       setEditOpen(false);
       setAlunoSelecionado(null);
     } catch (err) {
-      console.error(err);
-      const msg =
-        err.response?.data?.details?.join("\n") ||
-        err.response?.data?.message ||
-        "Erro ao editar.";
-      alert(msg);
+      alert("Erro ao editar.");
     }
   };
 
@@ -318,15 +303,10 @@ export default function AlunosPage() {
     if (alunoSelecionado) {
       try {
         await alunosApi.deleteAluno(alunoSelecionado.id);
-        alert("Aluno excluído com sucesso!");
+        alert("Aluno excluído!");
         loadData();
       } catch (err) {
-        console.error(err);
-        const msg =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Erro ao excluir.";
-        alert(msg);
+        alert("Erro ao excluir.");
       }
     }
     setDeleteOpen(false);
@@ -336,55 +316,66 @@ export default function AlunosPage() {
   const handleReportMenuClick = (event) =>
     setAnchorElReport(event.currentTarget);
   const handleReportMenuClose = () => setAnchorElReport(null);
-  const handleDownloadReport = async (reportType) => {
+  const handleDownloadSimpleReport = async () => {
     handleReportMenuClose();
-    let dataToExport = [];
-    let reportTitle = "Relatório de Alunos";
-    let apiCallFunction;
-    let isDetailed = reportType.includes("detalhado");
-    let filterType = reportType.split("-")[0];
 
-    switch (filterType) {
-      case "ativos":
-        dataToExport = rows.filter((row) => row.status === "Ativo");
-        break;
-      case "inativos":
-        dataToExport = rows.filter((row) => row.status === "Inativo");
-        break;
-      case "todos":
-      default:
-        dataToExport = rows;
-        break;
-    }
-
-    reportTitle = `Relatório de Alunos (${filterType.charAt(0).toUpperCase() + filterType.slice(1)})`;
-    if (isDetailed) reportTitle += " - Detalhado";
-
-    if (isDetailed) {
-      apiCallFunction = () =>
-        window.electronAPI.generateDetailedStudentReport(dataToExport);
-    } else {
-      const reportOptions = {
-        title: reportTitle,
-        defaultFileName: `relatorio_alunos_${filterType}.pdf`,
-        headers: ["Nome", "Matrícula", "Plano", "Status", "Expiração"],
-        columnWidths: [240, 100, 120, 100, 100],
-        data: dataToExport.map((row) => [
-          row.nome,
-          row.matricula,
-          row.plano,
-          row.status,
-          row.data_expiracao,
-        ]),
-      };
-      apiCallFunction = () => window.electronAPI.generateReport(reportOptions);
-    }
+    const reportOptions = {
+      title: "Relatório de Alunos",
+      defaultFileName: `lista_alunos_${new Date().toISOString().split("T")[0]}.pdf`,
+      headers: ["Nome", "Matrícula", "Plano", "Status", "Vencimento"],
+      columnWidths: [180, 80, 120, 70, 90],
+      
+      data: filteredRows.map((row) => [
+        String(row.nome || ""),
+        String(row.matricula || ""),
+        String(row.plano || ""),
+        String(row.status || ""),
+        String(row.data_expiracao || "-"),
+      ]),
+    };
 
     try {
-      const result = await apiCallFunction();
-      if (result.success) alert(`Relatório salvo: ${result.path}`);
+      const result = await window.electronAPI.generateReport(reportOptions);
+      if (result.success) {
+        alert(`Relatório salvo com sucesso!`);
+      } else if (result.error !== "Save dialog canceled") {
+        alert(`Erro: ${result.error}`);
+      }
     } catch (error) {
-      alert(`Erro ao gerar relatório: ${error.message}`);
+      alert(`Erro: ${error.message}`);
+    }
+  };
+
+  const handleDownloadDetailedReport = async () => {
+    handleReportMenuClose();
+
+    const dataToSend = filteredRows.map((row) => ({
+      nome: String(row.nome || ""),
+      matricula: String(row.matricula || ""),
+      plano: String(row.plano || ""),
+      data_matricula: String(row.data_matricula || ""),
+      data_expiracao: String(row.data_expiracao || ""),
+      status: String(row.status || ""),
+      cpf: String(row.cpf || ""),
+      dataNascimento: String(row.dataNascimento || ""),
+      genero: String(row.genero || ""),
+      email: String(row.email || ""),
+      telefone: String(row.telefone || ""),
+      endereco: {
+        logradouro: String(row.endereco?.logradouro || ""),
+        numero: String(row.endereco?.numero || ""),
+      },
+    }));
+
+    try {
+      const result = await window.electronAPI.generateDetailedStudentReport(dataToSend);
+      if (result.success) {
+        alert(`Relatório detalhado salvo com sucesso!`);
+      } else if (result.error !== "Save dialog canceled") {
+        alert(`Erro: ${result.error}`);
+      }
+    } catch (error) {
+      alert(`Erro: ${error.message}`);
     }
   };
 
@@ -421,7 +412,7 @@ export default function AlunosPage() {
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <TextField
             size="small"
-            placeholder="Pesquisar por Nome ou Matrícula do Aluno"
+            placeholder="Pesquisar..."
             value={searchTerm}
             onChange={handleSearchChange}
             InputProps={{
@@ -449,7 +440,6 @@ export default function AlunosPage() {
             </Select>
           </FormControl>
         </Box>
-
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
@@ -458,7 +448,6 @@ export default function AlunosPage() {
             sx={{
               color: "text.secondary",
               borderColor: "grey.400",
-              fontWeight: "normal",
               borderRadius: "25px",
             }}
           >
@@ -471,9 +460,8 @@ export default function AlunosPage() {
             sx={{
               backgroundColor: "#F2D95C",
               color: "black",
-              "&:hover": { backgroundColor: "#e0c850" },
-              fontWeight: "normal",
               borderRadius: "25px",
+              "&:hover": { backgroundColor: "#e0c850" },
             }}
           >
             Novo Aluno
@@ -528,7 +516,6 @@ export default function AlunosPage() {
                       >
                         {studentColumns.map((column) => {
                           const value = row[column.id];
-
                           if (column.id === "expand") {
                             return (
                               <TableCell
@@ -536,7 +523,6 @@ export default function AlunosPage() {
                                 sx={{ width: column.width }}
                               >
                                 <IconButton
-                                  aria-label="expand row"
                                   size="small"
                                   onClick={() =>
                                     setOpenRowId(isRowOpen ? null : row.id)
@@ -551,30 +537,49 @@ export default function AlunosPage() {
                               </TableCell>
                             );
                           }
-
-                          let cellContent = value;
+                          if (column.id === "status") {
+                            const isAtivo = value === "Ativo";
+                            return (
+                              <TableCell key={column.id} align="center">
+                                <Chip
+                                  label={value}
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: isAtivo
+                                      ? "#e8f5e9"
+                                      : "#ffebee",
+                                    color: isAtivo ? "#2e7d32" : "#c62828",
+                                    fontWeight: "bold",
+                                    border: `1px solid ${isAtivo ? "#a5d6a7" : "#ef9a9a"}`,
+                                  }}
+                                />
+                              </TableCell>
+                            );
+                          }
                           if (column.id === "actions") {
-                            cellContent = (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  gap: 0.5,
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleEdit(row.id)}
+                            return (
+                              <TableCell key={column.id} align="center">
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    gap: 0.5,
+                                    justifyContent: "center",
+                                  }}
                                 >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleDelete(row.id)}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleEdit(row.id)}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDelete(row.id)}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              </TableCell>
                             );
                           }
                           return (
@@ -582,7 +587,7 @@ export default function AlunosPage() {
                               key={column.id}
                               align={column.align || "left"}
                             >
-                              {cellContent}
+                              {value}
                             </TableCell>
                           );
                         })}
@@ -603,7 +608,6 @@ export default function AlunosPage() {
             </TableBody>
           </Table>
         </TableContainer>
-
         <TablePagination
           rowsPerPageOptions={[10, 25, 100]}
           component="div"
@@ -623,7 +627,6 @@ export default function AlunosPage() {
         onSave={handleSaveNovoAluno}
         listaPlanos={listaPlanos}
       />
-
       <EditarAlunoDialog
         open={editOpen}
         onClose={handleCloseDialogs}
@@ -631,14 +634,12 @@ export default function AlunosPage() {
         alunoParaEditar={alunoSelecionado}
         listaPlanos={listaPlanos}
       />
-
       <ExcluirAlunoDialog
         open={deleteOpen}
         onClose={handleCloseDialogs}
         onConfirm={handleConfirmDelete}
         alunoParaExcluir={alunoSelecionado}
       />
-
       <Menu
         anchorEl={anchorElReport}
         open={Boolean(anchorElReport)}
@@ -646,11 +647,18 @@ export default function AlunosPage() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <MenuItem onClick={() => handleDownloadReport("todos")}>
+        <MenuItem onClick={handleDownloadSimpleReport}>
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Todos os Alunos
+          Relatório de alunos (Simples)
+        </MenuItem>
+        
+        <MenuItem onClick={handleDownloadDetailedReport}>
+          <ListItemIcon>
+            <PictureAsPdfIcon fontSize="small" />
+          </ListItemIcon>
+          Relatório de alunos (Detalhado)
         </MenuItem>
       </Menu>
     </Paper>

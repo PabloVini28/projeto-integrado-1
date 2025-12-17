@@ -52,7 +52,8 @@ export default function ExcluirUsuarioDialog({ open, onClose, onConfirm, user, c
   if (!user) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
+    <Dialog open={open} onClose={onClose} disableEnforceFocus={true} 
+      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
       <DialogTitle fontWeight="bold" textAlign="center" sx={{ px: 3, pt: 3, pb: 2, fontSize: '1.5rem' }}>
         {user && currentUser && user.id === currentUser.id
           ? `Você tem certeza que deseja excluir seu usuário: ${user?.nome}?`

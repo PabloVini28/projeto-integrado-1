@@ -33,6 +33,20 @@ async function create(dados) {
   return res.rows[0];
 }
 
+async function findLastPaymentDateByMatricula(matricula) {
+    const q = `
+        SELECT data 
+        FROM financeiro 
+        WHERE tipo = 'Receita' 
+        AND categoria = 'Alunos' 
+        AND nome LIKE $1
+        ORDER BY data DESC
+        LIMIT 1
+    `;
+    const r = await pool.query(q, [`%(${matricula})%`]);
+    return r.rows[0]?.data || null;
+}
+
 async function update(id, dados) {
   const query = `
     UPDATE financeiro 
@@ -59,4 +73,4 @@ async function remove(id) {
   return res.rows[0] || null;
 }
 
-module.exports = { findAll, findById, create, update, remove };
+module.exports = { findLastPaymentDateByMatricula, findAll, findById, create, update, remove };
