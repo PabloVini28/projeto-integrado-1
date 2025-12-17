@@ -63,7 +63,7 @@ export default function AdminArea({
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h4" fontWeight="Semi bold">
+        <Typography variant="h5" fontWeight="Semi bold">
           Área do Administrador
         </Typography>
       </Box>
