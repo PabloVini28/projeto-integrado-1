@@ -114,11 +114,9 @@ export default function EditarAlunoDialog({
   const [nome, setNome] = useState("");
   const [dataNascimento, setDataNascimento] = useState(null);
   const [email, setEmail] = useState("");
-
   const [logradouro, setLogradouro] = useState("");
   const [bairroComplemento, setBairroComplemento] = useState("");
   const [numero, setNumero] = useState("");
-
   const [telefone, setTelefone] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataInicio, setDataInicio] = useState(null);
@@ -132,37 +130,37 @@ export default function EditarAlunoDialog({
   useEffect(() => {
     if (alunoParaEditar) {
       setNome(alunoParaEditar.nome || "");
-      setPlano(alunoParaEditar.cod_plano || "");
+
+      const p = alunoParaEditar.cod_plano || "";
+      setPlano(p);
+
       setGenero(alunoParaEditar.genero || "prefiro");
       setEmail(alunoParaEditar.email || "");
 
       const logradouroBD = alunoParaEditar.endereco?.logradouro || "";
-      const partes = logradouroBD.split(",").map(s => s.trim()).filter(Boolean);
-
+      const partes = logradouroBD
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
       let logradouroInicial = "";
       let bairroComplementoInicial = "";
-
       if (partes.length >= 2) {
-          logradouroInicial = partes[0];
-          bairroComplementoInicial = partes[1];
+        logradouroInicial = partes[0];
+        bairroComplementoInicial = partes[1];
       } else if (partes.length === 1) {
-          bairroComplementoInicial = partes[0];
+        bairroComplementoInicial = partes[0];
       }
-
       setLogradouro(logradouroInicial);
       setBairroComplemento(bairroComplementoInicial);
       setNumero(alunoParaEditar.endereco?.numero || "");
-
       setTelefone(alunoParaEditar.telefone || "");
       setCpf(alunoParaEditar.cpf || "");
 
       const parseDate = (dateString) => {
         if (!dateString) return null;
         if (dateString instanceof Date) return dateString;
-
         const d = new Date(dateString);
         if (!isNaN(d.getTime())) return d;
-
         if (typeof dateString === "string" && dateString.includes("/")) {
           const parts = dateString.split("/");
           if (parts.length === 3)
@@ -197,13 +195,11 @@ export default function EditarAlunoDialog({
     setCpf(formatCPF(e.target.value));
     if (fieldErrors.cpf) setFieldErrors((prev) => ({ ...prev, cpf: false }));
   };
-
   const handleTelefoneChange = (e) => {
     setTelefone(formatTelefone(e.target.value));
     if (fieldErrors.telefone)
       setFieldErrors((prev) => ({ ...prev, telefone: false }));
   };
-
   const handleChangeGeneric = (setter, field) => (e) => {
     setter(e.target.value);
     if (fieldErrors[field])
@@ -218,7 +214,6 @@ export default function EditarAlunoDialog({
     if (!nome.trim()) errors.nome = true;
     if (!email.trim()) errors.email = true;
     if (!cpf.trim()) errors.cpf = true;
-    if (!plano) errors.plano = true;
     if (!dataNascimento) errors.dataNascimento = true;
     if (!dataInicio) errors.dataInicio = true;
 
@@ -247,31 +242,28 @@ export default function EditarAlunoDialog({
     const bairroComplementoClean = bairroComplemento.trim();
 
     if (logradouroClean && bairroComplementoClean) {
-        logradouroFinal = `${logradouroClean}, ${bairroComplementoClean}`;
+      logradouroFinal = `${logradouroClean}, ${bairroComplementoClean}`;
     } else if (logradouroClean) {
-        logradouroFinal = logradouroClean;
+      logradouroFinal = logradouroClean;
     } else if (bairroComplementoClean) {
-        logradouroFinal = bairroComplementoClean;
+      logradouroFinal = bairroComplementoClean;
     }
 
     const alunoEditado = {
       id: alunoParaEditar.id,
       matricula: alunoParaEditar.matricula,
-
       nome,
       email,
       cpf,
       telefone,
       dataNascimento,
       dataInicio,
-
       logradouro: logradouroFinal,
       numero,
       cod_plano: plano,
       genero,
     };
 
-    console.log("Salvando aluno editado:", alunoEditado);
     onSave(alunoEditado);
     onClose();
   };
@@ -287,7 +279,7 @@ export default function EditarAlunoDialog({
       onClose={onClose}
       maxWidth="xs"
       fullWidth
-	  disableEnforceFocus={true} 
+      disableEnforceFocus={true}
       keepMounted={false}
       PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
     >
@@ -338,7 +330,6 @@ export default function EditarAlunoDialog({
           <Typography variant="subtitle1" sx={{ fontWeight: "bold", mt: 1 }}>
             Informações Pessoais:
           </Typography>
-
           <TextField
             required
             label="Nome Completo"
@@ -348,7 +339,6 @@ export default function EditarAlunoDialog({
             error={!!fieldErrors.nome}
             sx={getSx("nome")}
           />
-
           <ThemeProvider theme={blackTheme}>
             <LocalizationProvider
               dateAdapter={AdapterDateFns}
@@ -370,7 +360,6 @@ export default function EditarAlunoDialog({
               />
             </LocalizationProvider>
           </ThemeProvider>
-
           <TextField
             required
             label="E-mail"
@@ -381,7 +370,6 @@ export default function EditarAlunoDialog({
             error={!!fieldErrors.email}
             sx={getSx("email")}
           />
-
           <TextField
             required
             label="CPF"
@@ -393,7 +381,6 @@ export default function EditarAlunoDialog({
             error={!!fieldErrors.cpf}
             sx={getSx("cpf")}
           />
-
           <TextField
             label="Telefone"
             size="small"
@@ -404,6 +391,7 @@ export default function EditarAlunoDialog({
             error={!!fieldErrors.telefone}
             sx={getSx("telefone")}
           />
+
           <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
             Endereço:{" "}
             <Typography component="span" color="text.secondary">
@@ -433,14 +421,16 @@ export default function EditarAlunoDialog({
             label="Bairro"
             size="small"
             value={bairroComplemento}
-            onChange={handleChangeGeneric(setBairroComplemento, "bairroComplemento")}
+            onChange={handleChangeGeneric(
+              setBairroComplemento,
+              "bairroComplemento"
+            )}
             sx={getSx("bairroComplemento")}
           />
 
           <Typography variant="subtitle1" sx={{ fontWeight: "bold", pt: 1 }}>
             Informações Administrativas:
           </Typography>
-
           <ThemeProvider theme={blackTheme}>
             <LocalizationProvider
               dateAdapter={AdapterDateFns}
@@ -464,22 +454,10 @@ export default function EditarAlunoDialog({
             </LocalizationProvider>
           </ThemeProvider>
 
-          <FormControl
-            fullWidth
-            size="small"
-            required
-            error={!!fieldErrors.plano}
-          >
+          <FormControl fullWidth size="small" disabled>
             <InputLabel
               id="edit-plano-select-label"
-              sx={
-                fieldErrors.plano
-                  ? { color: "red !important" }
-                  : {
-                      color: "rgba(0, 0, 0, 0.6)",
-                      "&.Mui-focused": { color: "black" },
-                    }
-              }
+              sx={{ color: "rgba(0, 0, 0, 0.6) !important" }}
             >
               Plano
             </InputLabel>
@@ -488,29 +466,23 @@ export default function EditarAlunoDialog({
               value={plano}
               label="Plano"
               onChange={(e) => setPlano(e.target.value)}
-              sx={
-                fieldErrors.plano
-                  ? {
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "red !important",
-                      },
-                    }
-                  : {
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "black",
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#343a40",
-                      },
-                    }
-              }
+              displayEmpty
             >
+              <MenuItem value="">
+                <em>Sem Plano</em>
+              </MenuItem>
               {listaPlanos.map((p) => (
                 <MenuItem key={p.cod_plano} value={p.cod_plano}>
                   {p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}
                 </MenuItem>
               ))}
             </Select>
+            <Typography
+              variant="caption"
+              sx={{ mt: 0.5, color: "text.secondary", fontSize: "0.7rem" }}
+            >
+              Para alterar o plano, utilize a opção "Renovar" na tabela.
+            </Typography>
           </FormControl>
 
           <FormControl sx={{ pt: 1, pb: 1 }}>
