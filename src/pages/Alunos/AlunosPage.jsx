@@ -316,9 +316,67 @@ export default function AlunosPage() {
   const handleReportMenuClick = (event) =>
     setAnchorElReport(event.currentTarget);
   const handleReportMenuClose = () => setAnchorElReport(null);
-  const handleDownloadReport = async () => {
+  const handleDownloadSimpleReport = async () => {
     handleReportMenuClose();
-    alert("Relatório em breve...");
+
+    const reportOptions = {
+      title: "Relatório de Alunos",
+      defaultFileName: `lista_alunos_${new Date().toISOString().split("T")[0]}.pdf`,
+      headers: ["Nome", "Matrícula", "Plano", "Status", "Vencimento"],
+      columnWidths: [180, 80, 120, 70, 90],
+      
+      data: filteredRows.map((row) => [
+        String(row.nome || ""),
+        String(row.matricula || ""),
+        String(row.plano || ""),
+        String(row.status || ""),
+        String(row.data_expiracao || "-"),
+      ]),
+    };
+
+    try {
+      const result = await window.electronAPI.generateReport(reportOptions);
+      if (result.success) {
+        alert(`Relatório salvo com sucesso!`);
+      } else if (result.error !== "Save dialog canceled") {
+        alert(`Erro: ${result.error}`);
+      }
+    } catch (error) {
+      alert(`Erro: ${error.message}`);
+    }
+  };
+
+  const handleDownloadDetailedReport = async () => {
+    handleReportMenuClose();
+
+    const dataToSend = filteredRows.map((row) => ({
+      nome: String(row.nome || ""),
+      matricula: String(row.matricula || ""),
+      plano: String(row.plano || ""),
+      data_matricula: String(row.data_matricula || ""),
+      data_expiracao: String(row.data_expiracao || ""),
+      status: String(row.status || ""),
+      cpf: String(row.cpf || ""),
+      dataNascimento: String(row.dataNascimento || ""),
+      genero: String(row.genero || ""),
+      email: String(row.email || ""),
+      telefone: String(row.telefone || ""),
+      endereco: {
+        logradouro: String(row.endereco?.logradouro || ""),
+        numero: String(row.endereco?.numero || ""),
+      },
+    }));
+
+    try {
+      const result = await window.electronAPI.generateDetailedStudentReport(dataToSend);
+      if (result.success) {
+        alert(`Relatório detalhado salvo com sucesso!`);
+      } else if (result.error !== "Save dialog canceled") {
+        alert(`Erro: ${result.error}`);
+      }
+    } catch (error) {
+      alert(`Erro: ${error.message}`);
+    }
   };
 
   return (
@@ -589,11 +647,18 @@ export default function AlunosPage() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <MenuItem onClick={() => handleDownloadReport("todos")}>
+        <MenuItem onClick={handleDownloadSimpleReport}>
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Todos os Alunos
+          Relatório de alunos (Simples)
+        </MenuItem>
+        
+        <MenuItem onClick={handleDownloadDetailedReport}>
+          <ListItemIcon>
+            <PictureAsPdfIcon fontSize="small" />
+          </ListItemIcon>
+          Relatório de alunos (Detalhado)
         </MenuItem>
       </Menu>
     </Paper>

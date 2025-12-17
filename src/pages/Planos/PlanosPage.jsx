@@ -212,7 +212,34 @@ export default function PlanosPage() {
   const handleReportMenuClose = () => setAnchorElReport(null);
   const handleDownloadReport = async () => {
     handleReportMenuClose();
-    alert("Funcionalidade em desenvolvimento");
+
+    const reportOptions = {
+      title: "Relatório de Planos",
+      defaultFileName: `relatorio_planos_${new Date().toISOString().split("T")[0]}.pdf`,
+      headers: ["Nome do Plano", "Código", "Valor", "Duração", "Status"],
+      columnWidths: [180, 70, 90, 110, 90],
+      
+      data: filteredRows.map((row) => [
+        String(row.nome || ""),
+        String(row.codigo || ""), 
+        String(row.valor || ""),
+        String(row.duracaoUnidade || "-"),
+        String(row.status || ""),
+      ]),
+    };
+
+    try {
+      const result = await window.electronAPI.generateReport(reportOptions);
+
+      if (result.success) {
+        alert(`Relatório salvo com sucesso em:\n${result.path}`);
+      } else if (result.error !== "Save dialog canceled") {
+        alert(`Falha ao salvar relatório: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Erro na geração do relatório:", error);
+      alert(`Erro ao gerar relatório: ${error.message}`);
+    }
   };
 
   return (
@@ -440,7 +467,7 @@ export default function PlanosPage() {
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Relatório de Planos (PDF)
+          Relatório de Planos
         </MenuItem>
       </Menu>
     </Paper>
