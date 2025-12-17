@@ -594,6 +594,7 @@ export default function FinanceiroPage() {
                   backgroundColor: "#F2D95C",
                   color: "black",
                   borderRadius: "50px",
+                  "&:hover": { backgroundColor: "#e0c850" },
                 }}
               >
                 Registrar Receita
@@ -673,6 +674,7 @@ export default function FinanceiroPage() {
                   backgroundColor: "#F2D95C",
                   color: "black",
                   borderRadius: "50px",
+                  "&:hover": { backgroundColor: "#e0c850" },
                 }}
               >
                 Registrar Despesa
