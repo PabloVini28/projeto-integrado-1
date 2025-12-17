@@ -651,14 +651,14 @@ export default function AlunosPage() {
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Relatório Simples
+          Relatório de alunos (Simples)
         </MenuItem>
         
         <MenuItem onClick={handleDownloadDetailedReport}>
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Relatório Detalhado
+          Relatório de alunos (Detalhado)
         </MenuItem>
       </Menu>
     </Paper>
