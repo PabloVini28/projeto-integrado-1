@@ -22,12 +22,14 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
-  Chip, // <--- Componente visual para o Status
+  Chip,
+  Checkbox,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -37,9 +39,13 @@ import * as planosApi from "../../services/planosApiService";
 import CadastroAlunoDialog from "./AlunosComponents/CadastroAlunoDialog.jsx";
 import EditarAlunoDialog from "./AlunosComponents/EditarAlunoDialog.jsx";
 import ExcluirAlunoDialog from "./AlunosComponents/ExcluirAlunoDialog.jsx";
+import RenovarPlanoDialog from "./AlunosComponents/RenovarPlanoDialog.jsx";
 
 const formatarData = (dataString) => {
   if (!dataString) return "-";
+  if (dataString === "Sem Plano" || dataString === "Expirado")
+    return dataString;
+
   const data = new Date(dataString);
   if (isNaN(data.getTime())) return "-";
   return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
@@ -159,13 +165,18 @@ export default function AlunosPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+
   const [cadastroOpen, setCadastroOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [renovarOpen, setRenovarOpen] = useState(false);
+
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
   const [openRowId, setOpenRowId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [anchorElReport, setAnchorElReport] = useState(null);
+
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const loadData = async () => {
     try {
@@ -185,7 +196,7 @@ export default function AlunosPage() {
           a.matricula,
           a.nome_aluno,
           a.matricula,
-          a.nome_plano || "Plano não encontrado",
+          a.nome_plano || "Sem Plano",
           a.cod_plano,
           dataMatr,
           dataExpiracao,
@@ -235,15 +246,68 @@ export default function AlunosPage() {
     return tempRows;
   }, [searchTerm, statusFilter, rows]);
 
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = filteredRows.map((n) => n.matricula);
+      setSelectedIds(newSelecteds);
+      return;
+    }
+    setSelectedIds([]);
+  };
+
+  const handleClickCheckbox = (event, matricula) => {
+    const selectedIndex = selectedIds.indexOf(matricula);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selectedIds, matricula);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selectedIds.slice(1));
+    } else if (selectedIndex === selectedIds.length - 1) {
+      newSelected = newSelected.concat(selectedIds.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selectedIds.slice(0, selectedIndex),
+        selectedIds.slice(selectedIndex + 1)
+      );
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const isSelected = (matricula) => selectedIds.indexOf(matricula) !== -1;
+
+  const handleRenovarClick = () => {
+    if (selectedIds.length === 0)
+      return alert("Selecione pelo menos um aluno.");
+    setRenovarOpen(true);
+  };
+
+  const handleConfirmRenovacao = async (codPlano) => {
+    try {
+      await alunosApi.renovarPlano({
+        matriculas: selectedIds,
+        cod_plano: codPlano,
+      });
+      alert("Renovação realizada com sucesso!");
+      setRenovarOpen(false);
+      setSelectedIds([]);
+      loadData();
+    } catch (err) {
+      alert(`Erro ao renovar: ${err.response?.data?.error || err.message}`);
+    }
+  };
+
   const handleAddAlunoClick = () => setCadastroOpen(true);
   const handleEdit = (id) => {
     setAlunoSelecionado(rows.find((row) => row.id === id));
     setEditOpen(true);
   };
+
   const handleDelete = (id) => {
     setAlunoSelecionado(rows.find((row) => row.id === id));
     setDeleteOpen(true);
   };
+
   const handleCloseDialogs = () => {
     setCadastroOpen(false);
     setEditOpen(false);
@@ -301,6 +365,13 @@ export default function AlunosPage() {
 
   const handleConfirmDelete = async () => {
     if (alunoSelecionado) {
+      if (alunoSelecionado.status === "Ativo") {
+        alert("Não é permitido excluir um aluno Ativo. Inative-o primeiro.");
+        setDeleteOpen(false);
+        setAlunoSelecionado(null);
+        return;
+      }
+
       try {
         await alunosApi.deleteAluno(alunoSelecionado.id);
         alert("Aluno excluído!");
@@ -453,6 +524,23 @@ export default function AlunosPage() {
           >
             Relatórios
           </Button>
+
+          {selectedIds.length > 0 && (
+            <Button
+              variant="contained"
+              startIcon={<AutorenewIcon />}
+              onClick={handleRenovarClick}
+              sx={{
+                bgcolor: "#000",
+                color: "#fff",
+                borderRadius: "25px",
+                "&:hover": { bgcolor: "#333" },
+              }}
+            >
+              Renovar ({selectedIds.length})
+            </Button>
+          )}
+
           <Button
             variant="contained"
             endIcon={<AddIcon />}
@@ -484,6 +572,20 @@ export default function AlunosPage() {
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    color="primary"
+                    indeterminate={
+                      selectedIds.length > 0 &&
+                      selectedIds.length < filteredRows.length
+                    }
+                    checked={
+                      filteredRows.length > 0 &&
+                      selectedIds.length === filteredRows.length
+                    }
+                    onChange={handleSelectAllClick}
+                  />
+                </TableCell>
                 {studentColumns.map((column) => (
                   <TableCell
                     key={column.id}
@@ -504,16 +606,30 @@ export default function AlunosPage() {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row) => {
                   const isRowOpen = openRowId === row.id;
+                  const isItemSelected = isSelected(row.matricula);
+
                   return (
                     <React.Fragment key={row.id}>
                       <TableRow
                         hover
                         role="checkbox"
+                        aria-checked={isItemSelected}
+                        selected={isItemSelected}
                         tabIndex={-1}
                         sx={{
                           "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
                         }}
                       >
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            onClick={(event) =>
+                              handleClickCheckbox(event, row.matricula)
+                            }
+                          />
+                        </TableCell>
+
                         {studentColumns.map((column) => {
                           const value = row[column.id];
                           if (column.id === "expand") {
@@ -556,6 +672,21 @@ export default function AlunosPage() {
                               </TableCell>
                             );
                           }
+                          if (column.id === "data_expiracao") {
+                            const isExpired = value === "Expirado";
+                            return (
+                              <TableCell key={column.id} align="center">
+                                <Typography
+                                  variant="body2"
+                                  color={isExpired ? "error" : "textPrimary"}
+                                  fontWeight={isExpired ? "bold" : "regular"}
+                                >
+                                  {value}
+                                </Typography>
+                              </TableCell>
+                            );
+                          }
+
                           if (column.id === "actions") {
                             return (
                               <TableCell key={column.id} align="center">
@@ -595,7 +726,7 @@ export default function AlunosPage() {
                       <TableRow>
                         <TableCell
                           style={{ paddingBottom: 0, paddingTop: 0 }}
-                          colSpan={7}
+                          colSpan={8}
                         >
                           <Collapse in={isRowOpen} timeout="auto" unmountOnExit>
                             <RowDetails row={row} />
@@ -640,6 +771,14 @@ export default function AlunosPage() {
         onConfirm={handleConfirmDelete}
         alunoParaExcluir={alunoSelecionado}
       />
+
+      <RenovarPlanoDialog
+        open={renovarOpen}
+        onClose={() => setRenovarOpen(false)}
+        onConfirm={handleConfirmRenovacao}
+        listaPlanos={listaPlanos}
+      />
+
       <Menu
         anchorEl={anchorElReport}
         open={Boolean(anchorElReport)}

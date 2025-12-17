@@ -18,3 +18,5 @@ export const createAluno = (data) => apiClient.post('/', data);
 export const updateAluno = (matricula, data) => apiClient.put(`/${matricula}`, data);
 
 export const deleteAluno = (matricula) => apiClient.delete(`/${matricula}`);
+
+export const renovarPlano = (data) => apiClient.post('/renovar', data);
