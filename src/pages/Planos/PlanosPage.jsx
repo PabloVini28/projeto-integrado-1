@@ -467,7 +467,7 @@ export default function PlanosPage() {
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
           </ListItemIcon>
-          Relatório de Planos (PDF)
+          Relatório de Planos
         </MenuItem>
       </Menu>
     </Paper>
