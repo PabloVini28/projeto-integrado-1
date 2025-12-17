@@ -144,6 +144,113 @@ async function changePassword(id, senhaAtual, novaSenha) {
   return repo.updatePassword(id, newHash);
 }
 
+async function initiateEmailChange(id, currentPassword, newEmail) {
+  const funcionario = await repo.findById(id);
+  if (!funcionario) {
+    const err = new Error("Funcionário não encontrado");
+    err.status = 404;
+    throw err;
+  }
+
+  const match = await bcrypt.compare(String(currentPassword), funcionario.senha);
+  if (!match) {
+    const err = new Error("Senha atual incorreta");
+    err.status = 401;
+    throw err;
+  }
+
+  const verificationCode = generate6Digit();
+  const expiresAt = new Date(Date.now() + 1000 * 60 * CODE_EXPIRY_MINUTES);
+
+  await repo.update(funcionario.cpf_funcionario, {
+    verificationcode: verificationCode,
+    verificationcodeexpiry: expiresAt.toISOString(),
+    passwordresetcode: newEmail,
+    passwordresetexpiry: expiresAt.toISOString(),
+  });
+
+  try {
+    await emailService.sendVerificationEmail(newEmail, verificationCode);
+  } catch (err) {
+    console.error('Erro ao enviar email de verificação para novo email:', err);
+  }
+
+  return { message: 'Código enviado para o novo e-mail.' };
+}
+
+async function verifyEmailChange(id, code) {
+  const funcionario = await repo.findById(id);
+  if (!funcionario) {
+    const err = new Error('Funcionário não encontrado');
+    err.status = 404;
+    throw err;
+  }
+
+  const now = new Date();
+
+  if (!funcionario.verificationcode || funcionario.verificationcode !== code) {
+    const err = new Error('Código de verificação inválido');
+    err.status = 400;
+    throw err;
+  }
+
+  if (now > new Date(funcionario.verificationcodeexpiry)) {
+    const err = new Error('Código de verificação expirado');
+    err.status = 400;
+    throw err;
+  }
+
+  const newEmail = funcionario.passwordresetcode;
+  if (!newEmail) {
+    const err = new Error('Nenhum novo email pendente para alteração');
+    err.status = 400;
+    throw err;
+  }
+
+  await repo.update(funcionario.cpf_funcionario, {
+    email_funcionario: newEmail,
+    verificationcode: null,
+    verificationcodeexpiry: null,
+    passwordresetcode: null,
+    passwordresetexpiry: null,
+  });
+
+  return { message: 'Email alterado com sucesso.' };
+}
+
+async function deleteAdmin(requesterId, targetCpf, adminPassword, reason) {
+  const validatePasswordFn = async (hashArmazenado) => {
+    return bcrypt.compare(String(adminPassword), hashArmazenado);
+  };
+
+  return repo.deleteAdminTransaction(requesterId, targetCpf, reason, validatePasswordFn);
+}
+
+async function verifyAccountCreation(id, code) {
+  const funcionario = await repo.findById(id);
+  if (!funcionario) {
+    const err = new Error('Funcionário não encontrado');
+    err.status = 404;
+    throw err;
+  }
+
+  if (!funcionario.verificationcode || funcionario.verificationcode !== code) {
+    const err = new Error('Código de verificação inválido');
+    err.status = 400;
+    throw err;
+  }
+
+  if (new Date() > new Date(funcionario.verificationcodeexpiry)) {
+    const err = new Error('Código de verificação expirado');
+    err.status = 400;
+    throw err;
+  }
+
+  await repo.activateAccount(id);
+  
+  return { message: 'Conta verificada com sucesso!' };
+}
+
 module.exports = {
   listAll,
   getByCpf,
@@ -152,4 +259,8 @@ module.exports = {
   update,
   remove,
   changePassword,
+  initiateEmailChange,
+  verifyEmailChange,
+  deleteAdmin,
+  verifyAccountCreation, 
 };

@@ -52,6 +52,8 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const [fieldErrors, setFieldErrors] = useState({});
     const [errorMessage, setErrorMessage] = useState("");
 
+    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
     useEffect(() => {
         if (user) {
             setNome(user.nome || '');
@@ -90,6 +92,7 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     }
 
     const handleRoleChange = (e) => {
+        if (isSuperAdmin) return;
         setRole(e.target.value);
     };
 
@@ -158,9 +161,25 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
                 <FormControl component="fieldset" sx={{ mt: 1 }}>
                     <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
                     <RadioGroup row name="role" value={role} onChange={handleRoleChange}>
-                        <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
-                        <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+                        {isSuperAdmin ? (
+                            <FormControlLabel 
+                                value="SUPER_ADMIN" 
+                                control={<Radio size="small" checked={true} sx={{ '&.Mui-checked': { color: '#F2D95C' }, '&.Mui-disabled': { color: 'rgba(0, 0, 0, 0.38)' } }} />} 
+                                label="Super Admin" 
+                                disabled
+                            />
+                        ) : (
+                            <>
+                                <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
+                                <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+                            </>
+                        )}
                     </RadioGroup>
+                    {isSuperAdmin && (
+                         <Typography variant="caption" color="text.secondary" sx={{mt: 0.5}}>
+                            O nível de acesso de Super Admin não pode ser alterado.
+                         </Typography>
+                    )}
                 </FormControl>
 
                 <Typography variant="caption" color="text.secondary" sx={{mt: 1}}>
