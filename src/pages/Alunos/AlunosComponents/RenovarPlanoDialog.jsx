@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -11,6 +9,7 @@ import {
   MenuItem,
   Typography,
 } from "@mui/material";
+import { ModalBase } from "../../../components/ModalBase";
 
 export default function RenovarPlanoDialog({
   open,
@@ -27,23 +26,28 @@ export default function RenovarPlanoDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      disableEnforceFocus
-      disableRestoreFocus
+    <ModalBase 
+      open={open} 
+      onClose={onClose} 
+      title="Renovar Plano"
     >
-      <DialogTitle sx={{ fontWeight: "bold", textAlign: "center" }}>
-        Renovar Plano
-      </DialogTitle>
-      <DialogContent sx={{ pt: 2 }}>
+      <DialogContent sx={{ pt: 1 }}>
         <Typography
           variant="body2"
           sx={{ mb: 2, textAlign: "center" }}
-        ></Typography>
-        <FormControl fullWidth size="small">
+        >
+          Selecione o plano desejado para a renovação:
+        </Typography>
+        <FormControl 
+          fullWidth 
+          size="small"
+          sx={{
+            "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "black",
+            },
+            "& .MuiInputLabel-root.Mui-focused": { color: "black" },
+          }}
+        >
           <InputLabel>Novo Plano</InputLabel>
           <Select
             value={codPlano}
@@ -59,19 +63,35 @@ export default function RenovarPlanoDialog({
           </Select>
         </FormControl>
       </DialogContent>
-      <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} color="inherit">
+      <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
+        <Button 
+          onClick={onClose} 
+          variant="contained"
+          sx={{
+            backgroundColor: "#343a40",
+            color: "white",
+            "&:hover": { backgroundColor: "#23272b" },
+            fontWeight: "normal",
+            textTransform: "none"
+          }}
+        >
           Cancelar
         </Button>
         <Button
           onClick={handleConfirm}
           variant="contained"
-          sx={{ bgcolor: "#F2D95C", color: "black" }}
+          sx={{ 
+            bgcolor: "#F2D95C", 
+            color: "black",
+            "&:hover": { backgroundColor: "#e0c850" },
+            fontWeight: "normal",
+            textTransform: "none"
+          }}
           disabled={!codPlano}
         >
           Confirmar
         </Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

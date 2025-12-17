@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Typography, Button, Dialog, DialogTitle, DialogContent,
-    DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,
+    Typography, Button, DialogContent,
+    DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Box
 } from '@mui/material';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
     bgcolor: '#F2D95C',
@@ -141,62 +142,65 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 1;
 
     return (
-        <Dialog open={open} onClose={onClose} disableEnforceFocus={true} 
-      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-            <DialogTitle fontWeight="bold" textAlign="center">Editar Usuário</DialogTitle>
-            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
-                {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
+        <ModalBase open={open} onClose={onClose} title="Editar Usuário">
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
+                {error && (
+                    <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
+                        {errorMessage}
+                    </Typography>
+                )}
                 
-                <TextField 
-                    autoFocus label="Nome*" fullWidth variant="outlined" 
-                    value={nome} onChange={handleNomeChange} 
-                    error={!!fieldErrors.nome} 
-                    helperText={showHelperText && fieldErrors.nome ? fieldErrors.nome : ""} 
-                    sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle)}} 
-                />
-                
-                <TextField label="E-mail" fullWidth variant="outlined" value={email} disabled={true} sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)' } }} />
-                <TextField label="CPF*" fullWidth variant="outlined" value={cpf} onChange={handleCpfChange} inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf} helperText={showHelperText && fieldErrors.cpf ? fieldErrors.cpf : ""} sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle)}} />
-                
-                <FormControl component="fieldset" sx={{ mt: 1 }}>
-                    <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
-                    <RadioGroup row name="role" value={role} onChange={handleRoleChange}>
-                        {isSuperAdmin ? (
-                            <FormControlLabel 
-                                value="SUPER_ADMIN" 
-                                control={<Radio size="small" checked={true} sx={{ '&.Mui-checked': { color: '#F2D95C' }, '&.Mui-disabled': { color: 'rgba(0, 0, 0, 0.38)' } }} />} 
-                                label="Super Admin" 
-                                disabled
-                            />
-                        ) : (
-                            <>
-                                <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
-                                <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
-                            </>
+                <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <TextField 
+                        autoFocus label="Nome*" fullWidth variant="outlined" 
+                        value={nome} onChange={handleNomeChange} 
+                        error={!!fieldErrors.nome} 
+                        helperText={showHelperText && fieldErrors.nome ? fieldErrors.nome : ""} 
+                        sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle)}} 
+                    />
+                    
+                    <TextField label="E-mail" fullWidth variant="outlined" value={email} disabled={true} sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)' } }} />
+                    <TextField label="CPF*" fullWidth variant="outlined" value={cpf} onChange={handleCpfChange} inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf} helperText={showHelperText && fieldErrors.cpf ? fieldErrors.cpf : ""} sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle)}} />
+                    
+                    <FormControl component="fieldset" sx={{ mt: 1 }}>
+                        <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
+                        <RadioGroup row name="role" value={role} onChange={handleRoleChange}>
+                            {isSuperAdmin ? (
+                                <FormControlLabel 
+                                    value="SUPER_ADMIN" 
+                                    control={<Radio size="small" checked={true} sx={{ '&.Mui-checked': { color: '#F2D95C' }, '&.Mui-disabled': { color: 'rgba(0, 0, 0, 0.38)' } }} />} 
+                                    label="Super Admin" 
+                                    disabled
+                                />
+                            ) : (
+                                <>
+                                    <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
+                                    <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+                                </>
+                            )}
+                        </RadioGroup>
+                        {isSuperAdmin && (
+                            <Typography variant="caption" color="text.secondary" sx={{mt: 0.5}}>
+                                O nível de acesso de Super Admin não pode ser alterado.
+                            </Typography>
                         )}
-                    </RadioGroup>
-                    {isSuperAdmin && (
-                         <Typography variant="caption" color="text.secondary" sx={{mt: 0.5}}>
-                            O nível de acesso de Super Admin não pode ser alterado.
-                         </Typography>
-                    )}
-                </FormControl>
+                    </FormControl>
 
-                <Typography variant="caption" color="text.secondary" sx={{mt: 1}}>
-                    Digite <strong>sua senha de administrador</strong> para confirmar a alteração:
-                </Typography>
-                <TextField 
-                    label="Senha do Admin*" fullWidth variant="outlined" type="password"
-                    value={senha} onChange={handleSenhaChange} 
-                    error={!!fieldErrors.senha} 
-                    sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle)}} 
-                />
-
+                    <Typography variant="caption" color="text.secondary" sx={{mt: 1}}>
+                        Digite <strong>sua senha de administrador</strong> para confirmar a alteração:
+                    </Typography>
+                    <TextField 
+                        label="Senha do Admin*" fullWidth variant="outlined" type="password"
+                        value={senha} onChange={handleSenhaChange} 
+                        error={!!fieldErrors.senha} 
+                        sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle)}} 
+                    />
+                </Box>
             </DialogContent>
-            <DialogActions sx={{ p: '0 24px 16px' }}>
+            <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end', gap: 1.5 }}>
                 <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
                 <Button onClick={handleSave} variant="contained" sx={yellowButtonSx}>SALVAR USUÁRIO</Button>
             </DialogActions>
-        </Dialog>
+        </ModalBase>
     );
 }

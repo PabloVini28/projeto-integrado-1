@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogTitle,
+  Box,
   DialogContent,
   DialogActions,
   Button,
@@ -24,6 +23,7 @@ import { parse } from "date-fns/parse";
 import { format } from "date-fns/format";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { getAlunos } from "../../../services/alunosApiService";
+import { ModalBase } from "../../../components/ModalBase";
 
 const blackFocusedTextFieldStyle = {
   "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
@@ -267,7 +267,7 @@ export default function ItemDialog({
   };
 
   const renderReceitaForm = () => (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
+    <Grid container spacing={2} sx={{ pt: 1 }}>
       <Grid item xs={12}>
         <FormControl
           fullWidth
@@ -413,7 +413,7 @@ export default function ItemDialog({
   );
 
   const renderDespesaForm = () => (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
+    <Grid container spacing={2} sx={{ pt: 1 }}>
       <Grid item xs={12}>
         <TextField
           autoFocus
@@ -504,26 +504,12 @@ export default function ItemDialog({
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-      <Dialog
-        open={open}
-        onClose={onClose}
-		disableEnforceFocus={true} 
-      	keepMounted={false}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 2 } }}
+      <ModalBase 
+        open={open} 
+        onClose={onClose} 
+        title={title}
       >
-        <DialogTitle
-          sx={{
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: "1.5rem",
-            pb: 0,
-          }}
-        >
-          {title}
-        </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ pt: 1 }}>
           {showErrorText && (
             <Typography
               color="error"
@@ -565,7 +551,7 @@ export default function ItemDialog({
             SALVAR
           </Button>
         </DialogActions>
-      </Dialog>
+      </ModalBase>
     </LocalizationProvider>
   );
 }

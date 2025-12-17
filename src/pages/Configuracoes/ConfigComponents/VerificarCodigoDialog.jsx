@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Box, Typography, Button, Dialog, DialogTitle, DialogContent,
+  Box, Typography, Button, DialogContent,
   DialogActions, TextField,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
@@ -130,15 +131,14 @@ export default function VerificarCodigoDialog({ open, onClose, userId, onVerific
   };
 
   return (
-    <Dialog 
+    <ModalBase 
       open={open} 
-      onClose={onClose}
-      PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}
+      onClose={onClose} 
+      title={step === 'INPUT' ? "Verificar E-mail" : "Sucesso"}
     >
       {step === 'INPUT' ? (
         <>
-          <DialogTitle fontWeight="bold" textAlign="center">Verificar E-mail</DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary" textAlign="center">
               Um código de 6 dígitos foi enviado para seu e-mail.
             </Typography>
@@ -166,7 +166,7 @@ export default function VerificarCodigoDialog({ open, onClose, userId, onVerific
               Reenviar código caso não tenha chegado
             </Typography>
           </DialogContent>
-          <DialogActions sx={{ p: '0 24px 16px', justifyContent: 'center', gap: 2 }}>
+          <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'center', gap: 2 }}>
             <Button 
               onClick={onClose} 
               variant="contained" 
@@ -185,15 +185,14 @@ export default function VerificarCodigoDialog({ open, onClose, userId, onVerific
           </DialogActions>
         </>
       ) : (
-        <Box display="flex" flexDirection="column" alignItems="center" py={2}>
-          <DialogTitle fontWeight="bold" textAlign="center">Sucesso</DialogTitle>
-          <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box display="flex" flexDirection="column" alignItems="center">
+          <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 2 }}>
             <CheckCircleOutlineIcon sx={{ fontSize: 60, color: '#4caf50', mb: 2 }} />
-            <Typography variant="body1" textAlign="center" sx={{ mb: 2 }}>
+            <Typography variant="body1" textAlign="center">
               Parabéns! Seu e-mail foi<br />validado com sucesso.
             </Typography>
           </DialogContent>
-          <DialogActions sx={{ p: '0 24px 16px', justifyContent: 'center' }}>
+          <DialogActions sx={{ p: 3, justifyContent: 'center' }}>
             <Button 
               onClick={handleFinish} 
               variant="contained" 
@@ -204,6 +203,6 @@ export default function VerificarCodigoDialog({ open, onClose, userId, onVerific
           </DialogActions>
         </Box>
       )}
-    </Dialog>
+    </ModalBase>
   );
 }

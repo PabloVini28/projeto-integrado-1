@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -19,6 +17,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { ptBR } from "date-fns/locale";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { ModalBase } from "../../../components/ModalBase";
 
 const blackTheme = createTheme({
   palette: {
@@ -79,6 +78,7 @@ const blackTheme = createTheme({
     },
   },
 });
+
 export default function ItemDialog({
   open,
   onClose,
@@ -97,9 +97,8 @@ export default function ItemDialog({
   const isEditMode = !!itemToEdit;
 
   useEffect(() => {
-    if (itemToEdit) {
+    if (itemToEdit && open) {
       setNome(itemToEdit.nome || "");
-
       setCodigo(itemToEdit.codigo || itemToEdit.id_patrimonio || "");
 
       let initialDate = null;
@@ -117,7 +116,7 @@ export default function ItemDialog({
       else if (sv === "inativo") setStatus("Inativo");
       else if (sv.includes("manut")) setStatus("Em Manutenção");
       else setStatus("Ativo");
-    } else {
+    } else if (open) {
       setNome("");
       setCodigo("");
       setDataAquisicao(null);
@@ -148,30 +147,16 @@ export default function ItemDialog({
       status_patrimonio: status,
     };
     onSave(itemData);
+    onClose();
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-	  disableEnforceFocus={true} 
-      keepMounted={false}
-      fullWidth
-      PaperProps={{ sx: { borderRadius: 2, p: 2 } }}
+    <ModalBase 
+      open={open} 
+      onClose={onClose} 
+      title={title}
     >
-      <DialogTitle
-        sx={{
-          textAlign: "center",
-          fontWeight: "bold",
-          fontSize: "1.5rem",
-          pb: 0,
-        }}
-      >
-        {title || "Cadastre um Novo Item"}
-      </DialogTitle>
-
-      <DialogContent>
+      <DialogContent sx={{ pt: 1 }}>
         {error && (
           <Typography
             color="error"
@@ -185,7 +170,7 @@ export default function ItemDialog({
         )}
         <Box
           component="form"
-          sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
+          sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}
         >
           <ThemeProvider theme={blackTheme}>
             <TextField
@@ -211,7 +196,7 @@ export default function ItemDialog({
               />
             )}
 
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
               <DatePicker
                 label="Data de Aquisição *"
                 value={dataAquisicao}
@@ -219,6 +204,8 @@ export default function ItemDialog({
                 slotProps={{
                   textField: {
                     size: "small",
+                    fullWidth: true,
+                    required: true,
                     error: error && dataAquisicao === null,
                   },
                 }}
@@ -232,6 +219,7 @@ export default function ItemDialog({
               sx={{
                 color: "#23272b",
                 "&.Mui-focused": { color: "#23272b" },
+                fontSize: "0.9rem"
               }}
             >
               Status:
@@ -278,7 +266,7 @@ export default function ItemDialog({
       </DialogContent>
 
       <DialogActions
-        sx={{ p: "0 24px 16px", justifyContent: "flex-end", gap: 1 }}
+        sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}
       >
         <Button
           onClick={onClose}
@@ -287,7 +275,7 @@ export default function ItemDialog({
             backgroundColor: "#343a40",
             color: "white",
             fontWeight: "normal",
-            textTransform: "uppercase",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#23272b" },
           }}
         >
@@ -300,13 +288,13 @@ export default function ItemDialog({
             backgroundColor: "#F2D95C",
             color: "black",
             fontWeight: "normal",
-            textTransform: "uppercase",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#e0c850" },
           }}
         >
           Salvar Item
         </Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

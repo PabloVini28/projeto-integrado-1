@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Typography, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio
+  Typography, Button, DialogContent,
+  DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Box
 } from '@mui/material';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
@@ -138,60 +139,63 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
   const showHelperText = (name) => error && fieldErrors[name];
 
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '500px' } }}>
-      <DialogTitle fontWeight="bold" textAlign="center">Cadastrar um novo Usuário</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
+    <ModalBase open={open} onClose={onClose} title="Cadastrar um novo Usuário">
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
         {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
         
-        <TextField 
-          autoFocus label="Nome Completo*" name="nome" value={formData.nome}
-          onChange={(e) => { handleChange(e); resetFieldError('nome'); }}
-          error={!!fieldErrors.nome} 
-          helperText={showHelperText('nome') ? "Campo obrigatório" : ""}
-          sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle) }}
-        />
-        <TextField 
-          label="E-mail*" type="email" name="email" value={formData.email}
-          onChange={(e) => { handleChange(e); resetFieldError('email'); }}
-          error={!!fieldErrors.email} 
-          helperText={showHelperText('email') ? fieldErrors.email || "Campo obrigatório" : ""}
-          sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.email && errorTextFieldStyle) }}
-        />
-        <TextField 
-          label="Senha*" type="password" name="senha" value={formData.senha}
-          onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
-          error={!!fieldErrors.senha} 
-          helperText={showHelperText('senha') ? fieldErrors.senha || "Campo obrigatório" : ""}
-          sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle) }}
-        />
-        <TextField 
-          label="Confirmar Senha*" type="password" name="confirmarSenha" value={formData.confirmarSenha}
-          onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
-          error={!!fieldErrors.confirmarNovaSenha} 
-          helperText={showHelperText('confirmarNovaSenha') ? fieldErrors.confirmarSenha || "Campo obrigatório" : ""}
-          sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarNovaSenha && errorTextFieldStyle) }}
-        />
-        <TextField 
-          label="CPF*" name="cpf" value={formData.cpf}
-          onChange={(e) => { handleChange(e); resetFieldError('cpf'); }}
-          inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf}
-          helperText={showHelperText('cpf') ? fieldErrors.cpf || "Campo obrigatório" : ""}
-          sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle) }}
-        />
+        <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField 
+              autoFocus label="Nome Completo*" name="nome" value={formData.nome}
+              onChange={(e) => { handleChange(e); resetFieldError('nome'); }}
+              error={!!fieldErrors.nome} 
+              helperText={showHelperText('nome') ? "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.nome && errorTextFieldStyle) }}
+            />
+            <TextField 
+              label="E-mail*" type="email" name="email" value={formData.email}
+              onChange={(e) => { handleChange(e); resetFieldError('email'); }}
+              error={!!fieldErrors.email} 
+              helperText={showHelperText('email') ? fieldErrors.email || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.email && errorTextFieldStyle) }}
+            />
+            <TextField 
+              label="Senha*" type="password" name="senha" value={formData.senha}
+              onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
+              error={!!fieldErrors.senha} 
+              helperText={showHelperText('senha') ? fieldErrors.senha || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.senha && errorTextFieldStyle) }}
+            />
+            <TextField 
+              label="Confirmar Senha*" type="password" name="confirmarSenha" value={formData.confirmarSenha}
+              onChange={(e) => { handleChange(e); resetFieldError('senha'); resetFieldError('confirmarSenha'); }}
+              error={!!fieldErrors.confirmarSenha} 
+              helperText={showHelperText('confirmarSenha') ? fieldErrors.confirmarSenha || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarSenha && errorTextFieldStyle) }}
+            />
+            <TextField 
+              label="CPF*" name="cpf" value={formData.cpf}
+              onChange={(e) => { handleChange(e); resetFieldError('cpf'); }}
+              inputProps={{ maxLength: 14 }} error={!!fieldErrors.cpf}
+              helperText={showHelperText('cpf') ? fieldErrors.cpf || "Campo obrigatório" : ""}
+              sx={{ ...blackFocusedTextFieldStyle, ...(fieldErrors.cpf && errorTextFieldStyle) }}
+            />
+
+            <FormControl component="fieldset" sx={{ mt: 1 }}>
+              <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
+              <RadioGroup row name="role" value={formData.role} onChange={handleChange}>
+                <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
+                <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
+              </RadioGroup>
+            </FormControl>
+        </Box>
       </DialogContent>
-      <FormControl component="fieldset" sx={{ mt: 1, pl: 3 }}>
-        <FormLabel sx={{ color: '#23272b', '&.Mui-focused': { color: '#23272b' } }} component="legend">Nível de Acesso:</FormLabel>
-        <RadioGroup row name="role" value={formData.role} onChange={handleChange}>
-          <FormControlLabel value="ADMINISTRADOR" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Administrador" />
-          <FormControlLabel value="FUNCIONARIO" control={<Radio size="small" sx={{ '&.Mui-checked': { color: '#F2D95C' } }} />} label="Funcionário" />
-        </RadioGroup>
-      </FormControl>
-      <DialogActions sx={{ p: 3, justifyContent: 'flex-end', gap: 1.5 }}>
+
+      <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1.5 }}>
         <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
         <Button onClick={handleCadastrar} variant="contained" sx={yellowButtonSx} disabled={creating}>
           {creating ? 'Criando...' : 'CADASTRAR USUÁRIO'}
         </Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -22,6 +20,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { ptBR } from "date-fns/locale";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { ModalBase } from "../../../components/ModalBase";
 
 const formatCPF = (value) => {
   const numeric = value.replace(/\D/g, "");
@@ -34,9 +33,7 @@ const formatCPF = (value) => {
 
 const gerarMatricula = () => {
   const ano = new Date().getFullYear().toString().slice(-2);
-  const random = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, "0");
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
   return ano + random;
 };
 
@@ -50,10 +47,7 @@ const formatTelefone = (value) => {
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const isValidCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf);
-const isValidTelefone = (tel) => {
-  const clean = tel.replace(/\D/g, "");
-  return clean.length >= 10;
-};
+const isValidTelefone = (tel) => tel.replace(/\D/g, "").length >= 10;
 
 const blackTheme = createTheme({
   palette: { primary: { main: "#000000" } },
@@ -100,12 +94,7 @@ const errorTextFieldStyle = {
   "& .MuiInputLabel-root.Mui-error": { color: "red !important" },
 };
 
-export default function CadastroAlunoDialog({
-  open,
-  onClose,
-  onSave,
-  listaPlanos = [],
-}) {
+export default function CadastroAlunoDialog({ open, onClose, onSave, listaPlanos = [] }) {
   const [nome, setNome] = useState("");
   const [dataNascimento, setDataNascimento] = useState(null);
   const [email, setEmail] = useState("");
@@ -203,19 +192,11 @@ export default function CadastroAlunoDialog({
   });
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleCancel}
-      maxWidth="xs"
-      fullWidth
-      disableEnforceFocus={true} 
-      keepMounted={false}
-      PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
+    <ModalBase 
+      open={open} 
+      onClose={handleCancel} 
+      title="Cadastrar Novo Aluno"
     >
-      <DialogTitle sx={{ textAlign: "center", fontSize: "1.5rem", fontWeight: "bold", pt: 3, pb: 1, px: 3 }}>
-        Cadastrar Novo Aluno
-      </DialogTitle>
-
       <DialogContent
         sx={{
           px: 3, pt: 1, pb: 0,
@@ -301,9 +282,7 @@ export default function CadastroAlunoDialog({
                   <em> </em>
               </MenuItem>
               {listaPlanos.map((p) => (
-                <MenuItem key={p.cod_plano} value={p.cod_plano}>
-                  {p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}
-                </MenuItem>
+                <MenuItem key={p.cod_plano} value={p.cod_plano}>{p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -323,6 +302,6 @@ export default function CadastroAlunoDialog({
         <Button onClick={handleCancel} variant="contained" sx={{ backgroundColor: "#343a40", color: "white", "&:hover": { backgroundColor: "#23272b" }, fontWeight: "normal" }}>Cancelar</Button>
         <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: "#F2D95C", color: "black", "&:hover": { backgroundColor: "#e0c850" }, fontWeight: "normal" }}>Cadastrar aluno</Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Typography, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField,
+  Typography, Button, DialogContent,
+  DialogActions, TextField, Box
 } from '@mui/material';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
@@ -18,6 +19,12 @@ const grayButtonSx = {
   fontWeight: 'normal',
   '&:hover': { bgcolor: '#23272b' },
   textTransform: 'none',
+};
+
+const blackFocusedTextFieldStyle = {
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'black' },
+  '& .MuiInputLabel-root.Mui-focused': { color: 'black' },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#343a40' },
 };
 
 export default function ExcluirUsuarioDialog({ open, onClose, onConfirm, user, currentUser }) {
@@ -51,23 +58,26 @@ export default function ExcluirUsuarioDialog({ open, onClose, onConfirm, user, c
 
   if (!user) return null;
 
+  // Lógica para definir o título dinâmico
+  const modalTitle = user && currentUser && user.id === currentUser.id
+    ? `Você tem certeza que deseja excluir seu usuário: ${user?.nome}?`
+    : `Tem certeza que deseja excluir o usuário: ${user?.nome}?`;
+
   return (
-    <Dialog open={open} onClose={onClose} disableEnforceFocus={true} 
-      keepMounted={false} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-      <DialogTitle fontWeight="bold" textAlign="center" sx={{ px: 3, pt: 3, pb: 2, fontSize: '1.5rem' }}>
-        {user && currentUser && user.id === currentUser.id
-          ? `Você tem certeza que deseja excluir seu usuário: ${user?.nome}?`
-          : `Tem certeza que deseja excluir o usuário: ${user?.nome}?`}
-      </DialogTitle>
-      <DialogContent>
+    <ModalBase 
+      open={open} 
+      onClose={onClose} 
+      title={modalTitle}
+    >
+      <DialogContent sx={{ pt: 1 }}>
         {(() => {
           const requesterRole = (currentUser?.role || '').toUpperCase();
           const requiresPassword = requesterRole === 'ADMINISTRADOR' || requesterRole === 'SUPER_ADMIN';
 
           if (requiresPassword) {
             return (
-              <>
-                <Typography variant="body2" color="text.secondary" mb={2}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="body2" color="text.secondary">
                   Esta ação é irreversível (ou requer auditoria). É necessário digitar sua senha para confirmar.
                 </Typography>
                 <TextField
@@ -77,7 +87,7 @@ export default function ExcluirUsuarioDialog({ open, onClose, onConfirm, user, c
                   variant="outlined"
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
-                  sx={{ mt: 1, mb: 2 }}
+                  sx={blackFocusedTextFieldStyle}
                 />
                 <TextField
                   label="Motivo da exclusão (opcional)"
@@ -87,21 +97,26 @@ export default function ExcluirUsuarioDialog({ open, onClose, onConfirm, user, c
                   variant="outlined"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
+                  sx={blackFocusedTextFieldStyle}
                 />
-                {error && <Typography color="error" mt={1}>{error}</Typography>}
-              </>
+                {error && (
+                  <Typography color="error" variant="body2" textAlign="center" fontWeight="bold">
+                    {error}
+                  </Typography>
+                )}
+              </Box>
             );
           }
 
-          return <Typography sx={{ px: 3, pt: 1, pb: 2 }}>Confirme a exclusão permanente do usuário.</Typography>;
+          return <Typography>Confirme a exclusão permanente do usuário.</Typography>;
         })()}
       </DialogContent>
-      <DialogActions sx={{ p: '0 24px 16px' }}>
+      <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} variant="contained" sx={grayButtonSx}>VOLTAR</Button>
         <Button onClick={handleConfirm} variant="contained" sx={yellowButtonSx}>
           {(user?.role === 'ADMINISTRADOR' || user?.role === 'SUPER_ADMIN') ? 'DEMITIR ADMIN' : 'EXCLUIR'}
         </Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

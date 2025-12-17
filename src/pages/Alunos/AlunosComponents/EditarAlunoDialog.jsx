@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogTitle,
+  Box,
   DialogContent,
   DialogActions,
   Button,
-  Box,
   TextField,
   Typography,
   FormControl,
@@ -22,6 +20,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { ptBR } from "date-fns/locale";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { ModalBase } from "../../../components/ModalBase";
 
 const formatCPF = (value) => {
   const numeric = value.replace(/\D/g, "");
@@ -42,10 +41,7 @@ const formatTelefone = (value) => {
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const isValidCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf);
-const isValidTelefone = (tel) => {
-  const clean = tel.replace(/\D/g, "");
-  return clean.length >= 10;
-};
+const isValidTelefone = (tel) => tel.replace(/\D/g, "").length >= 10;
 
 const blackTheme = createTheme({
   palette: { primary: { main: "#000000" } },
@@ -64,15 +60,9 @@ const blackTheme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#000000",
-          },
-          "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#343a40",
-          },
-          "&.Mui-error .MuiOutlinedInput-notchedOutline": {
-            borderColor: "red !important",
-          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#000000" },
+          "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#343a40" },
+          "&.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: "red !important" },
         },
       },
     },
@@ -88,19 +78,13 @@ const blackTheme = createTheme({
 });
 
 const blackFocusedStyle = {
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "black",
-  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "black" },
   "& .MuiInputLabel-root.Mui-focused": { color: "black" },
-  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#343a40",
-  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#343a40" },
 };
 
 const errorTextFieldStyle = {
-  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": {
-    borderColor: "red !important",
-  },
+  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: "red !important" },
   "& .MuiInputLabel-root.Mui-error": { color: "red !important" },
 };
 
@@ -128,7 +112,7 @@ export default function EditarAlunoDialog({
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
-    if (alunoParaEditar) {
+    if (alunoParaEditar && open) {
       setNome(alunoParaEditar.nome || "");
 
       const p = alunoParaEditar.cod_plano || "";
@@ -163,8 +147,7 @@ export default function EditarAlunoDialog({
         if (!isNaN(d.getTime())) return d;
         if (typeof dateString === "string" && dateString.includes("/")) {
           const parts = dateString.split("/");
-          if (parts.length === 3)
-            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+          if (parts.length === 3) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
         }
         return null;
       };
@@ -186,9 +169,7 @@ export default function EditarAlunoDialog({
       setPlano("");
       setGenero("prefiro");
     }
-    setError(false);
-    setErrorMessage("");
-    setFieldErrors({});
+    setError(false); setErrorMessage(""); setFieldErrors({});
   }, [alunoParaEditar, open]);
 
   const handleCpfChange = (e) => {
@@ -197,20 +178,16 @@ export default function EditarAlunoDialog({
   };
   const handleTelefoneChange = (e) => {
     setTelefone(formatTelefone(e.target.value));
-    if (fieldErrors.telefone)
-      setFieldErrors((prev) => ({ ...prev, telefone: false }));
+    if (fieldErrors.telefone) setFieldErrors((prev) => ({ ...prev, telefone: false }));
   };
   const handleChangeGeneric = (setter, field) => (e) => {
     setter(e.target.value);
-    if (fieldErrors[field])
-      setFieldErrors((prev) => ({ ...prev, [field]: false }));
+    if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: false }));
   };
 
   const handleSave = () => {
     setError(false);
-    setErrorMessage("");
     let errors = {};
-
     if (!nome.trim()) errors.nome = true;
     if (!email.trim()) errors.email = true;
     if (!cpf.trim()) errors.cpf = true;
@@ -218,23 +195,18 @@ export default function EditarAlunoDialog({
     if (!dataInicio) errors.dataInicio = true;
 
     if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setErrorMessage("Preencha todos os campos obrigatórios.");
-      setError(true);
-      return;
+      setFieldErrors(errors); setErrorMessage("Preencha todos os campos obrigatórios.");
+      setError(true); return;
     }
 
     let specificErrors = {};
     if (!isValidEmail(email)) specificErrors.email = true;
     if (!isValidCPF(cpf)) specificErrors.cpf = true;
-    if (telefone.length > 0 && !isValidTelefone(telefone))
-      specificErrors.telefone = true;
+    if (telefone.length > 0 && !isValidTelefone(telefone)) specificErrors.telefone = true;
 
     if (Object.keys(specificErrors).length > 0) {
-      setFieldErrors(specificErrors);
-      setErrorMessage("Verifique os campos em vermelho (formato inválido).");
-      setError(true);
-      return;
+      setFieldErrors(specificErrors); setErrorMessage("Verifique os campos em vermelho.");
+      setError(true); return;
     }
 
     let logradouroFinal = null;
@@ -274,28 +246,11 @@ export default function EditarAlunoDialog({
   });
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      disableEnforceFocus={true}
-      keepMounted={false}
-      PaperProps={{ sx: { borderRadius: 2, maxHeight: "550px" } }}
+    <ModalBase 
+      open={open} 
+      onClose={onClose} 
+      title="Editar Aluno"
     >
-      <DialogTitle
-        sx={{
-          textAlign: "center",
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-          pt: 2,
-          pb: 0.5,
-          px: 3,
-        }}
-      >
-        Editar Aluno
-      </DialogTitle>
-
       <DialogContent
         sx={{
           px: 3,
@@ -313,13 +268,7 @@ export default function EditarAlunoDialog({
         }}
       >
         {error && (
-          <Typography
-            color="error"
-            variant="body2"
-            mb={1}
-            textAlign="center"
-            fontWeight="bold"
-          >
+          <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
             {errorMessage}
           </Typography>
         )}
@@ -340,24 +289,8 @@ export default function EditarAlunoDialog({
             sx={getSx("nome")}
           />
           <ThemeProvider theme={blackTheme}>
-            <LocalizationProvider
-              dateAdapter={AdapterDateFns}
-              adapterLocale={ptBR}
-            >
-              <DatePicker
-                label="Data de Nascimento *"
-                value={dataNascimento}
-                onChange={(newValue) => setDataNascimento(newValue)}
-                format="dd/MM/yyyy"
-                slotProps={{
-                  textField: {
-                    size: "small",
-                    error: !!fieldErrors.dataNascimento,
-                    sx: fieldErrors.dataNascimento ? errorTextFieldStyle : {},
-                  },
-                }}
-                disableFuture
-              />
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+              <DatePicker label="Data de Nascimento *" value={dataNascimento} onChange={setDataNascimento} format="dd/MM/yyyy" slotProps={{ textField: { size: "small", fullWidth: true, error: !!fieldErrors.dataNascimento, sx: fieldErrors.dataNascimento ? errorTextFieldStyle : {} } }} disableFuture />
             </LocalizationProvider>
           </ThemeProvider>
           <TextField
@@ -432,25 +365,8 @@ export default function EditarAlunoDialog({
             Informações Administrativas:
           </Typography>
           <ThemeProvider theme={blackTheme}>
-            <LocalizationProvider
-              dateAdapter={AdapterDateFns}
-              adapterLocale={ptBR}
-            >
-              <DatePicker
-                label="Data de início *"
-                value={dataInicio}
-                onChange={(newValue) => setDataInicio(newValue)}
-                format="dd/MM/yyyy"
-                slotProps={{
-                  textField: {
-                    size: "small",
-                    error: !!fieldErrors.dataInicio,
-                    sx: fieldErrors.dataInicio ? errorTextFieldStyle : {},
-                  },
-                }}
-                disabled={true}
-                disableFuture
-              />
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+              <DatePicker label="Data de início *" value={dataInicio} onChange={setDataInicio} format="dd/MM/yyyy" slotProps={{ textField: { size: "small", fullWidth: true, error: !!fieldErrors.dataInicio, sx: fieldErrors.dataInicio ? errorTextFieldStyle : {} } }} disabled={true} disableFuture />
             </LocalizationProvider>
           </ThemeProvider>
 
@@ -472,9 +388,7 @@ export default function EditarAlunoDialog({
                 <em>Sem Plano</em>
               </MenuItem>
               {listaPlanos.map((p) => (
-                <MenuItem key={p.cod_plano} value={p.cod_plano}>
-                  {p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}
-                </MenuItem>
+                <MenuItem key={p.cod_plano} value={p.cod_plano}>{p.nome_plano} - R$ {parseFloat(p.valor_plano).toFixed(2)}</MenuItem>
               ))}
             </Select>
             <Typography
@@ -485,80 +399,21 @@ export default function EditarAlunoDialog({
             </Typography>
           </FormControl>
 
-          <FormControl sx={{ pt: 1, pb: 1 }}>
-            <FormLabel
-              sx={{ color: "#23272b", "&.Mui-focused": { color: "#23272b" } }}
-            >
-              Gênero:
-            </FormLabel>
-            <RadioGroup
-              row
-              value={genero}
-              onChange={(e) => setGenero(e.target.value)}
-            >
-              <FormControlLabel
-                value="masculino"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={<Typography variant="body2">Masculino</Typography>}
-              />
-              <FormControlLabel
-                value="feminino"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={<Typography variant="body2">Feminino</Typography>}
-              />
-              <FormControlLabel
-                value="prefiro"
-                control={
-                  <Radio
-                    size="small"
-                    sx={{ "&.Mui-checked": { color: "#F2D95C" } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2">Prefiro não informar</Typography>
-                }
-              />
+          <FormControl>
+            <FormLabel sx={{ color: "#23272b", "&.Mui-focused": { color: "#23272b" } }}>Gênero:</FormLabel>
+            <RadioGroup row value={genero} onChange={(e) => setGenero(e.target.value)}>
+              <FormControlLabel value="masculino" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label="Masculino" />
+              <FormControlLabel value="feminino" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label="Feminino" />
+              <FormControlLabel value="prefiro" control={<Radio size="small" sx={{ "&.Mui-checked": { color: "#F2D95C" } }} />} label="Não informar" />
             </RadioGroup>
           </FormControl>
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
-        <Button
-          onClick={onClose}
-          variant="contained"
-          sx={{
-            backgroundColor: "#343a40",
-            color: "white",
-            "&:hover": { backgroundColor: "#23272b" },
-            fontWeight: "normal",
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          sx={{
-            backgroundColor: "#F2D95C",
-            color: "black",
-            "&:hover": { backgroundColor: "#e0c850" },
-            fontWeight: "normal",
-          }}
-        >
-          Salvar
-        </Button>
+        <Button onClick={onClose} variant="contained" sx={{ backgroundColor: "#343a40", color: "white", "&:hover": { backgroundColor: "#23272b" }, fontWeight: "normal" }}>Cancelar</Button>
+        <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: "#F2D95C", color: "black", "&:hover": { backgroundColor: "#e0c850" }, fontWeight: "normal" }}>Salvar</Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

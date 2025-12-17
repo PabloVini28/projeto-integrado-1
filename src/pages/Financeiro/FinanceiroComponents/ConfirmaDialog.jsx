@@ -1,43 +1,24 @@
 import React from "react";
-import { Dialog, DialogTitle, DialogActions, Button } from "@mui/material";
+import { DialogActions, Button } from "@mui/material";
+import { ModalBase } from "../../../components/ModalBase";
 
 export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-	  disableEnforceFocus={true} 
-      keepMounted={false}
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          width: "100%",
-          maxWidth: "420px",
-        },
-      }}
+    <ModalBase 
+      open={open} 
+      onClose={onClose} 
+      title={title || "Confirmação"}
     >
-      <DialogTitle
-        sx={{
-          px: 3,
-          pt: 3,
-          pb: 2,
-          fontWeight: "bold",
-          fontSize: "1.5rem",
-          textAlign: "center",
-        }}
-      >
-        {title || "Tem certeza que deseja excluir?"}
-      </DialogTitle>
-
       <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
         <Button
           onClick={onClose}
           variant="contained"
           sx={{
             backgroundColor: "#343a40",
-            color: "#ffffffff",
-            "&:hover": { backgroundColor: "#23272b" },
+            color: "#ffffff",
             fontWeight: "normal",
+            textTransform: "none",
+            "&:hover": { backgroundColor: "#23272b" },
           }}
         >
           Voltar
@@ -48,13 +29,14 @@ export default function ConfirmaDialog({ open, onClose, onConfirm, title }) {
           sx={{
             backgroundColor: "#F2D95C",
             color: "black",
-            "&:hover": { backgroundColor: "#e0c850" },
             fontWeight: "normal",
+            textTransform: "none",
+            "&:hover": { backgroundColor: "#e0c850" },
           }}
         >
-          Excluir
+          Confirmar
         </Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

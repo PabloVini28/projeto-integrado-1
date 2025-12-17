@@ -1,13 +1,12 @@
 import React from "react";
 import {
-  Dialog,
-  DialogTitle,
   DialogActions,
   Button,
   DialogContent,
   Typography,
   Box,
 } from "@mui/material";
+import { ModalBase } from "../../../components/ModalBase";
 
 export default function ExcluirAlunoDialog({
   open,
@@ -19,32 +18,11 @@ export default function ExcluirAlunoDialog({
   const matricula = alunoParaExcluir ? alunoParaExcluir.matricula : "...";
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-	  disableEnforceFocus={true} 
-      keepMounted={false}
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          width: "100%",
-          maxWidth: "420px",
-        },
-      }}
+    <ModalBase 
+      open={open} 
+      onClose={onClose} 
+      title="Tem certeza que deseja excluir esse aluno?"
     >
-      <DialogTitle
-        sx={{
-          px: 3,
-          pt: 3,
-          pb: 2,
-          fontWeight: "bold",
-          fontSize: "1.5rem",
-          textAlign: "center",
-        }}
-      >
-        Tem certeza que deseja excluir esse aluno?
-      </DialogTitle>
-
       <DialogContent sx={{ px: 3, pt: 1, pb: 1 }}>
         <Box
           sx={{
@@ -76,7 +54,7 @@ export default function ExcluirAlunoDialog({
           variant="contained"
           sx={{
             backgroundColor: "#343a40",
-            color: "#ffffffff",
+            color: "#ffffff",
             fontWeight: "normal",
             "&:hover": { backgroundColor: "#23272b" },
           }}
@@ -96,6 +74,6 @@ export default function ExcluirAlunoDialog({
           Excluir
         </Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }
