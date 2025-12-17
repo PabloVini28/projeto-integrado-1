@@ -1,4 +1,4 @@
-const STATUSES = ["Administrador", "Funcionário", "Funcionario"];
+const STATUSES = ["Administrador", "Funcionário", "Funcionario", "Super Admin", "Super-Admin", "Super_Admin"];
 
 function validateFuncionario(payload) {
   const errors = [];
