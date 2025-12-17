@@ -71,4 +71,15 @@ router.delete("/:matricula", async (req, res) => {
   }
 });
 
+router.post('/renovar', async (req, res) => {
+    try {
+        const { matriculas, cod_plano } = req.body;
+        await service.renew(matriculas, cod_plano);
+        res.status(200).json({ message: "Renovação concluída!" });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ error: err.message });
+    }
+});
+
 module.exports = router;

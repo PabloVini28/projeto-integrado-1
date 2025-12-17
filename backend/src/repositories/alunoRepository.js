@@ -4,7 +4,7 @@ const SELECT_QUERY = `
     SELECT a.matricula, a.cod_plano, a.nome_aluno, a.email_aluno, a.cpf_aluno, 
         a.telefone, a.data_nascimento, a.logradouro, a.numero, a.status_aluno, 
         a.genero, a.created_at, a.data_expiracao, p.nome_plano
-    FROM alunos a JOIN planos p ON a.cod_plano = p.cod_plano
+    FROM alunos a LEFT JOIN planos p ON a.cod_plano = p.cod_plano
 `;
 
 async function findAll() {
@@ -19,7 +19,7 @@ async function findByMatricula(matricula) {
   return r.rows[0] || null;
 }
 
-async function create(alunos, intervaloSql) {
+async function create(alunos, intervaloSql, statusInicial) {
   const q = ` 
       INSERT INTO alunos (
           matricula, cod_plano, nome_aluno, email_aluno, cpf_aluno, 
@@ -29,22 +29,21 @@ async function create(alunos, intervaloSql) {
       VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 
           NOW(), 
-          -- CORREÇÃO NO SQL: Soma a data atual com o intervalo recebido ('1 month')
           NOW() + $12::INTERVAL 
       )
       RETURNING * `;
 
   const vals = [
     alunos.matricula, 
-    alunos.cod_plano, 
+    alunos.cod_plano || null, 
     alunos.nome_aluno, 
     alunos.email_aluno, 
-    alunos.cpf_aluno,
+    alunos.cpf_aluno, 
     alunos.telefone, 
     alunos.data_nascimento, 
     alunos.logradouro, 
-    alunos.numero,
-    "Inativo", 
+    alunos.numero, 
+    statusInicial, 
     alunos.genero,
     intervaloSql 
   ];
@@ -62,6 +61,15 @@ async function create(alunos, intervaloSql) {
   }
 }
 
+async function updateRenovacao(matricula, cod_plano, novaDataExpiracao) {
+    const q = `
+        UPDATE alunos 
+        SET cod_plano = $1, data_expiracao = $2, status_aluno = 'Ativo'
+        WHERE matricula = $3
+    `;
+    await pool.query(q, [cod_plano, novaDataExpiracao, matricula]);
+}
+
 async function update(matricula, alunos) {
   const q = ` 
       UPDATE alunos SET 
@@ -69,7 +77,7 @@ async function update(matricula, alunos) {
           data_nascimento=$6, logradouro=$7, numero=$8, status_aluno=$9, genero=$10
       WHERE matricula = $11 RETURNING * `;
   const vals = [
-    alunos.cod_plano, alunos.nome_aluno, alunos.email_aluno, alunos.cpf_aluno, alunos.telefone,
+    alunos.cod_plano || null, alunos.nome_aluno, alunos.email_aluno, alunos.cpf_aluno, alunos.telefone,
     alunos.data_nascimento, alunos.logradouro, alunos.numero, alunos.status_aluno, alunos.genero,
     matricula,
   ];
@@ -96,4 +104,4 @@ async function updateStatus(matricula, status) {
     return r.rows[0] || null;
 }
 
-module.exports = { findAll, findByMatricula, create, update, remove, updateStatus };
+module.exports = { findAll, findByMatricula, create, update, remove, updateStatus, updateRenovacao };
