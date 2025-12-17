@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Typography, Button, Dialog, DialogTitle, DialogContent,
+    Typography, Button, DialogContent,
     DialogActions, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,
 } from '@mui/material';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
     bgcolor: '#F2D95C',
@@ -138,8 +139,7 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
     const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 1;
 
     return (
-        <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-            <DialogTitle fontWeight="bold" textAlign="center">Editar Usuário</DialogTitle>
+        <ModalBase open={open} onClose={onClose} title="Editar Usuário">
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
                 {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
                 
@@ -177,6 +177,6 @@ export default function EditarUsuarioDialog({ open, onClose, onSave, user }) {
                 <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
                 <Button onClick={handleSave} variant="contained" sx={yellowButtonSx}>SALVAR USUÁRIO</Button>
             </DialogActions>
-        </Dialog>
+        </ModalBase>
     );
 }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Typography, Button, Dialog, DialogTitle, DialogContent,
+  Typography, Button, DialogContent,
   DialogActions, TextField,
 } from '@mui/material';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
@@ -97,8 +98,7 @@ export default function AlterarSenhaDialog({ open, onClose }) {
         const idUsuario = userData.id_funcionario || userData.id;
 
         if (!idUsuario) {
-            console.error("Dados do usuário sem ID:", userData);
-            setErrorMessage("Erro: ID do usuário não identificado na sessão.");
+            setErrorMessage("Erro: ID do usuário não identificado.");
             setError(true);
             return;
         }
@@ -122,27 +122,21 @@ export default function AlterarSenhaDialog({ open, onClose }) {
             const data = await response.json();
             setErrorMessage(data.error || "Erro ao alterar senha.");
             setError(true);
-            
-            if (data.error && (data.error.toLowerCase().includes('senha') || data.error.toLowerCase().includes('password'))) {
+            if (data.error?.toLowerCase().includes('senha')) {
                 setFieldErrors({ senhaAtual: true });
             }
         }
     } catch (err) {
-        console.error(err);
         setErrorMessage("Erro de conexão com o servidor.");
         setError(true);
     }
   };
 
-  const hasSpecificError = error && !errorMessage.includes("todos os campos");
-  const showHelperText = hasSpecificError && Object.keys(fieldErrors).length > 0;
-
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-      <DialogTitle fontWeight="bold" textAlign="center">Alterar Senha</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
+    <ModalBase open={open} onClose={onClose} title="Alterar Senha">
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
         {error && (
-          <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">
+          <Typography color="error" variant="body2" textAlign="center" fontWeight="bold">
             {errorMessage}
           </Typography>
         )}
@@ -180,12 +174,16 @@ export default function AlterarSenhaDialog({ open, onClose }) {
           error={!!fieldErrors.confirmarNovaSenha}
           sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarNovaSenha && errorTextFieldStyle)}}
         />
-
       </DialogContent>
-      <DialogActions sx={{ p: '0 24px 16px' }}>
-        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
-        <Button onClick={handleAlterarSenha} variant="contained" sx={yellowButtonSx}>SALVAR SENHA</Button>
+
+      <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end', gap: 1 }}>
+        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
+          CANCELAR
+        </Button>
+        <Button onClick={handleAlterarSenha} variant="contained" sx={yellowButtonSx}>
+          SALVAR SENHA
+        </Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

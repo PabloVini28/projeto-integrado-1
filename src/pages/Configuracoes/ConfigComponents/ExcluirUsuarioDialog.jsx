@@ -1,8 +1,8 @@
 import React from 'react';
 import {
-  Typography, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions,
+  Button, DialogActions,
 } from '@mui/material';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
@@ -21,15 +21,14 @@ const grayButtonSx = {
 };
 
 export default function ExcluirUsuarioDialog({ open, onClose, onConfirm, user }) {
+  const modalTitle = `Tem certeza que deseja excluir o usuário: ${user?.nome}?`;
+
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-      <DialogTitle fontWeight="bold" textAlign="center" sx={{ px: 3, pt: 3, pb: 2, fontSize: '1.5rem' }}>
-        Tem certeza que deseja excluir o usuário: {user?.nome}?
-      </DialogTitle>
-      <DialogActions sx={{ p: '0 24px 16px' }}>
+    <ModalBase open={open} onClose={onClose} title={modalTitle}>
+      <DialogActions sx={{ p: '0 24px 16px', justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} variant="contained" sx={grayButtonSx}>VOLTAR</Button>
         <Button onClick={onConfirm} variant="contained" sx={yellowButtonSx}>EXCLUIR</Button>
       </DialogActions>
-    </Dialog>
+    </ModalBase>
   );
 }

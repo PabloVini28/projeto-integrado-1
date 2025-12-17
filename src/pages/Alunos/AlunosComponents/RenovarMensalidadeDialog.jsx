@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -16,6 +14,7 @@ import {
   FormLabel,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { ModalBase } from "../../../components/ModalBase";
 
 export default function RenovarMensalidadeDialog({
   open,
@@ -60,40 +59,12 @@ export default function RenovarMensalidadeDialog({
   };
 
   const handleRenovar = () => {
-    console.log(`Renovando +30 dias para ${selectedStudent.nome}`);
     onRenovar(selectedStudent.matricula);
     onClose();
   };
 
-  const handleCancel = () => {
-    onClose();
-  };
-
   return (
-    <Dialog
-      open={open}
-      onClose={handleCancel}
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          maxWidth: "420px",
-        },
-      }}
-      fullWidth
-    >
-      <DialogTitle
-        sx={{
-          textAlign: "left",
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-          pt: 2,
-          pb: 0.5,
-          px: 3,
-        }}
-      >
-        Renovar mensalidade
-      </DialogTitle>
-
+    <ModalBase open={open} onClose={onClose} title="Renovar mensalidade">
       {step === 1 && (
         <>
           <DialogContent sx={{ pt: 1, pb: 0, px: 3 }}>
@@ -124,7 +95,7 @@ export default function RenovarMensalidadeDialog({
                 }}
               />
               {filteredStudents.length > 0 && (
-                <Paper sx={{ maxHeight: 200, overflow: "auto" }}>
+                <Paper sx={{ maxHeight: 200, overflow: "auto", mt: 1 }}>
                   <List dense>
                     {filteredStudents.map((student) => (
                       <ListItemButton
@@ -133,10 +104,7 @@ export default function RenovarMensalidadeDialog({
                       >
                         <ListItemText
                           primary={
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: "bold" }}
-                            >
+                            <Typography variant="body2" sx={{ fontWeight: "bold" }}>
                               {student.nome}
                             </Typography>
                           }
@@ -151,11 +119,10 @@ export default function RenovarMensalidadeDialog({
               )}
             </Box>
           </DialogContent>
-          <DialogActions sx={{ p: "16px 24px", justifyContent: "flex-end" }}>
+          <DialogActions sx={{ p: 3, justifyContent: "flex-end" }}>
             <Button
-              onClick={handleCancel}
+              onClick={onClose}
               variant="contained"
-              size="small"
               sx={{
                 backgroundColor: "#343a40",
                 color: "white",
@@ -172,60 +139,39 @@ export default function RenovarMensalidadeDialog({
       {step === 2 && selectedStudent && (
         <>
           <DialogContent sx={{ pt: 1, pb: 0, px: 3 }}>
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}
-            >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}>
               <Box
                 sx={{
                   width: "100%",
                   border: "1px solid #ccc",
                   borderRadius: 2,
-                  p: 1,
+                  p: 2,
                   textAlign: "left",
                 }}
               >
                 <FormLabel sx={{ fontSize: "0.75rem", fontWeight: "normal" }}>
                   Data de expiração atual
                 </FormLabel>
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
-                >
+                <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
                   {selectedStudent.data_expiracao || "-"}
                 </Typography>
               </Box>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-start",
-                  flexWrap: "nowrap",
-                  gap: 1,
-                  width: "100%",
-                  mt: 0,
-                }}
-              >
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, p: 1 }}>
                 <Typography variant="body2">
-                  <Box component="span" sx={{ fontWeight: "bold" }}>
-                    Aluno(A):{" "}
-                  </Box>
+                  <Box component="span" sx={{ fontWeight: "bold" }}>Aluno(A): </Box>
                   {selectedStudent.nome}
                 </Typography>
                 <Typography variant="body2">
-                  <Box component="span" sx={{ fontWeight: "bold" }}>
-                    Matrícula:{" "}
-                  </Box>
+                  <Box component="span" sx={{ fontWeight: "bold" }}>Matrícula: </Box>
                   {selectedStudent.matricula}
                 </Typography>
               </Box>
             </Box>
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}
-          >
+          <DialogActions sx={{ p: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
             <Button
-              onClick={handleCancel}
+              onClick={() => setStep(1)}
               variant="contained"
               sx={{
                 backgroundColor: "#343a40",
@@ -234,7 +180,7 @@ export default function RenovarMensalidadeDialog({
                 fontWeight: "normal",
               }}
             >
-              Cancelar
+              Voltar
             </Button>
             <Button
               onClick={handleRenovar}
@@ -251,6 +197,6 @@ export default function RenovarMensalidadeDialog({
           </DialogActions>
         </>
       )}
-    </Dialog>
+    </ModalBase>
   );
 }

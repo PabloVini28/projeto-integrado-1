@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Box, Typography, Button, Dialog, DialogTitle, DialogContent,
+  Box, Typography, Button, DialogContent,
   DialogActions, TextField,
 } from '@mui/material';
+import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
@@ -27,9 +28,9 @@ const blackFocusedTextFieldStyle = {
 };
 
 const errorTextFieldStyle = {
-    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' },
-    '& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'darkred !important' },
-    '& .MuiInputLabel-root.Mui-error': { color: 'red !important' },
+  '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: 'red !important' },
+  '& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'darkred !important' },
+  '& .MuiInputLabel-root.Mui-error': { color: 'red !important' },
 };
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -80,7 +81,7 @@ export default function AlterarEmailDialog({ open, onClose }) {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [step1FieldErrors, setStep1FieldErrors] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (!open) {
@@ -90,41 +91,29 @@ export default function AlterarEmailDialog({ open, onClose }) {
       setCode(['', '', '', '', '', '']);
       setError(false);
       setErrorMessage('');
-      setStep1FieldErrors({});
+      setFieldErrors({});
     }
   }, [open]);
 
   const handleNextStep = () => {
     setError(false);
     setErrorMessage('');
-    setStep1FieldErrors({});
+    setFieldErrors({});
 
     if (step === 1) {
-      const hasEmpty = !password.trim() || !newEmail.trim();
-      if (hasEmpty) {
-        const errors = {};
-        if (!password.trim()) errors.password = true;
-        if (!newEmail.trim()) errors.newEmail = true;
+      if (!password.trim() || !newEmail.trim()) {
+        setFieldErrors({ password: !password.trim(), newEmail: !newEmail.trim() });
         setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
         setError(true);
-        setStep1FieldErrors(errors);
         return;
       }
-      
-      let errors = {};
-      if (!isValidEmail(newEmail)) errors.newEmail = "Formato de e-mail inválido.";
-      if (password !== 'senha123') errors.password = "Senha atual incorreta."; 
-
-      const errorCount = Object.keys(errors).length;
-      if (errorCount > 0) {
-        let message = errorCount === 1 ? Object.values(errors)[0] : "Corrija os campos em erro.";
+      if (!isValidEmail(newEmail)) {
+        setFieldErrors({ newEmail: true });
+        setErrorMessage("Formato de e-mail inválido.");
         setError(true);
-        setStep1FieldErrors(errors);
-        setErrorMessage(message);
         return;
       }
       setStep(2);
-
     } else if (step === 2) {
       const enteredCode = code.join('');
       if (enteredCode.length < 6) {
@@ -132,46 +121,31 @@ export default function AlterarEmailDialog({ open, onClose }) {
         setError(true);
         return;
       }
-      if (enteredCode !== '123456') { 
-        setErrorMessage("Código de verificação incorreto.");
-        setError(true);
-        return;
-      }
       setStep(3);
     }
   };
 
-  const handlePrevStep = () => {
-    setError(false);
-    setErrorMessage('');
-    setStep1FieldErrors({});
-    setStep((prev) => prev - 1);
-  };
-  
-  const handleClose = () => {
-    setStep(1);
-    onClose();
+  const getTitle = () => {
+    switch (step) {
+      case 1: return "Alterar E-mail";
+      case 2: return "Verificar E-mail";
+      case 3: return "Sucesso";
+      default: return "";
+    }
   };
 
-  const renderStep = () => {
-    const hasEmptyError = error && errorMessage.includes("preencha todos");
-    const hasSpecificError = error && !hasEmptyError;
-    const showHelperText = hasSpecificError && Object.keys(step1FieldErrors).length > 1;
-
+  const renderStepContent = () => {
     switch (step) {
       case 1:
-        const isPasswordError = !!step1FieldErrors.password;
-        const isNewEmailError = !!step1FieldErrors.newEmail;
         return (
           <>
-            <DialogTitle fontWeight="bold" textAlign="center">Alterar E-mail</DialogTitle>
             <DialogContent>
               {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
-              <TextField autoFocus margin="dense" label="Digite a senha do app*" type="password" fullWidth variant="outlined" value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} error={isPasswordError} helperText={showHelperText && isPasswordError ? step1FieldErrors.password : ""} sx={{...blackFocusedTextFieldStyle, ...(isPasswordError ? errorTextFieldStyle : {})}} />
-              <TextField margin="dense" label="Digite seu novo email*" type="email" fullWidth variant="outlined" value={newEmail} onChange={(e) => { setNewEmail(e.target.value); setError(false); }} error={isNewEmailError} helperText={showHelperText && isNewEmailError ? step1FieldErrors.newEmail : ""} sx={{...blackFocusedTextFieldStyle, ...(isNewEmailError ? errorTextFieldStyle : {})}} />
+              <TextField autoFocus margin="dense" label="Digite a senha do app*" type="password" fullWidth variant="outlined" value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} error={!!fieldErrors.password} sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.password ? errorTextFieldStyle : {})}} />
+              <TextField margin="dense" label="Digite seu novo email*" type="email" fullWidth variant="outlined" value={newEmail} onChange={(e) => { setNewEmail(e.target.value); setError(false); }} error={!!fieldErrors.newEmail} sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.newEmail ? errorTextFieldStyle : {})}} />
             </DialogContent>
-            <DialogActions sx={{ p: '0 24px 16px' }}>
-              <Button onClick={handleClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
+            <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end', gap: 1 }}>
+              <Button onClick={onClose} variant="contained" sx={grayButtonSx}>CANCELAR</Button>
               <Button onClick={handleNextStep} variant="contained" sx={yellowButtonSx}>CONTINUAR</Button>
             </DialogActions>
           </>
@@ -179,14 +153,13 @@ export default function AlterarEmailDialog({ open, onClose }) {
       case 2:
         return (
           <>
-            <DialogTitle fontWeight="bold" textAlign="center">Verificar E-mail</DialogTitle>
             <DialogContent>
               <Typography variant="body2" color="text.secondary" textAlign="center">Um código de 6 dígitos foi enviado para seu e-mail.</Typography>
               {error && <Typography color="error" variant="body2" mt={2} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
               <CodigoInput code={code} setCode={setCode} isError={error} setError={setError} />
             </DialogContent>
-            <DialogActions sx={{ p: '0 24px 16px' }}>
-              <Button onClick={handlePrevStep} variant="contained" sx={grayButtonSx}>VOLTAR</Button>
+            <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end', gap: 1 }}>
+              <Button onClick={() => setStep(1)} variant="contained" sx={grayButtonSx}>VOLTAR</Button>
               <Button onClick={handleNextStep} variant="contained" sx={yellowButtonSx}>CONTINUAR</Button>
             </DialogActions>
           </>
@@ -194,12 +167,11 @@ export default function AlterarEmailDialog({ open, onClose }) {
       case 3:
         return (
           <>
-            <DialogTitle fontWeight="bold" textAlign="center">Sucesso</DialogTitle>
             <DialogContent>
-              <Typography variant="body1" textAlign="center">Parabéns! Seu e-mail foi alterado com sucesso.</Typography>
+              <Typography variant="body1" textAlign="center" sx={{ py: 2 }}>Parabéns! Seu e-mail foi alterado com sucesso.</Typography>
             </DialogContent>
-            <DialogActions sx={{ p: '0 24px 16px', justifyContent: 'center' }}>
-              <Button onClick={handleClose} variant="contained" sx={yellowButtonSx}>CONCLUÍDO</Button>
+            <DialogActions sx={{ p: '16px 24px', justifyContent: 'center' }}>
+              <Button onClick={onClose} variant="contained" sx={yellowButtonSx}>CONCLUÍDO</Button>
             </DialogActions>
           </>
         );
@@ -208,8 +180,8 @@ export default function AlterarEmailDialog({ open, onClose }) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: '400px' } }}>
-      {renderStep()}
-    </Dialog>
+    <ModalBase open={open} onClose={onClose} title={getTitle()}>
+      {renderStepContent()}
+    </ModalBase>
   );
 }
