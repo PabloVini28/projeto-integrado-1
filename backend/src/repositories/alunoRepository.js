@@ -19,7 +19,7 @@ async function findByMatricula(matricula) {
   return r.rows[0] || null;
 }
 
-async function create(alunos, intervaloSql, statusInicial) {
+async function create(alunos, dataExpiracao, statusInicial) {
   const q = ` 
       INSERT INTO alunos (
           matricula, cod_plano, nome_aluno, email_aluno, cpf_aluno, 
@@ -29,7 +29,7 @@ async function create(alunos, intervaloSql, statusInicial) {
       VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 
           NOW(), 
-          NOW() + $12::INTERVAL 
+          $12
       )
       RETURNING * `;
 
@@ -45,7 +45,7 @@ async function create(alunos, intervaloSql, statusInicial) {
     alunos.numero, 
     statusInicial, 
     alunos.genero,
-    intervaloSql 
+    dataExpiracao 
   ];
 
   try {
@@ -57,6 +57,7 @@ async function create(alunos, intervaloSql, statusInicial) {
       err.status = 409;
       throw err;
     }
+    console.error("Erro no Repository Create:", error); 
     throw error;
   }
 }
