@@ -100,6 +100,7 @@ export default function ItemDialog({
   title,
   itemToEdit,
   isRecipe,
+  planos, 
 }) {
   const [categoria, setCategoria] = useState("");
   const [nome, setNome] = useState("");
@@ -133,7 +134,7 @@ export default function ItemDialog({
         .then((response) => {
           const rawData = response.data || [];
           const dadosFormatados = rawData.map((aluno) => ({
-            ...aluno,
+            ...aluno, 
             id: aluno.id_aluno || aluno.id,
             nome: aluno.nome_aluno || aluno.nome,
             matricula: aluno.matricula || aluno.matricula_aluno,
@@ -165,6 +166,26 @@ export default function ItemDialog({
   }, [buscaAluno, listaCompletaAlunos]);
 
   useEffect(() => {
+    if (isRecipe && categoria === "Alunos" && alunoSelecionado && planos && planos.length > 0) {
+      
+      if (itemToEdit && itemToEdit.nome === alunoSelecionado.nome) {
+        return;
+      }
+
+      const codigoPlanoAluno = alunoSelecionado.cod_plano;
+
+      if (codigoPlanoAluno) {
+        const planoEncontrado = planos.find(p => String(p.cod_plano) === String(codigoPlanoAluno));
+        
+        if (planoEncontrado && planoEncontrado.valor_plano) {
+          const valorRaw = Number(planoEncontrado.valor_plano).toFixed(2).replace(/\D/g, "");
+          setValorFormatado(formatCurrency(valorRaw));
+        }
+      }
+    }
+  }, [alunoSelecionado, planos, isRecipe, categoria, itemToEdit]);
+
+  useEffect(() => {
     if (open) {
       if (itemToEdit) {
         setCategoria(itemToEdit.categoria || "");
@@ -191,6 +212,7 @@ export default function ItemDialog({
           setAlunoSelecionado(null);
         }
       } else {
+        // Reset para Novo Item
         setCategoria("");
         setNome("");
         setData(new Date());
@@ -283,7 +305,8 @@ export default function ItemDialog({
             label="Categoria"
             onChange={(e) => {
               setCategoria(e.target.value);
-              setAlunoSelecionado(null);
+              // Limpa o aluno se mudar a categoria
+              if(e.target.value !== "Alunos") setAlunoSelecionado(null);
             }}
           >
             <MenuItem value="" disabled>
