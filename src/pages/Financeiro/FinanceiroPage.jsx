@@ -35,6 +35,8 @@ import {
   deleteLancamento,
 } from "../../services/financeiroApiService";
 
+import { getPlanos } from "../../services/planosApiService";
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
   return (
@@ -97,6 +99,7 @@ const formatDateForAPI = (dateObj) => {
 export default function FinanceiroPage() {
   const [hasAccess, setHasAccess] = useState(false);
   const [transacoes, setTransacoes] = useState([]);
+  const [planos, setPlanos] = useState([]); 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [receitasPage, setReceitasPage] = useState(0);
@@ -155,9 +158,19 @@ export default function FinanceiroPage() {
     }
   }, []);
 
+  const fetchPlanos = useCallback(async () => {
+    try {
+      const response = await getPlanos();
+      setPlanos(response.data || []);
+    } catch (error) {
+      console.error("Erro ao buscar planos:", error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTransacoes();
-  }, [fetchTransacoes]);
+    fetchPlanos();
+  }, [fetchTransacoes, fetchPlanos]);
 
   const receitasData = useMemo(
     () => transacoes.filter((t) => t.tipo === "Receita"),
@@ -709,6 +722,7 @@ export default function FinanceiroPage() {
         onSave={handleSaveNewItem}
         title={`Adicionar ${isCurrentRecipe ? "Receita" : "Despesa"}`}
         isRecipe={isCurrentRecipe}
+        planos={planos} 
       />
       <ItemDialog
         open={isEditDialogOpen}
@@ -717,6 +731,7 @@ export default function FinanceiroPage() {
         title={`Editar ${isCurrentRecipe ? "Receita" : "Despesa"}`}
         itemToEdit={currentItem}
         isRecipe={isCurrentRecipe}
+        planos={planos}
       />
       <ConfirmaDialog
         open={isDeleteDialogOpen}
