@@ -139,7 +139,7 @@ export default function CadastrarNovoUsuarioDialog({ open, onClose, onSave }) {
   const showHelperText = (name) => error && fieldErrors[name];
 
   return (
-    <ModalBase open={open} onClose={onClose} title="Cadastrar um novo Usuário">
+    <ModalBase open={open} onClose={onClose} title="Cadastrar um Novo Usuário">
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
         {error && <Typography color="error" variant="body2" mb={1} textAlign="center" fontWeight="bold">{errorMessage}</Typography>}
         
