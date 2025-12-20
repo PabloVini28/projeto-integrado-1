@@ -20,6 +20,7 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
+  Chip, 
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -58,7 +59,7 @@ const columns = [
   { id: "nome", label: "Nome do Item" },
   { id: "codigo", label: "Código" },
   { id: "dataAquisicao", label: "Data de Aquisição" },
-  { id: "status", label: "Status" },
+  { id: "status", label: "Status", align: "center" },
   { id: "actions", label: "Ação", align: "center" },
 ];
 
@@ -267,14 +268,11 @@ export default function PatrimonioPage() {
 
   const handleDownloadReport = async () => {
     handleReportMenuClose();
-    console.log("Iniciando geração de relatório de Patrimônio...");
-
     const reportOptions = {
       title: "Relatório de Patrimônio",
       defaultFileName: `relatorio_patrimonio_${new Date().toISOString().split("T")[0]}.pdf`,
       headers: ["Nome do Item", "Código", "Data de Aquisição", "Status"],
       columnWidths: [300, 120, 150, 172],
-
       data: filteredRows.map((row) => [
         row.nome,
         row.codigo,
@@ -282,10 +280,8 @@ export default function PatrimonioPage() {
         displayStatus(row.status),
       ]),
     };
-
     try {
       const result = await window.electronAPI.generateReport(reportOptions);
-
       if (result.success) {
         alert(`Relatório salvo com sucesso em:\n${result.path}`);
       } else if (result.error !== "Save dialog canceled") {
@@ -474,7 +470,25 @@ export default function PatrimonioPage() {
                           ) : column.id === "dataAquisicao" ? (
                             formatDateValue(value)
                           ) : column.id === "status" ? (
-                            displayStatus(value)
+                            <Box sx={{ display: "flex", justifyContent: "center" }}>
+                              <Chip
+                                label={displayStatus(value)}
+                                size="small"
+                                sx={{
+                                  backgroundColor:
+                                    displayStatus(value) === "Ativo" ? "#e8f5e9" : 
+                                    displayStatus(value) === "Em Manutenção" ? "#fff3e0" : "#ffebee",
+                                  color:
+                                    displayStatus(value) === "Ativo" ? "#2e7d32" : 
+                                    displayStatus(value) === "Em Manutenção" ? "#ef6c00" : "#c62828",
+                                  fontWeight: "bold",
+                                  border: `1px solid ${
+                                    displayStatus(value) === "Ativo" ? "#a5d6a7" : 
+                                    displayStatus(value) === "Em Manutenção" ? "#ffe0b2" : "#ef9a9a"
+                                  }`,
+                                }}
+                              />
+                            </Box>
                           ) : (
                             value
                           )}
@@ -504,7 +518,7 @@ export default function PatrimonioPage() {
         open={isAddDialogOpen}
         onClose={handleCloseDialogs}
         onSave={handleSaveNewItem}
-        title="Cadastre um novo Item"
+        title="Cadastrar um Novo Item"
       />
 
       <ItemDialog
