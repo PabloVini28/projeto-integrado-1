@@ -24,12 +24,13 @@ import {
   ListItemIcon,
   Chip,
   Checkbox,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AutorenewIcon from "@mui/icons-material/Autorenew";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -45,7 +46,6 @@ const formatarData = (dataString) => {
   if (!dataString) return "-";
   if (dataString === "Sem Plano" || dataString === "Expirado")
     return dataString;
-
   const data = new Date(dataString);
   if (isNaN(data.getTime())) return "-";
   return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
@@ -175,8 +175,22 @@ export default function AlunosPage() {
   const [openRowId, setOpenRowId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [anchorElReport, setAnchorElReport] = useState(null);
-
   const [selectedIds, setSelectedIds] = useState([]);
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const loadData = async () => {
     try {
@@ -185,13 +199,11 @@ export default function AlunosPage() {
         alunosApi.getAlunos(),
       ]);
       setListaPlanos(resPlanos.data);
-
       const alunosFormatados = resAlunos.data.map((a) => {
         const dataNasc = formatarData(a.data_nascimento);
         const dataMatr = formatarData(a.created_at);
         const dataExpiracao =
           a.data_expiracao_formatada || formatarData(a.data_expiracao);
-
         return createStudentData(
           a.matricula,
           a.nome_aluno,
@@ -214,6 +226,7 @@ export default function AlunosPage() {
       setRows(alunosFormatados);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
+      showSnackbar("Erro ao carregar dados do servidor.", "error");
     }
   };
 
@@ -248,8 +261,7 @@ export default function AlunosPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = filteredRows.map((n) => n.matricula);
-      setSelectedIds(newSelecteds);
+      setSelectedIds(filteredRows.map((n) => n.matricula));
       return;
     }
     setSelectedIds([]);
@@ -258,27 +270,27 @@ export default function AlunosPage() {
   const handleClickCheckbox = (event, matricula) => {
     const selectedIndex = selectedIds.indexOf(matricula);
     let newSelected = [];
-
-    if (selectedIndex === -1) {
+    if (selectedIndex === -1)
       newSelected = newSelected.concat(selectedIds, matricula);
-    } else if (selectedIndex === 0) {
+    else if (selectedIndex === 0)
       newSelected = newSelected.concat(selectedIds.slice(1));
-    } else if (selectedIndex === selectedIds.length - 1) {
+    else if (selectedIndex === selectedIds.length - 1)
       newSelected = newSelected.concat(selectedIds.slice(0, -1));
-    } else if (selectedIndex > 0) {
+    else if (selectedIndex > 0)
       newSelected = newSelected.concat(
         selectedIds.slice(0, selectedIndex),
         selectedIds.slice(selectedIndex + 1)
       );
-    }
     setSelectedIds(newSelected);
   };
 
   const isSelected = (matricula) => selectedIds.indexOf(matricula) !== -1;
 
   const handleRenovarClick = () => {
-    if (selectedIds.length === 0)
-      return alert("Selecione pelo menos um aluno.");
+    if (selectedIds.length === 0) {
+      showSnackbar("Selecione pelo menos um aluno para renovar.", "warning");
+      return;
+    }
     setRenovarOpen(true);
   };
 
@@ -288,12 +300,15 @@ export default function AlunosPage() {
         matriculas: selectedIds,
         cod_plano: codPlano,
       });
-      alert("Renovação realizada com sucesso!");
+      showSnackbar("Renovação realizada com sucesso!", "success");
       setRenovarOpen(false);
       setSelectedIds([]);
       loadData();
     } catch (err) {
-      alert(`Erro ao renovar: ${err.response?.data?.error || err.message}`);
+      showSnackbar(
+        `Erro ao renovar: ${err.response?.data?.error || err.message}`,
+        "error"
+      );
     }
   };
 
@@ -302,7 +317,6 @@ export default function AlunosPage() {
     setAlunoSelecionado(rows.find((row) => row.id === id));
     setEditOpen(true);
   };
-
   const handleDelete = (id) => {
     setAlunoSelecionado(rows.find((row) => row.id === id));
     setDeleteOpen(true);
@@ -330,11 +344,14 @@ export default function AlunosPage() {
         genero: novoAluno.genero,
       };
       await alunosApi.createAluno(payload);
-      alert("Aluno cadastrado com sucesso!");
-      loadData();
+      await loadData();
       setCadastroOpen(false);
+      showSnackbar("Aluno cadastrado com sucesso!", "success");
     } catch (err) {
-      alert(`Erro: ${err.response?.data?.message || "Erro ao cadastrar."}`);
+      showSnackbar(
+        `Erro: ${err.response?.data?.message || "Erro ao cadastrar."}`,
+        "error"
+      );
     }
   };
 
@@ -354,30 +371,32 @@ export default function AlunosPage() {
         status_aluno: alunoEditado.status,
       };
       await alunosApi.updateAluno(alunoEditado.id, payload);
-      alert("Aluno atualizado!");
-      loadData();
+      await loadData();
       setEditOpen(false);
       setAlunoSelecionado(null);
+      showSnackbar("Aluno atualizado com sucesso!", "success");
     } catch (err) {
-      alert("Erro ao editar.");
+      showSnackbar("Erro ao editar aluno.", "error");
     }
   };
 
   const handleConfirmDelete = async () => {
     if (alunoSelecionado) {
       if (alunoSelecionado.status === "Ativo") {
-        alert("Não é permitido excluir um aluno Ativo. Inative-o primeiro.");
+        showSnackbar(
+          "Não é permitido excluir um aluno Ativo. Inative-o primeiro.",
+          "warning"
+        );
         setDeleteOpen(false);
         setAlunoSelecionado(null);
         return;
       }
-
       try {
         await alunosApi.deleteAluno(alunoSelecionado.id);
-        alert("Aluno excluído!");
-        loadData();
+        await loadData();
+        showSnackbar("Aluno excluído com sucesso!", "success");
       } catch (err) {
-        alert("Erro ao excluir.");
+        showSnackbar("Erro ao excluir aluno.", "error");
       }
     }
     setDeleteOpen(false);
@@ -387,15 +406,14 @@ export default function AlunosPage() {
   const handleReportMenuClick = (event) =>
     setAnchorElReport(event.currentTarget);
   const handleReportMenuClose = () => setAnchorElReport(null);
+
   const handleDownloadSimpleReport = async () => {
     handleReportMenuClose();
-
     const reportOptions = {
       title: "Relatório de Alunos",
       defaultFileName: `lista_alunos_${new Date().toISOString().split("T")[0]}.pdf`,
       headers: ["Nome", "Matrícula", "Plano", "Status", "Vencimento"],
       columnWidths: [180, 80, 120, 70, 90],
-
       data: filteredRows.map((row) => [
         String(row.nome || ""),
         String(row.matricula || ""),
@@ -404,22 +422,19 @@ export default function AlunosPage() {
         String(row.data_expiracao || "-"),
       ]),
     };
-
     try {
       const result = await window.electronAPI.generateReport(reportOptions);
-      if (result.success) {
-        alert(`Relatório salvo com sucesso!`);
-      } else if (result.error !== "Save dialog canceled") {
-        alert(`Erro: ${result.error}`);
-      }
+      if (result.success)
+        showSnackbar("Relatório salvo com sucesso!", "success");
+      else if (result.error !== "Save dialog canceled")
+        showSnackbar(`Erro: ${result.error}`, "error");
     } catch (error) {
-      alert(`Erro: ${error.message}`);
+      showSnackbar(`Erro: ${error.message}`, "error");
     }
   };
 
   const handleDownloadDetailedReport = async () => {
     handleReportMenuClose();
-
     const dataToSend = filteredRows.map((row) => ({
       nome: String(row.nome || ""),
       matricula: String(row.matricula || ""),
@@ -437,17 +452,15 @@ export default function AlunosPage() {
         numero: String(row.endereco?.numero || ""),
       },
     }));
-
     try {
       const result =
         await window.electronAPI.generateDetailedStudentReport(dataToSend);
-      if (result.success) {
-        alert(`Relatório detalhado salvo com sucesso!`);
-      } else if (result.error !== "Save dialog canceled") {
-        alert(`Erro: ${result.error}`);
-      }
+      if (result.success)
+        showSnackbar("Relatório detalhado salvo com sucesso!", "success");
+      else if (result.error !== "Save dialog canceled")
+        showSnackbar(`Erro: ${result.error}`, "error");
     } catch (error) {
-      alert(`Erro: ${error.message}`);
+      showSnackbar(`Erro: ${error.message}`, "error");
     }
   };
 
@@ -525,12 +538,11 @@ export default function AlunosPage() {
           >
             Relatórios
           </Button>
-
           {selectedIds.length > 0 && (
             <Button
               variant="contained"
               endIcon={<AddIcon />}
-              onClick={handleAddAlunoClick}
+              onClick={handleRenovarClick}
               sx={{
                 backgroundColor: "#F2D95C",
                 color: "black",
@@ -541,7 +553,6 @@ export default function AlunosPage() {
               Renovar ({selectedIds.length})
             </Button>
           )}
-
           <Button
             variant="contained"
             endIcon={<AddIcon />}
@@ -608,7 +619,6 @@ export default function AlunosPage() {
                 .map((row) => {
                   const isRowOpen = openRowId === row.id;
                   const isItemSelected = isSelected(row.matricula);
-
                   return (
                     <React.Fragment key={row.id}>
                       <TableRow
@@ -630,12 +640,12 @@ export default function AlunosPage() {
                             }
                           />
                         </TableCell>
-
                         {studentColumns.map((column) => {
                           const value = row[column.id];
-                          if (column.id === "expand") {
+                          if (column.id === "expand")
                             return (
                               <TableCell
+                                key={column.id}
                                 padding="checkbox"
                                 sx={{ width: column.width }}
                               >
@@ -653,42 +663,42 @@ export default function AlunosPage() {
                                 </IconButton>
                               </TableCell>
                             );
-                          }
-                          if (column.id === "status") {
-                            const isAtivo = value === "Ativo";
+                          if (column.id === "status")
                             return (
                               <TableCell key={column.id} align="center">
                                 <Chip
                                   label={value}
                                   size="small"
                                   sx={{
-                                    backgroundColor: isAtivo
-                                      ? "#e8f5e9"
-                                      : "#ffebee",
-                                    color: isAtivo ? "#2e7d32" : "#c62828",
+                                    backgroundColor:
+                                      value === "Ativo" ? "#e8f5e9" : "#ffebee",
+                                    color:
+                                      value === "Ativo" ? "#2e7d32" : "#c62828",
                                     fontWeight: "bold",
-                                    border: `1px solid ${isAtivo ? "#a5d6a7" : "#ef9a9a"}`,
+                                    border: `1px solid ${value === "Ativo" ? "#a5d6a7" : "#ef9a9a"}`,
                                   }}
                                 />
                               </TableCell>
                             );
-                          }
-                          if (column.id === "data_expiracao") {
-                            const isExpired = value === "Expirado";
+                          if (column.id === "data_expiracao")
                             return (
                               <TableCell key={column.id} align="center">
                                 <Typography
                                   variant="body2"
-                                  color={isExpired ? "error" : "textPrimary"}
-                                  fontWeight={isExpired ? "bold" : "regular"}
+                                  color={
+                                    value === "Expirado"
+                                      ? "error"
+                                      : "textPrimary"
+                                  }
+                                  fontWeight={
+                                    value === "Expirado" ? "bold" : "regular"
+                                  }
                                 >
                                   {value}
                                 </Typography>
                               </TableCell>
                             );
-                          }
-
-                          if (column.id === "actions") {
+                          if (column.id === "actions")
                             return (
                               <TableCell key={column.id} align="center">
                                 <Box
@@ -713,7 +723,6 @@ export default function AlunosPage() {
                                 </Box>
                               </TableCell>
                             );
-                          }
                           return (
                             <TableCell
                               key={column.id}
@@ -772,7 +781,6 @@ export default function AlunosPage() {
         onConfirm={handleConfirmDelete}
         alunoParaExcluir={alunoSelecionado}
       />
-
       <RenovarPlanoDialog
         open={renovarOpen}
         onClose={() => setRenovarOpen(false)}
@@ -793,7 +801,6 @@ export default function AlunosPage() {
           </ListItemIcon>
           Relatório de alunos (Simples)
         </MenuItem>
-
         <MenuItem onClick={handleDownloadDetailedReport}>
           <ListItemIcon>
             <PictureAsPdfIcon fontSize="small" />
@@ -801,6 +808,21 @@ export default function AlunosPage() {
           Relatório de alunos (Detalhado)
         </MenuItem>
       </Menu>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }
