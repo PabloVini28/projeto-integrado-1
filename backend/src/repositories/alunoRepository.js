@@ -22,19 +22,18 @@ async function findByMatricula(matricula) {
 async function create(alunos, dataExpiracao, statusInicial) {
   const q = ` 
       INSERT INTO alunos (
-          matricula, cod_plano, nome_aluno, email_aluno, cpf_aluno, 
+          cod_plano, nome_aluno, email_aluno, cpf_aluno, 
           telefone, data_nascimento, logradouro, numero, 
           status_aluno, genero, data_inicio, data_expiracao
       )
       VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
           NOW(), 
-          $12
+          $11
       )
       RETURNING * `;
 
   const vals = [
-    alunos.matricula, 
     alunos.cod_plano || null, 
     alunos.nome_aluno, 
     alunos.email_aluno, 
@@ -53,22 +52,13 @@ async function create(alunos, dataExpiracao, statusInicial) {
     return r.rows[0];
   } catch (error) {
     if (error.code === "23505") {
-      const err = new Error("Matrícula, CPF ou Email já cadastrada!");
+      const err = new Error("CPF ou Email já cadastrado!");
       err.status = 409;
       throw err;
     }
     console.error("Erro no Repository Create:", error); 
     throw error;
   }
-}
-
-async function updateRenovacao(matricula, cod_plano, novaDataExpiracao) {
-    const q = `
-        UPDATE alunos 
-        SET cod_plano = $1, data_expiracao = $2, status_aluno = 'Ativo'
-        WHERE matricula = $3
-    `;
-    await pool.query(q, [cod_plano, novaDataExpiracao, matricula]);
 }
 
 async function update(matricula, alunos) {
@@ -91,6 +81,15 @@ async function update(matricula, alunos) {
     }
     throw error;
   }
+}
+
+async function updateRenovacao(matricula, cod_plano, novaDataExpiracao) {
+    const q = `
+        UPDATE alunos 
+        SET cod_plano = $1, data_expiracao = $2, status_aluno = 'Ativo'
+        WHERE matricula = $3
+    `;
+    await pool.query(q, [cod_plano, novaDataExpiracao, matricula]);
 }
 
 async function remove(matricula) {
