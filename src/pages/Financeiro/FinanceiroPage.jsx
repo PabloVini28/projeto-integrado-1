@@ -211,7 +211,7 @@ export default function FinanceiroPage() {
       return {
         receitasAlunos: `R$ ${rA.toFixed(2).replace(".", ",")}`,
         outrasReceitas: `R$ ${rO.toFixed(2).replace(".", ",")}`,
-        despesas: `(R$ ${rD.toFixed(2).replace(".", ",")})`,
+        despesas: `R$ ${rD.toFixed(2).replace(".", ",")}`,
         resultado: `R$ ${(rA + rO - rD).toFixed(2).replace(".", ",")}`,
       };
     }, [receitasDoMes, despesasDoMes]);
