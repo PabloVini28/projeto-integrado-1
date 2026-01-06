@@ -218,9 +218,10 @@ export default function AlunosPage() {
             cpf: a.cpf_aluno,
             telefone: a.telefone,
             dataNascimento: dataNasc,
-            genero: a.genero 
-            ? a.genero.charAt(0).toUpperCase() + a.genero.slice(1).toLowerCase() 
-            : "Não informado",
+            genero: a.genero
+              ? a.genero.charAt(0).toUpperCase() +
+                a.genero.slice(1).toLowerCase()
+              : "Não informado",
             endereco: { logradouro: a.logradouro, numero: a.numero },
           }
         );
@@ -815,12 +816,20 @@ export default function AlunosPage() {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{ mt: 10 }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
-          sx={{ width: "100%" }}
+          variant="filled"
+          elevation={6}
+          sx={{
+            width: "100%",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            boxShadow: 3,
+          }}
         >
           {snackbar.message}
         </Alert>

@@ -20,7 +20,9 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
-  Chip, 
+  Chip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -47,7 +49,7 @@ const createData = (nome, codigo, valor, status, duracaoUnidade) => {
     valor: formatCurrency(valor),
     valorOriginal: valor,
     status,
-    duracaoUnidade, 
+    duracaoUnidade,
   };
 };
 
@@ -55,7 +57,7 @@ const columns = [
   { id: "nome", label: "Nome do Plano" },
   { id: "codigo", label: "Código" },
   { id: "valor", label: "Valor" },
-  { id: "duracaoUnidade", label: "Duração" }, 
+  { id: "duracaoUnidade", label: "Duração" },
   { id: "status", label: "Status", align: "center" },
   { id: "actions", label: "Ação", align: "center" },
 ];
@@ -85,24 +87,37 @@ export default function PlanosPage() {
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [anchorElReport, setAnchorElReport] = useState(null);
 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const loadPlanos = async () => {
     try {
       const response = await planosApi.getPlanos();
-      
-      console.log("Dados recebidos da API:", response.data);
-
       const dadosFormatados = response.data.map((p) =>
         createData(
           p.nome_plano,
           p.cod_plano,
           parseFloat(p.valor_plano),
           p.status_plano,
-          p.duracao_unidade 
+          p.duracao_unidade
         )
       );
       setRows(dadosFormatados);
     } catch (error) {
       console.error("Erro ao buscar planos:", error);
+      showSnackbar("Erro ao carregar planos.", "error");
     }
   };
 
@@ -134,7 +149,8 @@ export default function PlanosPage() {
         (row) =>
           row.nome.toLowerCase().includes(lowerCaseSearchTerm) ||
           row.codigo.toString().includes(lowerCaseSearchTerm) ||
-          (row.duracaoUnidade && row.duracaoUnidade.toLowerCase().includes(lowerCaseSearchTerm))
+          (row.duracaoUnidade &&
+            row.duracaoUnidade.toLowerCase().includes(lowerCaseSearchTerm))
       );
     }
     return tempRows;
@@ -175,19 +191,19 @@ export default function PlanosPage() {
 
       if (isEdit) {
         await planosApi.updatePlano(selectedPlan.cod_plano, apiPayload);
-        alert("Plano atualizado com sucesso!");
+        showSnackbar("Plano atualizado com sucesso!", "success");
       } else {
         await planosApi.createPlano(apiPayload);
-        alert("Plano criado com sucesso!");
+        showSnackbar("Plano criado com sucesso!", "success");
       }
 
-      loadPlanos();
+      await loadPlanos();
       setIsFormOpen(false);
       setSelectedPlan(null);
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || "Erro ao salvar plano.";
-      alert(msg);
+      showSnackbar(msg, "error");
     }
   };
 
@@ -195,12 +211,12 @@ export default function PlanosPage() {
     if (selectedPlan) {
       try {
         await planosApi.deletePlano(selectedPlan.cod_plano);
-        alert("Plano excluído com sucesso!");
-        loadPlanos();
+        showSnackbar("Plano excluído com sucesso!", "success");
+        await loadPlanos();
       } catch (err) {
         console.error(err);
         const msg = err.response?.data?.message || "Erro ao excluir plano.";
-        alert(msg);
+        showSnackbar(msg, "error");
       }
     }
     setIsDeleteOpen(false);
@@ -218,10 +234,10 @@ export default function PlanosPage() {
       defaultFileName: `relatorio_planos_${new Date().toISOString().split("T")[0]}.pdf`,
       headers: ["Nome do Plano", "Código", "Valor", "Duração", "Status"],
       columnWidths: [180, 70, 90, 110, 90],
-      
+
       data: filteredRows.map((row) => [
         String(row.nome || ""),
-        String(row.codigo || ""), 
+        String(row.codigo || ""),
         String(row.valor || ""),
         String(row.duracaoUnidade || "-"),
         String(row.status || ""),
@@ -232,13 +248,13 @@ export default function PlanosPage() {
       const result = await window.electronAPI.generateReport(reportOptions);
 
       if (result.success) {
-        alert(`Relatório salvo com sucesso em:\n${result.path}`);
+        showSnackbar("Relatório salvo com sucesso!", "success");
       } else if (result.error !== "Save dialog canceled") {
-        alert(`Falha ao salvar relatório: ${result.error}`);
+        showSnackbar(`Falha ao salvar relatório: ${result.error}`, "error");
       }
     } catch (error) {
       console.error("Erro na geração do relatório:", error);
-      alert(`Erro ao gerar relatório: ${error.message}`);
+      showSnackbar(`Erro ao gerar relatório: ${error.message}`, "error");
     }
   };
 
@@ -403,16 +419,20 @@ export default function PlanosPage() {
                               </IconButton>
                             </Box>
                           ) : column.id === "status" ? (
-                             <Chip 
-                                label={value} 
-                                size="small"
-                                sx={{ 
-                                  backgroundColor: value === "Ativo" ? "#e8f5e9" : "#ffebee", 
-                                  color: value === "Ativo" ? "#2e7d32" : "#c62828",
-                                  fontWeight: "bold",
-                                  border: `1px solid ${value === "Ativo" ? "#a5d6a7" : "#ef9a9a"}`
-                                }} 
-                              />
+                            <Chip
+                              label={value}
+                              size="small"
+                              sx={{
+                                backgroundColor:
+                                  value === "Ativo" ? "#e8f5e9" : "#ffebee",
+                                color:
+                                  value === "Ativo" ? "#2e7d32" : "#c62828",
+                                fontWeight: "bold",
+                                border: `1px solid ${
+                                  value === "Ativo" ? "#a5d6a7" : "#ef9a9a"
+                                }`,
+                              }}
+                            />
                           ) : (
                             value
                           )}
@@ -470,6 +490,21 @@ export default function PlanosPage() {
           Relatório de Planos
         </MenuItem>
       </Menu>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }
