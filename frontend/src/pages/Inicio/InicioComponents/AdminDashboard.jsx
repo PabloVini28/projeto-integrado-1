@@ -272,6 +272,7 @@ export default function AdminDashboard() {
         onClose={() => setIsReceitaDialogOpen(false)}
         onSave={(data) => handleSaveLancamento(data, true)}
         isRecipe={true}
+        planos={listaPlanos}
         title="Registrar Receita"
       />
       
@@ -285,5 +286,3 @@ export default function AdminDashboard() {
     </Box>
   );
 }
-
-//integrada!

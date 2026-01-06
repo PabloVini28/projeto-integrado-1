@@ -8,7 +8,6 @@ async function handleAlunoPayment(payload) {
         const matricula = match ? match[1] : null;
 
         if (matricula) {
-            // Persistimos o status 'Ativo' imediatamente no BD após o pagamento.
             await alunoService.updateStatusByPayment(matricula, "Ativo");
         }
     }

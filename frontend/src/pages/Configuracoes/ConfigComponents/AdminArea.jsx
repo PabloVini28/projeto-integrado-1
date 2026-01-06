@@ -17,8 +17,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const yellowButtonSx = {
   bgcolor: '#F2D95C',
@@ -54,7 +52,8 @@ export default function AdminArea({
       'ADMINISTRADOR': 'Administrador',
       'SUPER_ADMIN': 'Super Admin',
       'FUNCIONARIO': 'Funcionário',
-      'FUNCION_RIO': 'Funcionário'
+      'FUNCION_RIO': 'Funcionário',
+      'FUNCIONÁRIO': 'Funcionário'
     };
     const upperRole = String(role).toUpperCase();
     return roleMap[upperRole] || role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
@@ -83,11 +82,12 @@ export default function AdminArea({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+              {/* Ordem das colunas alterada no Head */}
               <TableCell sx={{ fontWeight: "bold" }}>Nome</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Matrícula</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>CPF</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Nível de Acesso</TableCell>
               <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Ação</TableCell>
             </TableRow>
@@ -101,9 +101,7 @@ export default function AdminArea({
                 const targetRole = (user.role || '').toUpperCase();
                 const isSelf = user.id == currentUserId; 
 
-                const isTargetSuper = targetRole === 'SUPER_ADMIN';
-                const isTargetAdmin = targetRole === 'ADMINISTRADOR';
-                const isTargetEmployee = !isTargetSuper && !isTargetAdmin; 
+                const isTargetEmployee = targetRole !== 'SUPER_ADMIN' && targetRole !== 'ADMINISTRADOR'; 
 
                 let canEdit = false;
                 if (myRole === 'SUPER_ADMIN') {
@@ -130,32 +128,27 @@ export default function AdminArea({
                       backgroundColor: idx % 2 ? theme.palette.action.hover : "transparent",
                     })}
                   >
-                    <TableCell>
-                      {user.isEnabled ? (
-                        <Chip 
-                          icon={<CheckCircleIcon style={{ color: 'green' }} />} 
-                          label="Ativo" 
-                          size="small" 
-                          variant="outlined" 
-                          color="success"
-                          sx={{ borderColor: 'transparent', '& .MuiChip-label': { color: 'green', fontWeight: 'bold'} }}
-                        />
-                      ) : (
-                        <Chip 
-                          icon={<ErrorOutlineIcon style={{ color: 'orange' }} />} 
-                          label="Pendente" 
-                          size="small" 
-                          variant="outlined"
-                          color="warning"
-                          sx={{ borderColor: 'transparent', '& .MuiChip-label': { color: 'orange', fontWeight: 'bold'} }}
-                        />
-                      )}
-                    </TableCell>
+                    {/* Ordem das colunas alterada no Body */}
                     <TableCell>{user.nome ?? "-"}</TableCell>
                     <TableCell>{user.matricula ?? "-"}</TableCell>
                     <TableCell>{user.cpf ?? "-"}</TableCell>
                     <TableCell>{user.email ?? "-"}</TableCell>
+                    
+                    <TableCell>
+                      <Chip 
+                        label={user.isEnabled ? "Ativo" : "Pendente"} 
+                        size="small" 
+                        sx={{
+                          fontWeight: 'bold',
+                          backgroundColor: user.isEnabled ? "#e8f5e9" : "#fff3e0",
+                          color: user.isEnabled ? "#2e7d32" : "#ef6c00",
+                          border: `1px solid ${user.isEnabled ? "#a5d6a7" : "#ffe0b2"}`,
+                        }}
+                      />
+                    </TableCell>
+
                     <TableCell>{formatRole(user.role)}</TableCell>
+                    
                     <TableCell align="center">
                       {canEdit && (
                         <IconButton onClick={() => onEditUser(user)}>

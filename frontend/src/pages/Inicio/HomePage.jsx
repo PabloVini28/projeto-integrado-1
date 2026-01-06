@@ -77,7 +77,6 @@ const FuncionarioDashboard = () => {
                         <Box sx={{ width: 12, height: 12, bgcolor: 'success.main', borderRadius: '50%' }} />
                         <Typography variant="h6" color="text.secondary">Alunos Ativos</Typography>
                     </Box>
-                    {/* Exibe o valor real do banco */}
                     <Typography variant="h2" fontWeight="bold">{totalAlunosAtivos}</Typography>
                 </Box>
             </Paper>
