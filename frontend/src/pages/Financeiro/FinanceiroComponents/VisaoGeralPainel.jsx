@@ -1,6 +1,35 @@
 import React from "react";
-import { Grid } from "@mui/material";
-import SummaryCard from "./SummaryCard.jsx";
+import { Grid, Paper, Typography } from "@mui/material";
+
+const StatCard = ({ title, value, color }) => (
+  <Paper
+    variant="outlined"
+    sx={{
+      p: 3,
+      borderRadius: 3,
+      textAlign: "center",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: '100%' 
+    }}
+  >
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+      {title}
+    </Typography>
+    <Typography variant="h5" fontWeight="bold">
+      <Typography
+        component="span"
+        variant="h5"
+        fontWeight="bold"
+        sx={{ color: color || 'inherit' }}
+      >
+        {value}
+      </Typography>
+    </Typography>
+  </Paper>
+);
 
 export default function VisaoGeralPainel({
   receitasAlunos,
@@ -8,31 +37,37 @@ export default function VisaoGeralPainel({
   despesas,
   resultado,
 }) {
-  const resultadoValor = parseFloat(
-    resultado.replace("R$ ", "").replace(".", "").replace(",", ".")
-  );
+  const resultadoLimpo = String(resultado || "0").replace("R$ ", "").replace(".", "").replace(",", ".");
+  const resultadoValor = parseFloat(resultadoLimpo);
 
   return (
     <Grid container spacing={3} sx={{ mt: 1 }}>
       <Grid item xs={12} sm={6} md={3}>
-        <SummaryCard
-          title="RECEITAS DE ALUNOS"
+        <StatCard
+          title="Receitas de alunos"
           value={receitasAlunos}
-          isGreen={true}
+          color="green"
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
-        <SummaryCard title="OUTRAS RECEITAS" value={outrasReceitas} />
+        <StatCard 
+          title="Outras receitas" 
+          value={outrasReceitas} 
+          color="green" 
+        />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
-        <SummaryCard title="DESPESAS (MÊS)" value={despesas} isRed={true} />
+        <StatCard 
+          title="Despesas esse mês" 
+          value={despesas} 
+          color="#d32f2f" 
+        />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
-        <SummaryCard
-          title="RESULTADO"
+        <StatCard
+          title="Resultado no mês"
           value={resultado}
-          isGreen={resultadoValor >= 0}
-          isRed={resultadoValor < 0}
+          color="black"
         />
       </Grid>
     </Grid>
