@@ -55,12 +55,10 @@ const Logo = () => (
 function LoginPage() {
   const navigate = useNavigate();
   
-  // Estados unificados
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
-  // Estados de erro visual (vindos da develop)
   const [error, setError] = useState(false); 
   const [errorMessage, setErrorMessage] = useState(''); 
   const [fieldErrors, setFieldErrors] = useState({}); 

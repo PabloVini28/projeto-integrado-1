@@ -218,9 +218,10 @@ export default function AlunosPage() {
             cpf: a.cpf_aluno,
             telefone: a.telefone,
             dataNascimento: dataNasc,
-            genero: a.genero 
-            ? a.genero.charAt(0).toUpperCase() + a.genero.slice(1).toLowerCase() 
-            : "Não informado",
+            genero: a.genero
+              ? a.genero.charAt(0).toUpperCase() +
+                a.genero.slice(1).toLowerCase()
+              : "Não informado",
             endereco: { logradouro: a.logradouro, numero: a.numero },
           }
         );

@@ -20,7 +20,9 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
-  Chip, 
+  Chip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -84,16 +86,19 @@ export default function PatrimonioPage() {
 
   const [anchorElReport, setAnchorElReport] = useState(null);
 
-  const [notification, setNotification] = useState({
+  const [snackbar, setSnackbar] = useState({
     open: false,
-    severity: "info",
     message: "",
+    severity: "success",
   });
-  const showNotification = (severity, message) =>
-    setNotification({ open: true, severity, message });
-  const handleCloseNotification = (event, reason) => {
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") return;
-    setNotification((prev) => ({ ...prev, open: false }));
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const handleChangePage = (event, newPage) => {
@@ -122,6 +127,7 @@ export default function PatrimonioPage() {
       setRows(normalized);
     } catch (err) {
       console.error("Erro ao buscar patrimônio", err);
+      showSnackbar("Erro ao buscar patrimônios", "error");
     }
   };
 
@@ -148,12 +154,12 @@ export default function PatrimonioPage() {
     try {
       await patrimonioApi.deletePatrimonio(itemToDelete);
       await fetchPatrimonios();
-      showNotification("success", "Patrimônio excluído com sucesso");
+      showSnackbar("Patrimônio excluído com sucesso", "success");
     } catch (err) {
       console.error("Erro ao deletar", err);
       const msg =
         err?.response?.data?.error || err?.message || "Erro ao deletar";
-      showNotification("error", msg);
+      showSnackbar(msg, "error");
     } finally {
       handleCloseDialogs();
     }
@@ -171,11 +177,11 @@ export default function PatrimonioPage() {
     try {
       await patrimonioApi.createPatrimonio(data);
       await fetchPatrimonios();
-      showNotification("success", "Patrimônio cadastrado com sucesso");
+      showSnackbar("Patrimônio cadastrado com sucesso", "success");
     } catch (err) {
       console.error("Erro ao criar", err);
       const msg = err?.response?.data?.error || err?.message || "Erro ao criar";
-      showNotification("error", msg);
+      showSnackbar(msg, "error");
     } finally {
       handleCloseDialogs();
     }
@@ -186,12 +192,12 @@ export default function PatrimonioPage() {
     try {
       await patrimonioApi.updatePatrimonio(currentItem.id_patrimonio, data);
       await fetchPatrimonios();
-      showNotification("success", "Patrimônio atualizado com sucesso");
+      showSnackbar("Patrimônio atualizado com sucesso", "success");
     } catch (err) {
       console.error("Erro ao atualizar", err);
       const msg =
         err?.response?.data?.error || err?.message || "Erro ao atualizar";
-      showNotification("error", msg);
+      showSnackbar(msg, "error");
     } finally {
       handleCloseDialogs();
     }
@@ -283,12 +289,12 @@ export default function PatrimonioPage() {
     try {
       const result = await window.electronAPI.generateReport(reportOptions);
       if (result.success) {
-        alert(`Relatório salvo com sucesso em:\n${result.path}`);
+        showSnackbar("Relatório salvo com sucesso!", "success");
       } else if (result.error !== "Save dialog canceled") {
-        alert(`Falha ao salvar relatório: ${result.error}`);
+        showSnackbar(`Falha ao salvar relatório: ${result.error}`, "error");
       }
     } catch (error) {
-      alert(`Erro ao gerar relatório: ${error.message}`);
+      showSnackbar(`Erro ao gerar relatório: ${error.message}`, "error");
     }
   };
 
@@ -470,21 +476,32 @@ export default function PatrimonioPage() {
                           ) : column.id === "dataAquisicao" ? (
                             formatDateValue(value)
                           ) : column.id === "status" ? (
-                            <Box sx={{ display: "flex", justifyContent: "center" }}>
+                            <Box
+                              sx={{ display: "flex", justifyContent: "center" }}
+                            >
                               <Chip
                                 label={displayStatus(value)}
                                 size="small"
                                 sx={{
                                   backgroundColor:
-                                    displayStatus(value) === "Ativo" ? "#e8f5e9" : 
-                                    displayStatus(value) === "Em Manutenção" ? "#fff3e0" : "#ffebee",
+                                    displayStatus(value) === "Ativo"
+                                      ? "#e8f5e9"
+                                      : displayStatus(value) === "Em Manutenção"
+                                        ? "#fff3e0"
+                                        : "#ffebee",
                                   color:
-                                    displayStatus(value) === "Ativo" ? "#2e7d32" : 
-                                    displayStatus(value) === "Em Manutenção" ? "#ef6c00" : "#c62828",
+                                    displayStatus(value) === "Ativo"
+                                      ? "#2e7d32"
+                                      : displayStatus(value) === "Em Manutenção"
+                                        ? "#ef6c00"
+                                        : "#c62828",
                                   fontWeight: "bold",
                                   border: `1px solid ${
-                                    displayStatus(value) === "Ativo" ? "#a5d6a7" : 
-                                    displayStatus(value) === "Em Manutenção" ? "#ffe0b2" : "#ef9a9a"
+                                    displayStatus(value) === "Ativo"
+                                      ? "#a5d6a7"
+                                      : displayStatus(value) === "Em Manutenção"
+                                        ? "#ffe0b2"
+                                        : "#ef9a9a"
                                   }`,
                                 }}
                               />
@@ -556,6 +573,21 @@ export default function PatrimonioPage() {
           Relatório de Patrimônio
         </MenuItem>
       </Menu>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }

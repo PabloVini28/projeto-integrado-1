@@ -12,6 +12,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -99,7 +101,7 @@ const formatDateForAPI = (dateObj) => {
 export default function FinanceiroPage() {
   const [hasAccess, setHasAccess] = useState(false);
   const [transacoes, setTransacoes] = useState([]);
-  const [planos, setPlanos] = useState([]); 
+  const [planos, setPlanos] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [receitasPage, setReceitasPage] = useState(0);
@@ -118,13 +120,31 @@ export default function FinanceiroPage() {
   const [despesaSearch, setDespesaSearch] = useState("");
   const [despesaCategory, setDespesaCategory] = useState("Todas");
 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   useEffect(() => {
     try {
       const storedData = localStorage.getItem("userData");
       if (storedData) {
         const parsedUser = JSON.parse(storedData);
         const normalizeRole = (r) =>
-          String(r || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").toUpperCase();
+          String(r || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "_")
+            .toUpperCase();
 
         const nivel = normalizeRole(parsedUser?.nivel_acesso);
 
@@ -155,6 +175,7 @@ export default function FinanceiroPage() {
       setTransacoes(formattedData);
     } catch (error) {
       console.error("Erro ao buscar transações:", error);
+      showSnackbar("Erro ao buscar transações.", "error");
     }
   }, []);
 
@@ -164,6 +185,7 @@ export default function FinanceiroPage() {
       setPlanos(response.data || []);
     } catch (error) {
       console.error("Erro ao buscar planos:", error);
+      showSnackbar("Erro ao buscar planos.", "error");
     }
   }, []);
 
@@ -293,9 +315,10 @@ export default function FinanceiroPage() {
     try {
       await createLancamento(payload);
       await fetchTransacoes();
+      showSnackbar("Lançamento criado com sucesso!", "success");
       handleCloseDialogs();
     } catch (error) {
-      alert("Erro ao salvar.");
+      showSnackbar("Erro ao salvar lançamento.", "error");
     }
   };
 
@@ -320,9 +343,10 @@ export default function FinanceiroPage() {
     try {
       await updateLancamento(currentItem.id, payload);
       await fetchTransacoes();
+      showSnackbar("Lançamento atualizado com sucesso!", "success");
       handleCloseDialogs();
     } catch (error) {
-      alert("Erro ao atualizar.");
+      showSnackbar("Erro ao atualizar lançamento.", "error");
     }
   };
 
@@ -330,9 +354,10 @@ export default function FinanceiroPage() {
     try {
       await deleteLancamento(itemToDelete.id);
       await fetchTransacoes();
+      showSnackbar("Lançamento excluído com sucesso!", "success");
       handleCloseDialogs();
     } catch (error) {
-      alert("Erro ao excluir.");
+      showSnackbar("Erro ao excluir lançamento.", "error");
     }
   };
 
@@ -447,13 +472,13 @@ export default function FinanceiroPage() {
     try {
       const result = await apiToCall(reportOptions);
       if (result.success) {
-        alert(`Relatório salvo com sucesso em:\n${result.path}`);
+        showSnackbar("Relatório salvo com sucesso!", "success");
       } else if (result.error !== "Save dialog canceled") {
-        alert(`Falha ao salvar relatório: ${result.error}`);
+        showSnackbar(`Falha ao salvar relatório: ${result.error}`, "error");
       }
     } catch (error) {
       console.error("Erro ao chamar API do Electron:", error);
-      alert(`Erro ao gerar relatório: ${error.message}`);
+      showSnackbar(`Erro ao gerar relatório: ${error.message}`, "error");
     }
   };
 
@@ -722,7 +747,7 @@ export default function FinanceiroPage() {
         onSave={handleSaveNewItem}
         title={`Adicionar ${isCurrentRecipe ? "Receita" : "Despesa"}`}
         isRecipe={isCurrentRecipe}
-        planos={planos} 
+        planos={planos}
       />
       <ItemDialog
         open={isEditDialogOpen}
@@ -739,6 +764,21 @@ export default function FinanceiroPage() {
         onConfirm={confirmDelete}
         title={`Tem certeza que deseja excluir esta ${itemToDelete ? itemToDelete.type.toLowerCase() : "transação"}?`}
       />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }
