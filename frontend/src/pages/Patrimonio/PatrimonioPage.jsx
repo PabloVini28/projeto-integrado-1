@@ -476,21 +476,32 @@ export default function PatrimonioPage() {
                           ) : column.id === "dataAquisicao" ? (
                             formatDateValue(value)
                           ) : column.id === "status" ? (
-                            <Box sx={{ display: "flex", justifyContent: "center" }}>
+                            <Box
+                              sx={{ display: "flex", justifyContent: "center" }}
+                            >
                               <Chip
                                 label={displayStatus(value)}
                                 size="small"
                                 sx={{
                                   backgroundColor:
-                                    displayStatus(value) === "Ativo" ? "#e8f5e9" : 
-                                    displayStatus(value) === "Em Manutenção" ? "#fff3e0" : "#ffebee",
+                                    displayStatus(value) === "Ativo"
+                                      ? "#e8f5e9"
+                                      : displayStatus(value) === "Em Manutenção"
+                                        ? "#fff3e0"
+                                        : "#ffebee",
                                   color:
-                                    displayStatus(value) === "Ativo" ? "#2e7d32" : 
-                                    displayStatus(value) === "Em Manutenção" ? "#ef6c00" : "#c62828",
+                                    displayStatus(value) === "Ativo"
+                                      ? "#2e7d32"
+                                      : displayStatus(value) === "Em Manutenção"
+                                        ? "#ef6c00"
+                                        : "#c62828",
                                   fontWeight: "bold",
                                   border: `1px solid ${
-                                    displayStatus(value) === "Ativo" ? "#a5d6a7" : 
-                                    displayStatus(value) === "Em Manutenção" ? "#ffe0b2" : "#ef9a9a"
+                                    displayStatus(value) === "Ativo"
+                                      ? "#a5d6a7"
+                                      : displayStatus(value) === "Em Manutenção"
+                                        ? "#ffe0b2"
+                                        : "#ef9a9a"
                                   }`,
                                 }}
                               />

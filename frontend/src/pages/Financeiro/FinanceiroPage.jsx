@@ -175,7 +175,7 @@ export default function FinanceiroPage() {
       setTransacoes(formattedData);
     } catch (error) {
       console.error("Erro ao buscar transações:", error);
-      showSnackbar("Erro ao carregar transações", "error");
+      showSnackbar("Erro ao buscar transações.", "error");
     }
   }, []);
 
@@ -185,7 +185,7 @@ export default function FinanceiroPage() {
       setPlanos(response.data || []);
     } catch (error) {
       console.error("Erro ao buscar planos:", error);
-      showSnackbar("Erro ao carregar planos", "error");
+      showSnackbar("Erro ao buscar planos.", "error");
     }
   }, []);
 
@@ -315,10 +315,10 @@ export default function FinanceiroPage() {
     try {
       await createLancamento(payload);
       await fetchTransacoes();
-      showSnackbar("Lançamento criado com sucesso", "success");
+      showSnackbar("Lançamento criado com sucesso!", "success");
       handleCloseDialogs();
     } catch (error) {
-      showSnackbar("Erro ao salvar lançamento", "error");
+      showSnackbar("Erro ao salvar lançamento.", "error");
     }
   };
 
@@ -343,10 +343,10 @@ export default function FinanceiroPage() {
     try {
       await updateLancamento(currentItem.id, payload);
       await fetchTransacoes();
-      showSnackbar("Lançamento atualizado com sucesso", "success");
+      showSnackbar("Lançamento atualizado com sucesso!", "success");
       handleCloseDialogs();
     } catch (error) {
-      showSnackbar("Erro ao atualizar lançamento", "error");
+      showSnackbar("Erro ao atualizar lançamento.", "error");
     }
   };
 
@@ -354,10 +354,10 @@ export default function FinanceiroPage() {
     try {
       await deleteLancamento(itemToDelete.id);
       await fetchTransacoes();
-      showSnackbar("Lançamento excluído com sucesso", "success");
+      showSnackbar("Lançamento excluído com sucesso!", "success");
       handleCloseDialogs();
     } catch (error) {
-      showSnackbar("Erro ao excluir lançamento", "error");
+      showSnackbar("Erro ao excluir lançamento.", "error");
     }
   };
 

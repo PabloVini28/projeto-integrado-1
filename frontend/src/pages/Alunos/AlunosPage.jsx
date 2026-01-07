@@ -816,20 +816,12 @@ export default function AlunosPage() {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        sx={{ mt: 10 }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
-          variant="filled"
-          elevation={6}
-          sx={{
-            width: "100%",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            boxShadow: 3,
-          }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>
