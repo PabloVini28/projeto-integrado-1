@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Typography, Button, DialogContent,
-  DialogActions, TextField,
+  DialogActions, TextField, Box
 } from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { ModalBase } from "../../../components/ModalBase";
 
 const yellowButtonSx = {
@@ -38,6 +39,7 @@ export default function AlterarSenhaDialog({ open, onClose }) {
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarNovaSenha, setConfirmarNovaSenha] = useState('');
   
+  const [isSuccess, setIsSuccess] = useState(false); // Novo estado de sucesso
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
@@ -50,6 +52,7 @@ export default function AlterarSenhaDialog({ open, onClose }) {
       setError(false);
       setErrorMessage('');
       setFieldErrors({});
+      setIsSuccess(false);
     }
   }, [open]);
 
@@ -97,12 +100,6 @@ export default function AlterarSenhaDialog({ open, onClose }) {
         const userData = JSON.parse(userDataString);
         const idUsuario = userData.id_funcionario || userData.id;
 
-        if (!idUsuario) {
-            setErrorMessage("Erro: ID do usuário não identificado.");
-            setError(true);
-            return;
-        }
-
         const response = await fetch(`http://localhost:4000/api/funcionario/alterar-senha/${idUsuario}`, {
             method: 'PUT',
             headers: { 
@@ -116,8 +113,7 @@ export default function AlterarSenhaDialog({ open, onClose }) {
         });
 
         if (response.ok) {
-            alert("Senha alterada com sucesso!");
-            onClose();
+            setIsSuccess(true); 
         } else {
             const data = await response.json();
             setErrorMessage(data.error || "Erro ao alterar senha.");
@@ -133,56 +129,79 @@ export default function AlterarSenhaDialog({ open, onClose }) {
   };
 
   return (
-    <ModalBase open={open} onClose={onClose} title="Alterar Senha">
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
-        {error && (
-          <Typography color="error" variant="body2" textAlign="center" fontWeight="bold">
-            {errorMessage}
-          </Typography>
-        )}
+    <ModalBase open={open} onClose={onClose} title={isSuccess ? "" : "Alterar Senha"}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important', minWidth: '300px' }}>
         
-        <TextField
-          autoFocus
-          label="Senha Atual*"
-          type="password"
-          fullWidth
-          variant="outlined"
-          value={senhaAtual}
-          onChange={(e) => { setSenhaAtual(e.target.value); setError(false); }}
-          error={!!fieldErrors.senhaAtual}
-          sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.senhaAtual && errorTextFieldStyle)}}
-        />
+        {isSuccess ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2, textAlign: 'center' }}>
+            <CheckCircleOutlineIcon sx={{ fontSize: 60, color: '#4caf50', mb: 2 }} />
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Senha Alterada!
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Sua senha foi atualizada com sucesso.
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            {error && (
+              <Typography color="error" variant="body2" textAlign="center" fontWeight="bold">
+                {errorMessage}
+              </Typography>
+            )}
+            
+            <TextField
+              autoFocus
+              label="Senha Atual*"
+              type="password"
+              fullWidth
+              variant="outlined"
+              value={senhaAtual}
+              onChange={(e) => { setSenhaAtual(e.target.value); setError(false); }}
+              error={!!fieldErrors.senhaAtual}
+              sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.senhaAtual && errorTextFieldStyle)}}
+            />
 
-        <TextField
-          label="Nova Senha*"
-          type="password"
-          fullWidth
-          variant="outlined"
-          value={novaSenha}
-          onChange={(e) => { setNovaSenha(e.target.value); setError(false); }}
-          error={!!fieldErrors.novaSenha}
-          sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.novaSenha && errorTextFieldStyle)}}
-        />
+            <TextField
+              label="Nova Senha*"
+              type="password"
+              fullWidth
+              variant="outlined"
+              value={novaSenha}
+              onChange={(e) => { setNovaSenha(e.target.value); setError(false); }}
+              error={!!fieldErrors.novaSenha}
+              sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.novaSenha && errorTextFieldStyle)}}
+            />
 
-        <TextField
-          label="Confirmar Nova Senha*"
-          type="password"
-          fullWidth
-          variant="outlined"
-          value={confirmarNovaSenha}
-          onChange={(e) => { setConfirmarNovaSenha(e.target.value); setError(false); }}
-          error={!!fieldErrors.confirmarNovaSenha}
-          sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarNovaSenha && errorTextFieldStyle)}}
-        />
+            <TextField
+              label="Confirmar Nova Senha*"
+              type="password"
+              fullWidth
+              variant="outlined"
+              value={confirmarNovaSenha}
+              onChange={(e) => { setConfirmarNovaSenha(e.target.value); setError(false); }}
+              error={!!fieldErrors.confirmarNovaSenha}
+              sx={{...blackFocusedTextFieldStyle, ...(fieldErrors.confirmarNovaSenha && errorTextFieldStyle)}}
+            />
+          </>
+        )}
       </DialogContent>
 
       <DialogActions sx={{ p: '16px 24px', justifyContent: 'flex-end', gap: 1 }}>
-        <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
-          CANCELAR
-        </Button>
-        <Button onClick={handleAlterarSenha} variant="contained" sx={yellowButtonSx}>
-          SALVAR SENHA
-        </Button>
+        {isSuccess ? (
+          <Button onClick={onClose} variant="contained" sx={yellowButtonSx} fullWidth>
+            FECHAR
+          </Button>
+        ) : (
+          <>
+            <Button onClick={onClose} variant="contained" sx={grayButtonSx}>
+              CANCELAR
+            </Button>
+            <Button onClick={handleAlterarSenha} variant="contained" sx={yellowButtonSx}>
+              SALVAR SENHA
+            </Button>
+          </>
+        )}
       </DialogActions>
     </ModalBase>
   );
