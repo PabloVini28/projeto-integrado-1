@@ -1,6 +1,11 @@
 const repo = require("../repositories/financeiroRepository");
 const alunoService = require('./alunoService');
 const { validateFinanceiro } = require("../models/financeiro.model");
+const { FinanceiroValidationStrategy, ValidationContext } = require("../patterns/validationStrategy");
+const { ServiceFactory } = require("../patterns/serviceFactory");
+
+const validationStrategy = new FinanceiroValidationStrategy(validateFinanceiro);
+const validationContext = new ValidationContext(validationStrategy);
 
 async function handleAlunoPayment(payload) {
     if (payload.tipo === 'Receita' && payload.categoria === 'Alunos') {
@@ -13,46 +18,32 @@ async function handleAlunoPayment(payload) {
     }
 }
 
-async function listAll() {
-  return await repo.findAll();
-}
+const customMethods = {
+  async create(payload) {
+    validationContext.executeValidation(payload);
+    
+    const created = await this.repository.create(payload);
+    await handleAlunoPayment(payload);
 
-async function getById(id) {
-  return await repo.findById(id);
-}
+    return created;
+  },
 
-async function create(payload) {
-  const { valid, errors } = validateFinanceiro(payload);
-  if (!valid) {
-    const err = new Error("Validação falhou");
-    err.status = 400;
-    err.details = errors;
-    throw err;
+  async update(id, payload) {
+    validationContext.executeValidation(payload);
+    
+    const updated = await this.repository.update(id, payload);
+    await handleAlunoPayment(payload);
+
+    return updated;
   }
-  
-  const created = await repo.create(payload);
-  await handleAlunoPayment(payload);
+};
 
-  return created;
-}
+const service = ServiceFactory.createCustomService(repo, validationContext, customMethods);
 
-async function update(id, payload) {
-  const { valid, errors } = validateFinanceiro(payload);
-  if (!valid) {
-    const err = new Error("Validação falhou");
-    err.status = 400;
-    err.details = errors;
-    throw err;
-  }
-  
-  const updated = await repo.update(id, payload);
-  await handleAlunoPayment(payload);
-
-  return updated;
-}
-
-async function remove(id) {
-  return await repo.remove(id);
-}
-
-module.exports = { listAll, getById, create, update, remove };
+module.exports = {
+  listAll: () => service.listAll(),
+  getById: (id) => service.getById(id),
+  create: (payload) => service.create(payload),
+  update: (id, payload) => service.update(id, payload),
+  remove: (id) => service.remove(id)
+};

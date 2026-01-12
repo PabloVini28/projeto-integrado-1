@@ -19,47 +19,58 @@ async function findByMatricula(matricula) {
   return r.rows[0] || null;
 }
 
-async function create(alunos, dataExpiracao, statusInicial) {
-  const q = ` 
+async function create(aluno) {
+    const q = ` 
       INSERT INTO alunos (
-          cod_plano, nome_aluno, email_aluno, cpf_aluno, 
-          telefone, data_nascimento, logradouro, numero, 
-          status_aluno, genero, data_inicio, data_expiracao
+        matricula,
+        cod_plano,
+        nome_aluno,
+        email_aluno,
+        cpf_aluno,
+        telefone,
+        data_nascimento,
+        logradouro,
+        numero,
+        status_aluno,
+        genero,
+        data_inicio,
+        data_expiracao
       )
       VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
-          NOW(), 
-          $11
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), $12
       )
-      RETURNING * `;
-
-  const vals = [
-    alunos.cod_plano || null, 
-    alunos.nome_aluno, 
-    alunos.email_aluno, 
-    alunos.cpf_aluno, 
-    alunos.telefone, 
-    alunos.data_nascimento, 
-    alunos.logradouro, 
-    alunos.numero, 
-    statusInicial, 
-    alunos.genero,
-    dataExpiracao 
-  ];
-
-  try {
-    const r = await pool.query(q, vals);
-    return r.rows[0];
-  } catch (error) {
-    if (error.code === "23505") {
-      const err = new Error("CPF ou Email já cadastrado!");
-      err.status = 409;
-      throw err;
+      RETURNING *
+    `;
+  
+    const vals = [
+      aluno.matricula,        
+      aluno.cod_plano || null,
+      aluno.nome_aluno,       
+      aluno.email_aluno,      
+      aluno.cpf_aluno,        
+      aluno.telefone,      
+      aluno.data_nascimento,  
+      aluno.logradouro,       
+      aluno.numero,           
+      aluno.status_aluno,     
+      aluno.genero,           
+      aluno.data_expiracao    
+    ];
+  
+    try {
+      const r = await pool.query(q, vals);
+      return r.rows[0];
+    } catch (error) {
+      if (error.code === "23505") {
+        const err = new Error("CPF ou Email já cadastrado!");
+        err.status = 409;
+        throw err;
+      }
+      console.error("Erro no Repository Create:", error);
+      console.error("Valores enviados:", vals); 
+      throw error;
     }
-    console.error("Erro no Repository Create:", error); 
-    throw error;
-  }
-}
+}  
 
 async function update(matricula, alunos) {
   const q = ` 
@@ -68,8 +79,16 @@ async function update(matricula, alunos) {
           data_nascimento=$6, logradouro=$7, numero=$8, status_aluno=$9, genero=$10
       WHERE matricula = $11 RETURNING * `;
   const vals = [
-    alunos.cod_plano || null, alunos.nome_aluno, alunos.email_aluno, alunos.cpf_aluno, alunos.telefone,
-    alunos.data_nascimento, alunos.logradouro, alunos.numero, alunos.status_aluno, alunos.genero,
+    alunos.cod_plano || null, 
+    alunos.nome_aluno, 
+    alunos.email_aluno, 
+    alunos.cpf_aluno, 
+    alunos.telefone,
+    alunos.data_nascimento, 
+    alunos.logradouro, 
+    alunos.numero, 
+    alunos.status_aluno, 
+    alunos.genero,
     matricula,
   ];
   try {
@@ -77,7 +96,9 @@ async function update(matricula, alunos) {
     return r.rows[0] || null;
   } catch (error) {
     if (error.code === "23505") {
-      const err = new Error("CPF ou Email já cadastrado!"); err.status = 409; throw err;
+      const err = new Error("CPF ou Email já cadastrado!"); 
+      err.status = 409; 
+      throw err;
     }
     throw error;
   }

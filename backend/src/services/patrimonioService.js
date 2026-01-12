@@ -1,39 +1,17 @@
 const repo = require("../repositories/patrimonioRepository");
 const { validatePatrimonio } = require("../models/patrimonio.model");
+const { PatrimonioValidationStrategy, ValidationContext } = require("../patterns/validationStrategy");
+const { ServiceFactory } = require("../patterns/serviceFactory");
 
-async function listAll() {
-  return repo.findAll();
-}
+const validationStrategy = new PatrimonioValidationStrategy(validatePatrimonio);
+const validationContext = new ValidationContext(validationStrategy);
 
-async function getById(id) {
-  return repo.findById(id);
-}
+const baseService = ServiceFactory.createService(repo, validationContext);
 
-async function create(payload) {
-  const { valid, errors } = validatePatrimonio(payload);
-  if (!valid) {
-    const err = new Error("Validação falhou");
-    err.status = 400;
-    err.details = errors;
-    throw err;
-  }
-
-  return repo.create(payload);
-}
-
-async function update(id, payload) {
-  const { valid, errors } = validatePatrimonio(payload);
-  if (!valid) {
-    const err = new Error("Validação falhou");
-    err.status = 400;
-    err.details = errors;
-    throw err;
-  }
-  return repo.update(id, payload);
-}
-
-async function remove(id) {
-  return repo.remove(id);
-}
-
-module.exports = { listAll, getById, create, update, remove };
+module.exports = {
+  listAll: () => baseService.listAll(),
+  getById: (id) => baseService.getById(id),
+  create: (payload) => baseService.create(payload),
+  update: (id, payload) => baseService.update(id, payload),
+  remove: (id) => baseService.remove(id)
+};
