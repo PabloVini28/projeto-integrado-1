@@ -42,6 +42,8 @@ import EditarAlunoDialog from "./AlunosComponents/EditarAlunoDialog.jsx";
 import ExcluirAlunoDialog from "./AlunosComponents/ExcluirAlunoDialog.jsx";
 import RenovarPlanoDialog from "./AlunosComponents/RenovarPlanoDialog.jsx";
 
+import * as relatoriosApi from "../../services/relatoriosApiService";
+
 const formatarData = (dataString) => {
   if (!dataString) return "-";
   if (dataString === "Sem Plano" || dataString === "Expirado")
@@ -410,61 +412,14 @@ export default function AlunosPage() {
     setAnchorElReport(event.currentTarget);
   const handleReportMenuClose = () => setAnchorElReport(null);
 
-  const handleDownloadSimpleReport = async () => {
+  const handleDownloadSimpleReport = () => {
     handleReportMenuClose();
-    const reportOptions = {
-      title: "Relatório de Alunos",
-      defaultFileName: `lista_alunos_${new Date().toISOString().split("T")[0]}.pdf`,
-      headers: ["Nome", "Matrícula", "Plano", "Status", "Vencimento"],
-      columnWidths: [180, 80, 120, 70, 90],
-      data: filteredRows.map((row) => [
-        String(row.nome || ""),
-        String(row.matricula || ""),
-        String(row.plano || ""),
-        String(row.status || ""),
-        String(row.data_expiracao || "-"),
-      ]),
-    };
-    try {
-      const result = await window.electronAPI.generateReport(reportOptions);
-      if (result.success)
-        showSnackbar("Relatório salvo com sucesso!", "success");
-      else if (result.error !== "Save dialog canceled")
-        showSnackbar(`Erro: ${result.error}`, "error");
-    } catch (error) {
-      showSnackbar(`Erro: ${error.message}`, "error");
-    }
+    relatoriosApi.gerarRelatorio("alunos_simples");
   };
 
-  const handleDownloadDetailedReport = async () => {
+  const handleDownloadDetailedReport = () => {
     handleReportMenuClose();
-    const dataToSend = filteredRows.map((row) => ({
-      nome: String(row.nome || ""),
-      matricula: String(row.matricula || ""),
-      plano: String(row.plano || ""),
-      data_matricula: String(row.data_matricula || ""),
-      data_expiracao: String(row.data_expiracao || ""),
-      status: String(row.status || ""),
-      cpf: String(row.cpf || ""),
-      dataNascimento: String(row.dataNascimento || ""),
-      genero: String(row.genero || ""),
-      email: String(row.email || ""),
-      telefone: String(row.telefone || ""),
-      endereco: {
-        logradouro: String(row.endereco?.logradouro || ""),
-        numero: String(row.endereco?.numero || ""),
-      },
-    }));
-    try {
-      const result =
-        await window.electronAPI.generateDetailedStudentReport(dataToSend);
-      if (result.success)
-        showSnackbar("Relatório detalhado salvo com sucesso!", "success");
-      else if (result.error !== "Save dialog canceled")
-        showSnackbar(`Erro: ${result.error}`, "error");
-    } catch (error) {
-      showSnackbar(`Erro: ${error.message}`, "error");
-    }
+    relatoriosApi.gerarRelatorio("alunos_detalhado");
   };
 
   return (

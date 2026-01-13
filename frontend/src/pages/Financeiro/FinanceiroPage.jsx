@@ -30,6 +30,8 @@ import ConfirmaDialog from "./FinanceiroComponents/ConfirmaDialog.jsx";
 import VisaoGeralPainel from "./FinanceiroComponents/VisaoGeralPainel.jsx";
 import MenuRelatorios from "./FinanceiroComponents/MenuRelatorios.jsx";
 
+import * as relatoriosApi from "../../services/relatoriosApiService";
+
 import {
   getLancamentos,
   createLancamento,
@@ -365,121 +367,8 @@ export default function FinanceiroPage() {
   const handleDateChange = (d) =>
     setSelectedDate(d && d.toString() !== "Invalid Date" ? d : new Date());
 
-  const handleDownloadReport = async (reportType) => {
-    const mesAno = selectedDate.toLocaleString("pt-BR", {
-      month: "2-digit",
-      year: "numeric",
-    });
-    const mesAnoArquivo = mesAno.replace("/", "-");
-
-    let reportOptions = {
-      title: `Relatório (${mesAno})`,
-      defaultFileName: `relatorio_${reportType}_${mesAnoArquivo}.pdf`,
-      headers: [],
-      columnWidths: [],
-      data: [],
-    };
-
-    let apiToCall = window.electronAPI
-      ? window.electronAPI.generateReport
-      : null;
-
-    if (!apiToCall) {
-      console.warn("API do Electron não detectada.");
-      return;
-    }
-
-    const receitasAlunosDoMes = receitasDoMes.filter(
-      (r) => r.categoria === "Alunos"
-    );
-    const outrasReceitasDoMes = receitasDoMes.filter(
-      (r) => r.categoria !== "Alunos"
-    );
-
-    const headersSimples = ["ID", "Nome", "Data", "Categoria", "Valor (R$)"];
-    const widthsSimples = [50, 200, 100, 150, 100];
-    const formatRowSimples = (row) => [
-      String(row.id),
-      row.nome || "-",
-      row.data || "-",
-      row.categoria || "-",
-      `R$ ${row.valor.toFixed(2).replace(".", ",")}`,
-    ];
-
-    const headersDespesas = [
-      "ID",
-      "Nome",
-      "Data",
-      "Categoria",
-      "Descrição",
-      "Valor (R$)",
-    ];
-    const widthsDespesas = [40, 120, 70, 100, 180, 80];
-    const formatDespesaRow = (row) => [
-      String(row.id),
-      row.nome || "-",
-      row.data || "-",
-      row.categoria || "-",
-      row.descricao || "-",
-      `(R$ ${row.valor.toFixed(2).replace(".", ",")})`,
-    ];
-
-    switch (reportType) {
-      case "balancete_mes":
-        reportOptions.title = `Demonstrativo Contábil (${mesAno})`;
-        reportOptions.headers = ["Descrição", "Valor (R$)"];
-        reportOptions.columnWidths = [400, 200];
-        reportOptions.data = [
-          ["Receitas de Alunos", receitasAlunos],
-          ["Outras Receitas", outrasReceitas],
-          ["TOTAL DE DESPESAS", despesas],
-          ["RESULTADO DO MÊS", resultado],
-        ];
-        break;
-
-      case "receitas_alunos":
-        reportOptions.title = `Relatório - Receitas de Alunos (${mesAno})`;
-        reportOptions.headers = headersSimples;
-        reportOptions.columnWidths = widthsSimples;
-        reportOptions.data = receitasAlunosDoMes.map(formatRowSimples);
-        break;
-
-      case "outras_receitas":
-        reportOptions.title = `Relatório - Outras Receitas (${mesAno})`;
-        reportOptions.headers = headersSimples;
-        reportOptions.columnWidths = widthsSimples;
-        reportOptions.data = outrasReceitasDoMes.map(formatRowSimples);
-        break;
-
-      case "todas_receitas":
-        reportOptions.title = `Relatório - Todas as Receitas (${mesAno})`;
-        reportOptions.headers = headersSimples;
-        reportOptions.columnWidths = widthsSimples;
-        reportOptions.data = receitasDoMes.map(formatRowSimples);
-        break;
-
-      case "todas_despesas":
-        reportOptions.title = `Relatório - Todas as Despesas (${mesAno})`;
-        reportOptions.headers = headersDespesas;
-        reportOptions.columnWidths = widthsDespesas;
-        reportOptions.data = despesasDoMes.map(formatDespesaRow);
-        break;
-
-      default:
-        return;
-    }
-
-    try {
-      const result = await apiToCall(reportOptions);
-      if (result.success) {
-        showSnackbar("Relatório salvo com sucesso!", "success");
-      } else if (result.error !== "Save dialog canceled") {
-        showSnackbar(`Falha ao salvar relatório: ${result.error}`, "error");
-      }
-    } catch (error) {
-      console.error("Erro ao chamar API do Electron:", error);
-      showSnackbar(`Erro ao gerar relatório: ${error.message}`, "error");
-    }
+  const handleDownloadReport = (reportType) => {
+    relatoriosApi.gerarRelatorio(reportType);
   };
 
   return (

@@ -34,6 +34,8 @@ import * as planosApi from "../../services/planosApiService";
 import { PlanoFormDialog } from "./PlanosComponents/PlanoFormDialog";
 import { ExcluirPlanoDialog } from "./PlanosComponents/ExcluirPlanoDialog";
 
+import * as relatoriosApi from "../../services/relatoriosApiService";
+
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -226,36 +228,10 @@ export default function PlanosPage() {
   const handleReportMenuClick = (event) =>
     setAnchorElReport(event.currentTarget);
   const handleReportMenuClose = () => setAnchorElReport(null);
-  const handleDownloadReport = async () => {
+
+  const handleDownloadReport = () => {
     handleReportMenuClose();
-
-    const reportOptions = {
-      title: "Relatório de Planos",
-      defaultFileName: `relatorio_planos_${new Date().toISOString().split("T")[0]}.pdf`,
-      headers: ["Nome do Plano", "Código", "Valor", "Duração", "Status"],
-      columnWidths: [180, 70, 90, 110, 90],
-
-      data: filteredRows.map((row) => [
-        String(row.nome || ""),
-        String(row.codigo || ""),
-        String(row.valor || ""),
-        String(row.duracaoUnidade || "-"),
-        String(row.status || ""),
-      ]),
-    };
-
-    try {
-      const result = await window.electronAPI.generateReport(reportOptions);
-
-      if (result.success) {
-        showSnackbar("Relatório salvo com sucesso!", "success");
-      } else if (result.error !== "Save dialog canceled") {
-        showSnackbar(`Falha ao salvar relatório: ${result.error}`, "error");
-      }
-    } catch (error) {
-      console.error("Erro na geração do relatório:", error);
-      showSnackbar(`Erro ao gerar relatório: ${error.message}`, "error");
-    }
+    relatoriosApi.gerarRelatorio("planos");
   };
 
   return (
