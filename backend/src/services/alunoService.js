@@ -3,6 +3,7 @@ const planoRepo = require('../repositories/planosRepository');
 const { validateAluno } = require('../models/alunos.model');
 const { AlunoValidationStrategy, ValidationContext } = require('../patterns/validationStrategy');
 const { ServiceFactory } = require('../patterns/serviceFactory');
+const CalculoData = require('../strategies/CalculoData');
 
 const validationStrategy = new AlunoValidationStrategy(validateAluno);
 const validationContext = new ValidationContext(validationStrategy);
@@ -21,22 +22,8 @@ function formatDateToDB(date) {
 }
 
 function calcularNovaData(dataBase, duracao) {
-    const novaData = new Date(dataBase);
-    novaData.setHours(12, 0, 0, 0);
-
-    const d = duracao ? duracao.toLowerCase() : "";
-    
-    if (d === 'mensal') {
-        novaData.setMonth(novaData.getMonth() + 1);
-    } else if (d === 'anual') {
-        novaData.setFullYear(novaData.getFullYear() + 1);
-    } else if (d === 'diário' || d === 'diario') {
-        novaData.setDate(novaData.getDate() + 1); 
-    } else {
-        novaData.setMonth(novaData.getMonth() + 1); 
-    }
-
-    return novaData;
+    const strategy = CalculoData.criarStrategy(duracao);
+    return strategy.calcular(dataBase);
 }
 
 function processarAlunoParaExibicao(aluno) {
