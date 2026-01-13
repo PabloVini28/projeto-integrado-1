@@ -1,7 +1,6 @@
 const { 
     RelatorioFinanceiro, 
-    RelatorioAlunosLista, 
-    RelatorioAlunosDetalhado,
+    RelatorioAlunos,
     RelatorioPatrimonio,
     RelatorioPlanos 
 } = require('../patterns/template/implementacoes');
@@ -89,15 +88,16 @@ exports.baixarRelatorio = async (req, res) => {
         } 
         
         else if (tipo.startsWith('alunos')) {
-            if (tipo === 'alunos_detalhado') {
-                relatorio = new RelatorioAlunosDetalhado();
-                titulo = "RELATÓRIO DE ALUNOS (DETALHADO)";
-            } else {
-                relatorio = new RelatorioAlunosLista();
-                titulo = "RELATÓRIO DE ALUNOS (SIMPLES)";
-            }
+            const modo = tipo === 'alunos_detalhado' ? 'detalhado' : 'simples';
+            
+            relatorio = new RelatorioAlunos(modo);
+            
+            titulo = modo === 'detalhado' 
+                ? "RELATÓRIO DE ALUNOS (DETALHADO)" 
+                : "RELATÓRIO DE ALUNOS (SIMPLES)";
             
             const brutos = alunoRepo ? await alunoRepo.findAll() : [];
+            
             dados = brutos.map(a => ({ 
                 nome: a.nome || a.nome_aluno || 'Sem Nome', 
                 matricula: a.matricula ? String(a.matricula) : '-', 
@@ -106,7 +106,10 @@ exports.baixarRelatorio = async (req, res) => {
                 cpf: a.cpf || a.cpf_aluno || '-', 
                 telefone: a.telefone || '-', 
                 email: a.email || a.email_aluno || '-', 
-                endereco: { logradouro: a.logradouro || '', numero: a.numero || '' } 
+                endereco: { 
+                    logradouro: a.logradouro || '', 
+                    numero: a.numero || '' 
+                } 
             }));
 
             relatorio.gerar(res, dados, titulo);

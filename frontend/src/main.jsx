@@ -12,7 +12,6 @@ import AlunosPage from "./pages/Alunos/AlunosPage";
 import PlanosPage from "./pages/Planos/PlanosPage";
 import FinanceiroPage from "./pages/Financeiro/FinanceiroPage";
 import PatrimonioPage from "./pages/Patrimonio/PatrimonioPage";
-import RelatoriosPage from "./pages/Relatorios/RelatoriosPage";
 import ConfigPage from "./pages/Configuracoes/ConfigPage";
 
 const router = createHashRouter([
@@ -48,10 +47,7 @@ const router = createHashRouter([
         path: "patrimonio",
         element: <PatrimonioPage />,
       },
-      {
-        path: "relatorios",
-        element: <RelatoriosPage />,
-      },
+      
       {
         path: "configuracoes",
         element: <ConfigPage />,
