@@ -11,6 +11,7 @@ const funcionarioRouter = require('./routes/funcionario');
 const financeiroRouter = require('./routes/financeiro');
 const authRoutes = require('./routes/auth');
 const verificationRouter = require('./routes/verification');
+const relatorioRouter = require('./routes/relatorios');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -27,6 +28,7 @@ app.use('/api/funcionario', funcionarioRouter);
 app.use('/api/financeiro', financeiroRouter);
 app.use('/api/auth', authRoutes);
 app.use('/api/verification', verificationRouter);
+app.use('/api/relatorios', relatorioRouter);
 
 async function start() {
   try {

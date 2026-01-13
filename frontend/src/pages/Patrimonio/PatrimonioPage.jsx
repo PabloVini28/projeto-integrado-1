@@ -35,6 +35,8 @@ import ConfirmaDialog from "./PatrimonioComponents/ConfirmaDialog";
 import * as patrimonioApi from "../../services/patrimonioApiService";
 import { format, parse, isValid } from "date-fns";
 
+import * as relatoriosApi from "../../services/relatoriosApiService";
+
 const blackFocusedStyle = {
   "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: "black",
@@ -47,15 +49,6 @@ const blackFocusedStyle = {
   },
 };
 
-const createData = (id, nome, codigo, dataAquisicao, status) => {
-  return { id, nome, codigo, dataAquisicao, status };
-};
-
-const allRows = [
-  createData(1, "Leg Press", "001", "25/07/2020", "Ativo"),
-  createData(2, "Esteira Ergométrica", "002", "13/06/2021", "Ativo"),
-  createData(13, "Halteres", "013", "15/02/2022", "Inativo"),
-];
 
 const columns = [
   { id: "nome", label: "Nome do Item" },
@@ -82,7 +75,7 @@ export default function PatrimonioPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
 
-  const [rows, setRows] = useState(allRows);
+  const [rows, setRows] = useState([]); 
 
   const [anchorElReport, setAnchorElReport] = useState(null);
 
@@ -272,30 +265,9 @@ export default function PatrimonioPage() {
     setAnchorElReport(null);
   };
 
-  const handleDownloadReport = async () => {
+  const handleDownloadReport = () => {
     handleReportMenuClose();
-    const reportOptions = {
-      title: "Relatório de Patrimônio",
-      defaultFileName: `relatorio_patrimonio_${new Date().toISOString().split("T")[0]}.pdf`,
-      headers: ["Nome do Item", "Código", "Data de Aquisição", "Status"],
-      columnWidths: [300, 120, 150, 172],
-      data: filteredRows.map((row) => [
-        row.nome,
-        row.codigo,
-        formatDateValue(row.dataAquisicao),
-        displayStatus(row.status),
-      ]),
-    };
-    try {
-      const result = await window.electronAPI.generateReport(reportOptions);
-      if (result.success) {
-        showSnackbar("Relatório salvo com sucesso!", "success");
-      } else if (result.error !== "Save dialog canceled") {
-        showSnackbar(`Falha ao salvar relatório: ${result.error}`, "error");
-      }
-    } catch (error) {
-      showSnackbar(`Erro ao gerar relatório: ${error.message}`, "error");
-    }
+    relatoriosApi.gerarRelatorio("patrimonio");
   };
 
   return (
