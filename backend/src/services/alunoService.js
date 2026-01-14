@@ -5,6 +5,8 @@ const { AlunoValidationStrategy, ValidationContext } = require('../patterns/stra
 const { ServiceFactory } = require('../patterns/serviceFactory');
 const CalculoData = require('../patterns/strategies/CalculoData');
 
+const AlunoBuilder = require('../patterns/AlunoBuilder');
+
 const validationStrategy = new AlunoValidationStrategy(validateAluno);
 const validationContext = new ValidationContext(validationStrategy);
 
@@ -63,16 +65,11 @@ const customMethods = {
 
   async create(payload) {
     try {
-      let matriculaFinal = payload.matricula || payload.matricula_aluno;
-      if (!matriculaFinal) {
-          matriculaFinal = gerarMatricula();
-      }
+      let matriculaFinal = payload.matricula || payload.matricula_aluno || gerarMatricula();
 
       let dataExpiracaoDate = null;
-      let statusInicial = "Inativo"; 
-      let codPlanoFinal = payload.cod_plano !== undefined && payload.cod_plano !== null && payload.cod_plano !== '' 
-          ? payload.cod_plano 
-          : (payload.plano || null);
+      let statusInicial = "Inativo";
+      let codPlanoFinal = payload.cod_plano || payload.plano || null;
 
       if (codPlanoFinal) {
           const plano = await planoRepo.findByCod(codPlanoFinal);
@@ -85,50 +82,46 @@ const customMethods = {
       const dataNascFinal = formatDateToDB(payload.data_nascimento || payload.dataNascimento);
       const dataExpFinal = formatDateToDB(dataExpiracaoDate);
 
-      const alunoParaSalvar = {
-          matricula: matriculaFinal,
-          nome_aluno: payload.nome_aluno || payload.nome,
-          email_aluno: payload.email_aluno || payload.email,
-          cpf_aluno: payload.cpf_aluno || payload.cpf,
-          telefone: payload.telefone || null,
-          logradouro: payload.logradouro || null,
-          numero: payload.numero || null,
-          cod_plano: codPlanoFinal,
-          genero: payload.genero || null,
-          data_nascimento: dataNascFinal,
-          data_expiracao: dataExpFinal,
-          status_aluno: statusInicial
-      };
+      const alunoParaSalvar = new AlunoBuilder()
+        .comMatricula(matriculaFinal)
+        .comIdentificacao(
+            payload.nome_aluno || payload.nome, 
+            payload.cpf_aluno || payload.cpf, 
+            payload.email_aluno || payload.email
+        )
+        .comContato(payload.telefone, payload.logradouro, payload.numero)
+        .comDadosPessoais(payload.genero, dataNascFinal)
+        .comPlano(codPlanoFinal, dataExpFinal, statusInicial)
+        .build();
 
-      console.log("--- DEBUG CREATE ALUNO ---");
-      console.log("Matrícula a salvar:", alunoParaSalvar.matricula);
-      console.log("Status:", alunoParaSalvar.status_aluno);
-      console.log("Data Exp:", alunoParaSalvar.data_expiracao);
-
-      if (!alunoParaSalvar.matricula) throw new Error("Erro Crítico: Matrícula não foi gerada.");
+      console.log("--- DEBUG CREATE ALUNO (BUILDER) ---");
+      console.log(alunoParaSalvar);
 
       return await this.repository.create(alunoParaSalvar);
 
     } catch (error) {
-      console.error('Erro ao criar aluno no serviço:', error);
+      console.error('Erro ao criar aluno:', error);
       throw error;
     }
   },
 
   async update(matricula, payload) {
-    const alunoUpdate = {
-        matricula: matricula,
-        nome_aluno: payload.nome_aluno || payload.nome,
-        email_aluno: payload.email_aluno || payload.email,
-        cpf_aluno: payload.cpf_aluno || payload.cpf,
-        telefone: payload.telefone,
-        logradouro: payload.logradouro,
-        numero: payload.numero,
-        cod_plano: payload.cod_plano,
-        genero: payload.genero,
-        status_aluno: payload.status_aluno || payload.status,
-        data_nascimento: formatDateToDB(payload.data_nascimento || payload.dataNascimento)
-    };
+    const dataNasc = payload.data_nascimento || payload.dataNascimento 
+        ? formatDateToDB(payload.data_nascimento || payload.dataNascimento) 
+        : undefined;
+
+    const alunoUpdate = new AlunoBuilder()
+        .comIdentificacao(
+            payload.nome_aluno || payload.nome, 
+            payload.cpf_aluno || payload.cpf, 
+            payload.email_aluno || payload.email
+        )
+        .comContato(payload.telefone, payload.logradouro, payload.numero)
+        .comDadosPessoais(payload.genero, dataNasc)
+        .comPlano(payload.cod_plano, null, payload.status_aluno || payload.status)
+        .build();
+
+    alunoUpdate.matricula = matricula;
 
     Object.keys(alunoUpdate).forEach(key => {
         if (alunoUpdate[key] === undefined) delete alunoUpdate[key];
