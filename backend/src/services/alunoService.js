@@ -78,7 +78,6 @@ const customMethods = {
 
   async create(payload) {
     try {
-      // 1. Lógica de Negócio (cálculos) continua aqui no Service
       let matriculaFinal = payload.matricula || payload.matricula_aluno || gerarMatricula();
 
       let dataExpiracaoDate = null;
@@ -96,8 +95,6 @@ const customMethods = {
       const dataNascFinal = formatDateToDB(payload.data_nascimento || payload.dataNascimento);
       const dataExpFinal = formatDateToDB(dataExpiracaoDate);
 
-      // 2. AQUI ENTRA O BUILDER
-      // Substitui aquele objeto gigante manual
       const alunoParaSalvar = new AlunoBuilder()
         .comMatricula(matriculaFinal)
         .comIdentificacao(
@@ -122,12 +119,10 @@ const customMethods = {
   },
 
   async update(matricula, payload) {
-    // Tratamento de data antes de passar pro builder
     const dataNasc = payload.data_nascimento || payload.dataNascimento 
         ? formatDateToDB(payload.data_nascimento || payload.dataNascimento) 
         : undefined;
 
-    // Usando o Builder para montar o objeto de atualização
     const alunoUpdate = new AlunoBuilder()
         .comIdentificacao(
             payload.nome_aluno || payload.nome, 
@@ -139,10 +134,8 @@ const customMethods = {
         .comPlano(payload.cod_plano, null, payload.status_aluno || payload.status)
         .build();
 
-    // Adiciona a matrícula no objeto (exigência do seu repositório ou SQL, se necessário)
     alunoUpdate.matricula = matricula;
 
-    // Limpeza final de segurança (O Builder já evita undefined, mas null pode passar se for intenção)
     Object.keys(alunoUpdate).forEach(key => {
         if (alunoUpdate[key] === undefined) delete alunoUpdate[key];
     });
