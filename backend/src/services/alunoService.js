@@ -1,9 +1,9 @@
 const repo = require('../repositories/alunoRepository');
 const planoRepo = require('../repositories/planosRepository');
 const { validateAluno } = require('../models/alunos.model');
-const { AlunoValidationStrategy, ValidationContext } = require('../patterns/validationStrategy');
+const { AlunoValidationStrategy, ValidationContext } = require('../patterns/strategies/validationStrategy');
 const { ServiceFactory } = require('../patterns/serviceFactory');
-const CalculoData = require('../strategies/CalculoData');
+const CalculoData = require('../patterns/strategies/CalculoData');
 
 const validationStrategy = new AlunoValidationStrategy(validateAluno);
 const validationContext = new ValidationContext(validationStrategy);
