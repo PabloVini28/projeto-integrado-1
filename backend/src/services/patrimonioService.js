@@ -1,7 +1,7 @@
 const repo = require("../repositories/patrimonioRepository");
 const { validatePatrimonio } = require("../models/patrimonio.model");
-const { PatrimonioValidationStrategy, ValidationContext } = require("../patterns/validationStrategy");
-const { ServiceFactory } = require("../patterns/serviceFactory");
+const { PatrimonioValidationStrategy, ValidationContext } = require("../patterns/strategies/ValidationStrategy");
+const { ServiceFactory } = require("../patterns/factory/ServiceFactory");
 
 const validationStrategy = new PatrimonioValidationStrategy(validatePatrimonio);
 const validationContext = new ValidationContext(validationStrategy);

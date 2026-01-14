@@ -58,6 +58,10 @@ class ValidationStrategy {
 	}
   
 	executeValidation(payload) {
+	  if (!this.strategy) {
+		 throw new Error("Estratégia de validação não definida no contexto.");
+	  }
+  
 	  const { valid, errors } = this.strategy.validate(payload);
 	  
 	  if (!valid) {
@@ -78,4 +82,4 @@ class ValidationStrategy {
 	PatrimonioValidationStrategy,
 	FinanceiroValidationStrategy,
 	ValidationContext
-  };  
+  };

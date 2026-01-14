@@ -1,4 +1,4 @@
-const { ValidationContext } = require('./validationStrategy');
+const { ValidationContext } = require('../strategies/ValidationStrategy'); // Ajuste o caminho se necessário
 
 class BaseService {
   constructor(repository, validationContext) {
@@ -11,11 +11,11 @@ class BaseService {
   }
 
   async getById(id) {
-    return this.repository.findById ? 
-      this.repository.findById(id) : 
-      this.repository.findByCod ? 
-        this.repository.findByCod(id) : 
-        this.repository.findByMatricula(id);
+    if (this.repository.findById) return this.repository.findById(id);
+    if (this.repository.findByCod) return this.repository.findByCod(id);
+    if (this.repository.findByMatricula) return this.repository.findByMatricula(id);
+    
+    throw new Error('Método de busca por ID não encontrado no repositório');
   }
 
   async create(payload) {

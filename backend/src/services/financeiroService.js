@@ -1,8 +1,8 @@
 const repo = require("../repositories/financeiroRepository");
 const alunoService = require('./alunoService');
 const { validateFinanceiro } = require("../models/financeiro.model");
-const { FinanceiroValidationStrategy, ValidationContext } = require("../patterns/validationStrategy");
-const { ServiceFactory } = require("../patterns/serviceFactory");
+const { FinanceiroValidationStrategy, ValidationContext } = require("../patterns/strategies/ValidationStrategy");
+const { ServiceFactory } = require("../patterns/factory/ServiceFactory");
 
 const validationStrategy = new FinanceiroValidationStrategy(validateFinanceiro);
 const validationContext = new ValidationContext(validationStrategy);

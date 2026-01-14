@@ -22,19 +22,9 @@ async function findByMatricula(matricula) {
 async function create(aluno) {
     const q = ` 
       INSERT INTO alunos (
-        matricula,
-        cod_plano,
-        nome_aluno,
-        email_aluno,
-        cpf_aluno,
-        telefone,
-        data_nascimento,
-        logradouro,
-        numero,
-        status_aluno,
-        genero,
-        data_inicio,
-        data_expiracao
+        matricula, cod_plano, nome_aluno, email_aluno, cpf_aluno,
+        telefone, data_nascimento, logradouro, numero,
+        status_aluno, genero, data_inicio, data_expiracao
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), $12
@@ -78,6 +68,7 @@ async function update(matricula, alunos) {
           cod_plano=$1, nome_aluno=$2, email_aluno=$3, cpf_aluno=$4, telefone=$5, 
           data_nascimento=$6, logradouro=$7, numero=$8, status_aluno=$9, genero=$10
       WHERE matricula = $11 RETURNING * `;
+      
   const vals = [
     alunos.cod_plano || null, 
     alunos.nome_aluno, 
@@ -91,6 +82,7 @@ async function update(matricula, alunos) {
     alunos.genero,
     matricula,
   ];
+
   try {
     const r = await pool.query(q, vals);
     return r.rows[0] || null;
@@ -125,4 +117,12 @@ async function updateStatus(matricula, status) {
     return r.rows[0] || null;
 }
 
-module.exports = { findAll, findByMatricula, create, update, remove, updateStatus, updateRenovacao };
+module.exports = { 
+    findAll, 
+    findByMatricula, 
+    create, 
+    update, 
+    remove, 
+    updateStatus, 
+    updateRenovacao 
+};

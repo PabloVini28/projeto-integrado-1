@@ -1,7 +1,7 @@
 const repo = require("../repositories/planosRepository");
 const { validatePlano } = require("../models/planos.model");
-const { PlanoValidationStrategy, ValidationContext } = require("../patterns/validationStrategy");
-const { ServiceFactory } = require("../patterns/serviceFactory");
+const { PlanoValidationStrategy, ValidationContext } = require("../patterns/strategies/ValidationStrategy");
+const { ServiceFactory } = require("../patterns/factory/ServiceFactory");
 
 const validationStrategy = new PlanoValidationStrategy(validatePlano);
 const validationContext = new ValidationContext(validationStrategy);

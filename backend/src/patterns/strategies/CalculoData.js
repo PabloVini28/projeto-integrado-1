@@ -1,6 +1,6 @@
-const CalculoDataMensalStrategy = require('./CalculoDataMensalStrategy');
-const CalculoDataAnualStrategy = require('./CalculoDataAnualStrategy');
-const CalculoDataDiarioStrategy = require('./CalculoDataDiarioStrategy');
+const CalculoDataMensalStrategy = require('./CalculoDataPlanoMensalStrategy');
+const CalculoDataAnualStrategy = require('./CalculoDataPlanoAnualStrategy');
+const CalculoDataDiarioStrategy = require('./CalculoDataPlanoDiarioStrategy');
 
 class CalculoData {
     static criarStrategy(duracao) {
